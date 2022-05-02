@@ -1,6 +1,14 @@
 ﻿namespace DiscordBotRewrite;
 
 public class Bot {
+    #if DEBUG
+        public bool Debugging = true;
+        public ulong? TargetServer = 941558436561305630;
+    #else
+        public bool Debugging = false;
+        public ulong? DebugServer = null;
+    #endif
+
     public static DiscordClient Client { get; private set; } //will need to change for sharding, deal with when that becomes important
     public static SlashCommandsExtension SlashExtension { get; private set; }
     public static DiscordUser Owner { get; private set; }
@@ -28,7 +36,7 @@ public class Bot {
             Token = Config.Token,
             TokenType = TokenType.Bot,
             AutoReconnect = true,
-            MinimumLogLevel = LogLevel.Debug
+            MinimumLogLevel = Debugging ? LogLevel.Debug : LogLevel.Information
         };
 
         Client = new DiscordClient(config);
@@ -56,23 +64,21 @@ public class Bot {
     private Task InitCommands() {
         SlashExtension = Client.UseSlashCommands();
 
-        SlashExtension.RegisterCommands<UnsortedCommands>(941558436561305630);
-        SlashExtension.RegisterCommands<PixelCommands>(941558436561305630);
-        SlashExtension.RegisterCommands<QuestionCommands>(941558436561305630);
-        SlashExtension.RegisterCommands<VoiceCommands>(941558436561305630);
+        SlashExtension.RegisterCommands<UnsortedCommands>(TargetServer);
+        SlashExtension.RegisterCommands<PixelCommands>(TargetServer);
+        SlashExtension.RegisterCommands<QuestionCommands>(TargetServer);
+        SlashExtension.RegisterCommands<VoiceCommands>(TargetServer);
 
-        SlashExtension.RegisterCommands<QuoteCommands>(941558436561305630);
+        SlashExtension.RegisterCommands<QuoteCommands>(TargetServer);
 
         return Task.CompletedTask;
     }
-
-
     private async Task OnClientReady(DiscordClient client, ReadyEventArgs e) {
         await Client.UpdateStatusAsync(new DiscordActivity() {
             ActivityType = ActivityType.Playing,
-            Name = "with new Slash Commands!"
+            Name = Debugging ? "with my code!": "with new Slash Commands!"
         }, UserStatus.Online);
-        Client.Logger.Log(LogLevel.Information, "Bot has started!");
+        Client.Logger.Log(LogLevel.Debug, "Bot has started!");
     }
 }
 public readonly struct GlobalConfig {
@@ -82,13 +88,4 @@ public readonly struct GlobalConfig {
     public readonly string Token;
     [JsonProperty("bot_owner")]
     public readonly ulong OwnerId;
-
-    //[JsonProperty("use_leveling")]
-    //public bool useLeveling;
-    //[JsonProperty("use_economy")]
-    //public bool useEconomy;
-    //[JsonProperty("use_questions")]
-    //public bool useQuestions;
-    //[JsonProperty("enable_voice_recording")]
-    //public bool voice_recording;
 }
