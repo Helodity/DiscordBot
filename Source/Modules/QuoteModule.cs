@@ -30,18 +30,15 @@ public class QuoteModule {
         //Already quoted, no need to continue
         if(data.QuotedMessages.Contains(args.Message.Id)) return;
 
+        //For some reason not all data is given from event args, so we get it manually here
+        DiscordMessage proper_message = await args.Channel.GetMessageAsync(args.Message.Id);
+
         //Grab each reaction and count up the amount that are the server's quote emoji
-        int quoteReactions = 0;
-        foreach(DiscordReaction reaction in args.Message.Reactions) {
-            if(reaction.Emoji.Id == data.QuoteEmojiId) {
-                quoteReactions++;
-            }
-        }
+        var reactions = await proper_message.GetReactionsAsync(await args.Guild.GetEmojiAsync(data.QuoteEmojiId));
+        int quoteReactions = reactions.Count;
 
         //Did we get enough emojis to create a quote?
         if(quoteReactions >= data.EmojiAmountToQuote) {
-            //For some reason the author isn't given from event args, so we get it manually here
-            DiscordMessage proper_message = await args.Channel.GetMessageAsync(args.Message.Id);
             DiscordUser author = proper_message.Author; //This isn't needed but makes the embed creation look cleaner
             //Quote it!
             var embed = new DiscordEmbedBuilder()
