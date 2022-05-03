@@ -37,6 +37,6 @@ class Program {
                 Bot.Client.Logger.LogError(((Server​Error​Exception)eventArgs.Exception).JsonMessage);
         };
         Bot bot = new Bot();
-        bot.RunAsync().GetAwaiter().GetResult();
+        bot.Start().GetAwaiter().GetResult();
     }
 }

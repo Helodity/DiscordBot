@@ -219,7 +219,7 @@ public class VoiceGuildConnection {
     }
 
     private Task OnChannelDisconnect(LavalinkGuildConnection sender, WebSocketCloseEventArgs e) {
-        Bot.Voice.OnVoiceGuildDisconnect(Id);
+        Bot.Modules.Voice.OnVoiceGuildDisconnect(Id);
         Bot.Client.Logger.LogDebug($"Web socket closed at {Id}");
         return Task.CompletedTask;
     }

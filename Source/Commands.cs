@@ -109,14 +109,14 @@ class QuoteCommands : ApplicationCommandModule {
             return;
         }
 
-        var data = Bot.Quote.GetQuoteData(ctx.Guild.Id);
+        var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
         data.QuoteChannelId = ctx.Channel.Id;
-        Bot.Quote.SetQuoteData(data);
+        Bot.Modules.Quote.SetQuoteData(data);
         await BotUtils.CreateBasicResponse(ctx, $"Set this server's quote channel to {ctx.Channel.Mention}!");
     }
     [SlashCommand("set_quote_emoji", "Sets this server's quote emoji")]
     public async Task SetQuoteEmoji(InteractionContext ctx) {
-        var data = Bot.Quote.GetQuoteData(ctx.Guild.Id);
+        var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
         await BotUtils.CreateBasicResponse(ctx, "React to this message with the emoji to use!");
 
         //Get the user's emoji they want
@@ -131,13 +131,13 @@ class QuoteCommands : ApplicationCommandModule {
         await BotUtils.EditBasicResponse(ctx, $"Set the server's quote emoji to {reaction.Result.Emoji}");
 
         data.QuoteEmojiId = reaction.Result.Emoji.Id;
-        Bot.Quote.SetQuoteData(data);
+        Bot.Modules.Quote.SetQuoteData(data);
     }
     [SlashCommand("set_quote_emoji_amount", "Sets how many reactions are needed to quote a message")]
     public async Task SetQuoteEmojiAmount(InteractionContext ctx, [Option("amount", "how many")] long amount) {
-        var data = Bot.Quote.GetQuoteData(ctx.Guild.Id);
+        var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
         data.EmojiAmountToQuote = (ushort)amount;
-        Bot.Quote.SetQuoteData(data);
+        Bot.Modules.Quote.SetQuoteData(data);
         await BotUtils.CreateBasicResponse(ctx, $"Set this server's quote channel to {ctx.Channel.Mention}!");
     }
 }
@@ -150,7 +150,7 @@ class QuestionCommands : ApplicationCommandModule {
     public async Task AskTruth(InteractionContext ctx,
         [Option("rating", "How risky is the question?")] Question.DepthGroup rating = Question.DepthGroup.G) {
 
-        QuestionModule module = Bot.QuestionModule;
+        QuestionModule module = Bot.Modules.Question;
         Question usedQuestion = module.PickQuestion(module.TruthQuestions.ToList(), rating);
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent(usedQuestion.Text));
     }
@@ -162,7 +162,7 @@ class QuestionCommands : ApplicationCommandModule {
         [Option("user", "Who is recieving the question?")] DiscordUser user = null,
         [Option("rating", "How risky is the question?")] Question.DepthGroup rating = Question.DepthGroup.G) {
 
-        QuestionModule module = Bot.QuestionModule;
+        QuestionModule module = Bot.Modules.Question;
         user ??= ctx.User;
         DiscordMember member = await BotUtils.IdToMember(ctx.Guild, user.Id);
 
@@ -200,7 +200,7 @@ class QuestionCommands : ApplicationCommandModule {
 class PixelCommands : ApplicationCommandModule {
 
     public SKSurface GetPixelSurface(InteractionContext ctx, int anchorX, int anchorY, int distance) {
-        var mapData = Bot.Pixel.GetPixelMap(ctx.Guild.Id);
+        var mapData = Bot.Modules.Pixel.GetPixelMap(ctx.Guild.Id);
         int scale = 500 / distance;
 
         SKImageInfo imageInfo = new SKImageInfo(500, 500);
@@ -381,9 +381,9 @@ class PixelCommands : ApplicationCommandModule {
                 break;
             }
             if(input.Result.Id == "place") {
-                var map = Bot.Pixel.GetPixelMap(ctx.Guild.Id);
+                var map = Bot.Modules.Pixel.GetPixelMap(ctx.Guild.Id);
                 map.WritePixel(x, y, selectedColorEnum);
-                Bot.Pixel.SetPixelMap(map);
+                Bot.Modules.Pixel.SetPixelMap(map);
             }
             if(input.Result.Id == "moveUp") {
                 for(int i = 0; i < jumpAmount; i++) {
@@ -451,7 +451,7 @@ class VoiceCommands : ApplicationCommandModule {
 
     [SlashCommand("join", "Join Channel")]
     public async Task JoinChannel(InteractionContext ctx) {
-        (bool canUse, var VGconn) = await Bot.Voice.CanUserSummon(ctx);
+        (bool canUse, var VGconn) = await Bot.Modules.Voice.CanUserSummon(ctx);
         if(!canUse)
             return;
 
@@ -461,7 +461,7 @@ class VoiceCommands : ApplicationCommandModule {
 
     [SlashCommand("leave", "Leave channel")]
     public async Task LeaveChannel(InteractionContext ctx) {
-        (bool canUse, var VGconn) = await Bot.Voice.CanUserUseModifyCommand(ctx);
+        (bool canUse, var VGconn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
         if(!canUse)
             return;
 
@@ -471,22 +471,23 @@ class VoiceCommands : ApplicationCommandModule {
 
     [SlashCommand("play", "Play a song")]
     public async Task Play(InteractionContext ctx, [Option("search", "what to play")] string search) {
-        VoiceGuildConnection VGconn = Bot.Voice.GetGuildConnection(ctx);
+        VoiceModule module = Bot.Modules.Voice;
+        VoiceGuildConnection VGconn = module.GetGuildConnection(ctx);
         bool canUse;
         if(VGconn.Conn == null) {
-            (canUse, VGconn) = await Bot.Voice.CanUserSummon(ctx);
+            (canUse, VGconn) = await module.CanUserSummon(ctx);
         } else {
-            if(Bot.Voice.IsBeingUsed(VGconn.Conn))
-                (canUse, VGconn) = await Bot.Voice.CanUserUseModifyCommand(ctx);
+            if(module.IsBeingUsed(VGconn.Conn))
+                (canUse, VGconn) = await module.CanUserUseModifyCommand(ctx);
             else
-                (canUse, VGconn) = await Bot.Voice.CanUserSummon(ctx);
+                (canUse, VGconn) = await module.CanUserSummon(ctx);
         }
 
         if(!canUse)
             return;
 
         await ctx.DeferAsync();
-        var tracks = await Bot.Voice.GetTrackAsync(search, VGconn.Node);
+        var tracks = await module.GetTrackAsync(search, VGconn.Node);
         if(tracks == null) {
             await BotUtils.CreateBasicResponse(ctx, "No results found!", true);
             return;
@@ -509,7 +510,7 @@ class VoiceCommands : ApplicationCommandModule {
 
     [SlashCommand("skip", "Skip the currently playing song")]
     public async Task Skip(InteractionContext ctx) {
-        (bool canUse, var VGConn) = await Bot.Voice.CanUserUseModifyCommand(ctx);
+        (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
 
         if(!canUse)
             return;
@@ -521,7 +522,7 @@ class VoiceCommands : ApplicationCommandModule {
 
     [SlashCommand("volume", "make music quiet or loud")]
     public async Task Volume(InteractionContext ctx, [Option("volume", "how loud")] long volume) {
-        (bool canUse, var VGConn) = await Bot.Voice.CanUserUseModifyCommand(ctx);
+        (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
         if(!canUse)
             return;
 
@@ -536,7 +537,7 @@ class VoiceCommands : ApplicationCommandModule {
 
     [SlashCommand("loop", "Loop your queue")]
     public async Task Loop(InteractionContext ctx) {
-        (bool canUse, var VGConn) = await Bot.Voice.CanUserUseModifyCommand(ctx);
+        (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
 
         if(!canUse)
             return;
@@ -550,7 +551,7 @@ class VoiceCommands : ApplicationCommandModule {
 
     [SlashCommand("shuffle", "Shuffle your queue")]
     public async Task Shuffle(InteractionContext ctx) {
-        (bool canUse, var VGConn) = await Bot.Voice.CanUserUseModifyCommand(ctx);
+        (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
         if(!canUse)
             return;
 
@@ -563,7 +564,7 @@ class VoiceCommands : ApplicationCommandModule {
 
     [SlashCommand("pause", "Pause the player")]
     public async Task Pause(InteractionContext ctx) {
-        (bool canUse, var VGConn) = await Bot.Voice.CanUserUseModifyCommand(ctx);
+        (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
         if(!canUse)
             return;
 
@@ -579,7 +580,7 @@ class VoiceCommands : ApplicationCommandModule {
 
     [SlashCommand("clear", "Clear the queue")]
     public async Task Clear(InteractionContext ctx) {
-        (bool canUse, var VGConn) = await Bot.Voice.CanUserUseModifyCommand(ctx);
+        (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
         if(!canUse)
             return;
 
@@ -590,7 +591,7 @@ class VoiceCommands : ApplicationCommandModule {
 
     [SlashCommand("queue", "Show the queue")]
     public async Task List(InteractionContext ctx, [Option("page", "what page")] long page = 1) {
-        (bool canUse, var VGConn) = await Bot.Voice.CanUserUseModifyCommand(ctx);
+        (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
         if(!canUse)
             return;
 
