@@ -21,16 +21,18 @@ public class QuoteModule {
         BotUtils.SaveJson(QuoteData, Modules.QuoteData.JsonLocation);
     }
 
-    async Task TryQuote(DiscordClient client, MessageReactionAddEventArgs e) {
-        QuoteData data = GetQuoteData(e.Guild.Id);
+    async Task TryQuote(DiscordClient client, MessageReactionAddEventArgs args) {
+        QuoteData data = GetQuoteData(args.Guild.Id);
+
+        //This isn't enabled in the server, ignore the reaction
+        if(!data.Enabled) return;
 
         //Already quoted, no need to continue
-        if(data.QuotedMessages.Contains(e.Message.Id))
-            return;
+        if(data.QuotedMessages.Contains(args.Message.Id)) return;
 
         //Grab each reaction and count up the amount that are the server's quote emoji
         int quoteReactions = 0;
-        foreach(DiscordReaction reaction in e.Message.Reactions) {
+        foreach(DiscordReaction reaction in args.Message.Reactions) {
             if(reaction.Emoji.Id == data.QuoteEmojiId) {
                 quoteReactions++;
             }
@@ -38,8 +40,8 @@ public class QuoteModule {
 
         //Did we get enough emojis to create a quote?
         if(quoteReactions >= data.EmojiAmountToQuote) {
-            //For some reason the author isn't given from event args, so we get it manually
-            DiscordMessage proper_message = await e.Channel.GetMessageAsync(e.Message.Id);
+            //For some reason the author isn't given from event args, so we get it manually here
+            DiscordMessage proper_message = await args.Channel.GetMessageAsync(args.Message.Id);
             DiscordUser author = proper_message.Author; //This isn't needed but makes the embed creation look cleaner
             //Quote it!
             var embed = new DiscordEmbedBuilder()
@@ -64,6 +66,10 @@ public class QuoteData {
     [JsonProperty("guild_id")]
     public readonly ulong Id;
 
+    //The guild this data is for
+    [JsonProperty("enabled")]
+    public bool Enabled;
+
     //Which channel to send quotes?
     [JsonProperty("quote_channel")]
     public ulong QuoteChannelId;
@@ -82,6 +88,7 @@ public class QuoteData {
 
     public QuoteData(ulong id) {
         Id = id;
+        Enabled = true;
         QuoteChannelId = 0;
         QuoteEmojiId = 0;
         EmojiAmountToQuote = 1;

@@ -22,7 +22,7 @@ public class Bot {
         await Task.Delay(-1);
     }
 
-    #region private
+    #region Private
     private bool TryLoadConfig() {
         Config = BotUtils.LoadJson<GlobalConfig>(GlobalConfig.JsonLocation);
 
