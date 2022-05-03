@@ -62,7 +62,7 @@ class VoiceCommands : ApplicationCommandModule {
         await BotUtils.EditBasicResponse(ctx, output);
     }
 
-    [SlashCommand("skip", "Skip the currently playing song")]
+    [SlashCommand("skip", "Skip the currently playing song.")]
     public async Task Skip(InteractionContext ctx) {
         (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
 
@@ -74,17 +74,13 @@ class VoiceCommands : ApplicationCommandModule {
         await BotUtils.CreateBasicResponse(ctx, "Skipped!");
     }
 
-    [SlashCommand("volume", "make music quiet or loud")]
+    [SlashCommand("volume", "Make your music louder.")]
     public async Task Volume(InteractionContext ctx, [Option("volume", "how loud")] long volume) {
         (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
         if(!canUse)
             return;
 
-        //Clamp the volume
-        if(volume < 1)
-            volume = 1;
-        if(volume > 200)
-            volume = 200;
+        Math.Clamp(volume, 1, 200);
         await VGConn.Conn.SetVolumeAsync((int)volume / 2);
         await BotUtils.CreateBasicResponse(ctx, $"Set the volume to {volume}%");
     }
@@ -97,26 +93,20 @@ class VoiceCommands : ApplicationCommandModule {
             return;
 
         VGConn.IsLooping = !VGConn.IsLooping;
-        if(VGConn.IsLooping)
-            await BotUtils.CreateBasicResponse(ctx, "Looping enabled!");
-        else
-            await BotUtils.CreateBasicResponse(ctx, "Looping disabled!");
+        await BotUtils.CreateBasicResponse(ctx, $"Looping {(VGConn.IsLooping ? "enabled" : "disabled")}!");
     }
 
-    [SlashCommand("shuffle", "Shuffle your queue")]
+    [SlashCommand("shuffle", "Play songs randomly")]
     public async Task Shuffle(InteractionContext ctx) {
         (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
         if(!canUse)
             return;
 
         VGConn.IsShuffling = !VGConn.IsShuffling;
-        if(VGConn.IsShuffling)
-            await BotUtils.CreateBasicResponse(ctx, "Shuffling enabled!");
-        else
-            await BotUtils.CreateBasicResponse(ctx, "Shuffling disabled!");
+        await BotUtils.CreateBasicResponse(ctx, $"Shuffling {(VGConn.IsShuffling ? "enabled" : "disabled")}!");
     }
 
-    [SlashCommand("pause", "Pause the player")]
+    [SlashCommand("pause", "Pause the player.")]
     public async Task Pause(InteractionContext ctx) {
         (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
         if(!canUse)
@@ -132,7 +122,7 @@ class VoiceCommands : ApplicationCommandModule {
         }
     }
 
-    [SlashCommand("clear", "Clear the queue")]
+    [SlashCommand("clear", "Clear the queue.")]
     public async Task Clear(InteractionContext ctx) {
         (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
         if(!canUse)
@@ -143,6 +133,22 @@ class VoiceCommands : ApplicationCommandModule {
         await BotUtils.CreateBasicResponse(ctx, $"Cleared {songCount} songs from queue!");
     }
 
+    [SlashCommand("remove", "Remove the song at the specified index..")]
+    public async Task Clear(InteractionContext ctx, [Option("index", "index")] long index) {
+        (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
+        if(!canUse)
+            return;
+
+        index--; //Convert from 1 being the first song to 0
+        int songCount = VGConn.TrackQueue.Count();
+        if(index > songCount || index < 1) {
+            await BotUtils.CreateBasicResponse(ctx, $"Index out of bounds!", true);
+            return;
+        }
+        VGConn.TrackQueue.RemoveAt((int)index);
+        await BotUtils.CreateBasicResponse(ctx, $"Removed {VGConn.TrackQueue[(int)index].Title} from the queue!");
+    }
+
     [SlashCommand("queue", "Show the queue")]
     public async Task List(InteractionContext ctx, [Option("page", "what page")] long page = 1) {
         (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
@@ -151,7 +157,7 @@ class VoiceCommands : ApplicationCommandModule {
 
         int pageCount = (int)Math.Ceiling((decimal)VGConn.TrackQueue.Count / (decimal)10);
         int activePage = Math.Min(Math.Max(1, (int)page), pageCount);
-        int endNumber = Math.Min((activePage) * 10, VGConn.TrackQueue.Count());
+        int endNumber = Math.Min(activePage * 10, VGConn.TrackQueue.Count());
 
         var embed = new DiscordEmbedBuilder {
             Title = "Queue",
@@ -163,7 +169,7 @@ class VoiceCommands : ApplicationCommandModule {
             description = "Queue is empty!";
         } else {
             for(int i = (activePage - 1) * 10; i < endNumber; i++) {
-                description += $"{i + 1}: `{VGConn.TrackQueue[i].Title}` by `{VGConn.TrackQueue[i].Author}` \n";
+                description += $"**{i + 1}:** `{VGConn.TrackQueue[i].Title}` by `{VGConn.TrackQueue[i].Author}` \n";
             }
         }
         embed.WithDescription(description);
