@@ -6,7 +6,7 @@ public class Bot {
         public ulong? TargetServer = 941558436561305630;
 #else
         public bool Debugging = false;
-        public ulong? DebugServer = null;
+        public ulong? TargetServer = null;
 #endif
     public static DiscordClient Client { get; private set; } //will need to change for sharding, deal with when that becomes important
     public static SlashCommandsExtension SlashExtension { get; private set; }
