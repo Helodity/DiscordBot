@@ -50,6 +50,8 @@ public class Bot {
         return Task.CompletedTask;
     }
     private async Task InitModules() {
+        Modules = new ModuleContainer();
+
         Modules.Quote = new QuoteModule(Client);
 
         Modules.Question = new QuestionModule();

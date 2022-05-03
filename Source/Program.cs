@@ -11,7 +11,6 @@ global using DSharpPlus.Lavalink;
 global using DSharpPlus.Lavalink.EventArgs;
 global using DSharpPlus.Net;
 global using DSharpPlus.SlashCommands;
-global using DSharpPlus.SlashCommands.Attributes;
 global using Microsoft.Extensions.Logging;
 global using Newtonsoft.Json;
 global using Newtonsoft.Json.Converters;
