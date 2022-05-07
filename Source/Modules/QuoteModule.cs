@@ -37,6 +37,10 @@ public class QuoteModule {
         var reactions = await proper_message.GetReactionsAsync(await args.Guild.GetEmojiAsync(data.QuoteEmojiId));
         int quoteReactions = reactions.Count;
 
+        DiscordAttachment attachment= null;
+        if(proper_message.Attachments.Count > 0)
+            attachment = proper_message.Attachments.FirstOrDefault(x => x.IsImage());
+
         //Did we get enough emojis to create a quote?
         if(quoteReactions >= data.EmojiAmountToQuote) {
             DiscordUser author = proper_message.Author; //This isn't needed but makes the embed creation look cleaner
@@ -45,6 +49,11 @@ public class QuoteModule {
                 .WithColor(DiscordColor.LightGray)
                 .WithAuthor($"{author.Username}#{author.Discriminator}", iconUrl: string.IsNullOrEmpty(author.AvatarHash) ? author.DefaultAvatarUrl : author.AvatarUrl)
                 .WithDescription(proper_message.Content + $"\n\n[Context]({proper_message.JumpLink})");
+
+            if(attachment != null) {
+                embed.WithImageUrl(attachment.Url);
+            }
+
             DiscordChannel channel = await client.GetChannelAsync(data.QuoteChannelId);
             await client.SendMessageAsync(channel, embed);
             
