@@ -205,7 +205,7 @@ public class VoiceGuildConnection {
         if(TrackQueue.Count > 0) {
             await PlayTrack(GetNextSongInQueue());
         } else
-            await Conn.StopAsync();
+            await StopPlaying();
     }
     #endregion
 
@@ -242,6 +242,11 @@ public class VoiceGuildConnection {
            
         CurrentTrack = track;
         await Conn.PlayAsync(track);
+    }
+
+    async Task StopPlaying() {
+        CurrentTrack = null;
+        await Conn.StopAsync();
     }
     bool IsTrackPlaying() {
         return CurrentTrack != null;
