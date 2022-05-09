@@ -28,7 +28,7 @@ class VoiceCommands : ApplicationCommandModule {
         VoiceModule module = Bot.Modules.Voice;
         VoiceGuildConnection VGconn = module.GetGuildConnection(ctx);
         bool canUse;
-        if(VGconn.Conn == null) {
+        if(VGconn.IsConnected) {
             (canUse, VGconn) = await module.CanUserSummon(ctx);
         } else {
             if(module.IsBeingUsed(VGconn.Conn))
@@ -40,16 +40,20 @@ class VoiceCommands : ApplicationCommandModule {
         if(!canUse)
             return;
 
+        if(!VGconn.IsConnected)
+            await VGconn.Connect(ctx.Member.VoiceState.Channel);
+
         await ctx.DeferAsync();
         var tracks = await module.GetTrackAsync(search, VGconn.Node);
-        if(tracks == null) {
-            await BotUtils.CreateBasicResponse(ctx, "No results found!", true);
+        if(tracks.Count == 0) {
+            await BotUtils.EditBasicResponse(ctx, "No results found!");
             return;
         }
 
         bool canPlayFirstSong = VGconn.CurrentTrack == null;
         if(VGconn.IsShuffling)
             tracks.Randomize();
+
         foreach(var track in tracks) {
             await VGconn.RequestTrackAsync(track);
         }

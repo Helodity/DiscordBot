@@ -142,7 +142,7 @@ public class VoiceModule {
             };
             return track;
         }
-        return null;
+        return new();
     }
 }
 
@@ -152,6 +152,7 @@ public class VoiceGuildConnection {
     public List<LavalinkTrack> TrackQueue;
     public LavalinkTrack CurrentTrack;
 
+    public bool IsConnected { get; private set;}
     public bool IsPaused;
     public bool IsLooping;
     public bool IsShuffling;
@@ -164,6 +165,7 @@ public class VoiceGuildConnection {
         Conn = Node.GetGuildConnection(guild);
         TrackQueue = new List<LavalinkTrack>();
         CurrentTrack = null;
+        IsConnected = false;
         IsPaused = false;
         IsLooping = false;
         IsShuffling = false;
@@ -177,6 +179,7 @@ public class VoiceGuildConnection {
         await Conn.SetVolumeAsync(50);
         Conn.PlaybackFinished += OnPlaybackFinish;
         Conn.DiscordWebSocketClosed += OnChannelDisconnect;
+        IsConnected = true;
     }
 
     public async Task Disconnect() {
@@ -219,6 +222,7 @@ public class VoiceGuildConnection {
     }
 
     private Task OnChannelDisconnect(LavalinkGuildConnection sender, WebSocketCloseEventArgs e) {
+        IsConnected = false;
         Bot.Modules.Voice.OnVoiceGuildDisconnect(Id);
         Bot.Client.Logger.LogDebug($"Web socket closed at {Id}");
         return Task.CompletedTask;
@@ -231,6 +235,11 @@ public class VoiceGuildConnection {
         TrackQueue.Add(track);
     }
     async Task PlayTrack(LavalinkTrack track) {
+        if(!IsConnected) {
+            Bot.Client.Logger.LogCritical("Tried to play null track!");
+            return;
+        }
+           
         CurrentTrack = track;
         await Conn.PlayAsync(track);
     }
