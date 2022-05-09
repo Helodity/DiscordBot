@@ -71,3 +71,12 @@ public class PixelModule {
         }
     }
 }
+public static class SKCanvasExtensions {
+    public static void SaveToPng(this SKImage image, string path) {
+        using(SKData data = image.Encode(SKEncodedImageFormat.Png, 100)) {
+            using(var stream = File.OpenWrite(path)) {
+                data.SaveTo(stream);
+            }
+        }
+    }
+}

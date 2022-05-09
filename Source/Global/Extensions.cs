@@ -1,5 +1,6 @@
 ﻿namespace DiscordBotRewrite.Global;
 
+//Extensions that do not fit under any one module
 public static class StringExtensions {
     public static string ToItalics(this string value) {
         return "*" + value + "*";
@@ -23,19 +24,6 @@ public static class StringExtensions {
     }
 }
 
-public static class LavalinkGuildExtensions {
-    public static int AmountOfMembersInChannel(this LavalinkGuildConnection conn) {
-        List<DiscordMember> members = conn.Channel.Users.ToList();
-        int totalMembers = 0;
-        for(int i = 0; i < members.Count; i++) {
-            if(!members[i].IsBot)
-                totalMembers++;
-        }
-        return totalMembers;
-    }
-}
-
-
 public static class CollectionExtensions {
     public static void AddOrUpdate<TKey, TValue>(
         this Dictionary<TKey, TValue> dict,
@@ -58,16 +46,6 @@ public static class CollectionExtensions {
     }
 }
 
-public static class SKCanvasExtensions {
-    public static void SaveToPng(this SKImage image, string path) {
-        using(SKData data = image.Encode(SKEncodedImageFormat.Png, 100)) {
-            using(var stream = File.OpenWrite(path)) {
-                data.SaveTo(stream);
-            }
-        }
-    }
-}
-
 public static class DiscordAttachmentExtensions {
 
     static List<string> ImageFileExtensions = new List<string> {
@@ -85,37 +63,5 @@ public static class DiscordAttachmentExtensions {
                 return true;
         }
         return false;
-    }
-}
-
-public class CustomIndentingJsonTextWriter : JsonTextWriter {
-    public int? MaxIndentDepth { get; set; }
-
-    public CustomIndentingJsonTextWriter(TextWriter writer) : base(writer) {
-        Formatting = Formatting.Indented;
-    }
-
-    public override void WriteStartArray() {
-        base.WriteStartArray();
-        if(MaxIndentDepth.HasValue && Top > MaxIndentDepth.Value)
-            Formatting = Formatting.None;
-    }
-
-    public override void WriteStartObject() {
-        base.WriteStartObject();
-        if(MaxIndentDepth.HasValue && Top > MaxIndentDepth.Value)
-            Formatting = Formatting.None;
-    }
-
-    public override void WriteEndArray() {
-        base.WriteEndArray();
-        if(MaxIndentDepth.HasValue && Top <= MaxIndentDepth.Value)
-            Formatting = Formatting.Indented;
-    }
-
-    public override void WriteEndObject() {
-        base.WriteEndObject();
-        if(MaxIndentDepth.HasValue && Top <= MaxIndentDepth.Value)
-            Formatting = Formatting.Indented;
     }
 }
