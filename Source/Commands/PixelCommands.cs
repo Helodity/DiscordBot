@@ -143,14 +143,13 @@ class PixelCommands : ApplicationCommandModule {
         };
         embed.WithDescription($"{ctx.Guild.Name}'s canvas. ({x},{y}) is selected. {zoom} zoom. {jumpAmount} tiles per move.");
 
-        await ctx.DeferAsync(true);
+        await BotUtils.CreateBasicResponse(ctx, "Check DMs for an interactive canvas! (It may take some time to load)", true);
 
         //Create the initial bitmap
         SKSurface surface = GetPixelSurface(ctx, x - zoom / 2, y - zoom / 2, zoom);
         AddInteractUI(surface, zoom, selectedColorEnum);
         surface.Snapshot().SaveToPng($"PixelImages/img{ctx.User.Id}.png");
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Check DMs for an interactive canvas!"));
         DiscordMessage msg;
         using(var fs = new FileStream($"PixelImages/img{ctx.User.Id}.png", FileMode.Open, FileAccess.Read)) {
             msg = await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddComponents(row1).AddComponents(row2).AddComponents(row3).AddComponents(row4).AddComponents(row5).AddEmbed(embed).WithFile($"img{ctx.User.Id}.png", fs));
