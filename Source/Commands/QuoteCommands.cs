@@ -33,13 +33,13 @@ class QuoteCommands : ApplicationCommandModule {
 
         //Ensure they sent an emoji
         if(reaction.TimedOut) {
-            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            await ctx.EditResponseAsync(new DiscordEmbedBuilder {
                 Description = $"No response: quote emoji remains as {DiscordEmoji.FromGuildEmote(ctx.Client, data.QuoteEmojiId)}",
                 Color = WarningColor
             });
             return;
         }
-        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+        await ctx.EditResponseAsync(new DiscordEmbedBuilder {
             Description = $"Set the server's quote emoji to {reaction.Result.Emoji}",
             Color = SuccessColor
         });

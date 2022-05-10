@@ -29,10 +29,7 @@ class UnsortedCommands : ApplicationCommandModule {
         }
         link += number.ToString();
 
-        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-            Description = link,
-            Color = DefaultColor
-        });
+        await ctx.CreateResponseAsync(link);
     }
 
     [SlashCommand("8ball", "Ask a question and The Ball shall answer.")]

@@ -106,7 +106,7 @@ public static class InteractionContextExtensions {
         return await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(message));
     }
     public static async Task<DiscordMessage> EditResponseAsync(this InteractionContext ctx, DiscordEmbedBuilder embed) {
-        return await (await ctx.GetOriginalResponseAsync()).ModifyAsync(embed.Build());
+        return await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
     }
 }
 public static class DiscordUserExtensions {

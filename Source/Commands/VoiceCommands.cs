@@ -10,7 +10,10 @@ class VoiceCommands : ApplicationCommandModule {
             return;
 
         await VGconn.Connect(ctx.Member.VoiceState.Channel);
-        await ctx.CreateResponseAsync($"Joined {ctx.Member.VoiceState.Channel.Name}!");
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = $"Joined {ctx.Member.VoiceState.Channel.Name}!",
+            Color = DefaultColor
+        });
     }
 
     [SlashCommand("leave", "Leave channel")]

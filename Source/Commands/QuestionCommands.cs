@@ -27,29 +27,48 @@ class QuestionCommands : ApplicationCommandModule {
         DiscordMember member = await ctx.Guild.GetMemberAsync(user.Id);
 
         if(module.ParanoiaInProgress.Contains(member.Id)) {
-            await ctx.CreateResponseAsync($"Can't' send question! {member.DisplayName} already has one!");
+            await ctx.CreateResponseAsync($"Can't send question! {member.DisplayName} already has one!");
             return;
         }
 
         Question usedQuestion = module.PickQuestion(module.ParanoiaQuestions.ToList(), rating);
 
         DiscordDmChannel channel = await member.CreateDmChannelAsync();
-        await member.SendMessageAsync(ctx.Member.DisplayName + " sent you a question:\n" + usedQuestion.Text + "\nReply with your answer.");
+        var msg = await member.SendMessageAsync(new DiscordEmbedBuilder() {
+            Title = "Paranoia",
+            Description = $"**{ctx.Member.DisplayName} sent you a question!**\n{usedQuestion.Text}\nSend a message with your answer.",
+            Color = DefaultColor
+        });
         module.ParanoiaInProgress.Add(user.Id);
-        await ctx.CreateResponseAsync($"Sent a question to {member.DisplayName}! Awaiting a response.");
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = $"Sent a question to {member.DisplayName}! Awaiting a response.",
+            Color = DefaultColor
+        });
 
         var interactivity = ctx.Client.GetInteractivity();
         InteractivityResult<DiscordMessage> result = await interactivity.WaitForMessageAsync(x => x.Channel == channel && x.Author == user);
 
         var message = result.Result;
         if(message != null) {
+            string description;
             if(GenerateRandomNumber(1, 4) > 1)
-                await ctx.EditResponseAsync($"Question is hidden \n{member.DisplayName} answered: {message.Content}");
+                description = $"Question is hidden \n{member.DisplayName} answered: {message.Content}";
             else
-                await ctx.EditResponseAsync($"{member.DisplayName} was asked {usedQuestion.Text}. \nThey answered: {message.Content}");
+                description = $"{member.DisplayName} was asked {usedQuestion.Text}. \nThey answered: {message.Content}";
+
+            await ctx.EditResponseAsync(new DiscordEmbedBuilder {
+                Description = description,
+                Color = DefaultColor
+            });
         } else {
-            await member.SendMessageAsync("Time has expired.");
-            await ctx.EditResponseAsync($"{member.DisplayName} never answered...");
+            await msg.ModifyAsync(new DiscordEmbedBuilder() {
+                Description = "Time has expired.",
+                Color = ErrorColor
+            }.Build());
+            await ctx.EditResponseAsync(new DiscordEmbedBuilder {
+                Description = $"{member.DisplayName} never answered...",
+                Color = DefaultColor
+            });
         }
         module.ParanoiaInProgress.Remove(user.Id);
     }
