@@ -105,6 +105,9 @@ public static class InteractionContextExtensions {
     public static async Task<DiscordMessage> EditResponseAsync(this InteractionContext ctx, string message) {
         return await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(message));
     }
+    public static async Task<DiscordMessage> EditResponseAsync(this InteractionContext ctx, DiscordEmbedBuilder embed) {
+        return await (await ctx.GetOriginalResponseAsync()).ModifyAsync(embed.Build());
+    }
 }
 public static class DiscordUserExtensions {
     public static bool IsOwner(this DiscordUser user) {

@@ -9,7 +9,10 @@ class QuestionCommands : ApplicationCommandModule {
 
         QuestionModule module = Bot.Modules.Question;
         Question usedQuestion = module.PickQuestion(module.TruthQuestions.ToList(), rating);
-        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent(usedQuestion.Text));
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder { 
+            Description = usedQuestion.Text,
+            Color = DefaultColor
+        });
     }
     #endregion
 
@@ -30,7 +33,7 @@ class QuestionCommands : ApplicationCommandModule {
 
         Question usedQuestion = module.PickQuestion(module.ParanoiaQuestions.ToList(), rating);
 
-        DiscordDmChannel channel = await member.CreateDmChannelAsync().ConfigureAwait(false);
+        DiscordDmChannel channel = await member.CreateDmChannelAsync();
         await member.SendMessageAsync(ctx.Member.DisplayName + " sent you a question:\n" + usedQuestion.Text + "\nReply with your answer.");
         module.ParanoiaInProgress.Add(user.Id);
         await ctx.CreateResponseAsync($"Sent a question to {member.DisplayName}! Awaiting a response.");
@@ -45,7 +48,7 @@ class QuestionCommands : ApplicationCommandModule {
             else
                 await ctx.EditResponseAsync($"{member.DisplayName} was asked {usedQuestion.Text}. \nThey answered: {message.Content}");
         } else {
-            await member.SendMessageAsync("Time has expired.").ConfigureAwait(false);
+            await member.SendMessageAsync("Time has expired.");
             await ctx.EditResponseAsync($"{member.DisplayName} never answered...");
         }
         module.ParanoiaInProgress.Remove(user.Id);

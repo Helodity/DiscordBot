@@ -20,7 +20,10 @@ class VoiceCommands : ApplicationCommandModule {
             return;
 
         await VGconn.Disconnect();
-        await ctx.CreateResponseAsync($"Left {ctx.Member.VoiceState.Channel.Name}!");
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = $"Left {ctx.Member.VoiceState.Channel.Name}!",
+            Color = DefaultColor
+        });
     }
 
     [SlashCommand("play", "Play a song")]
@@ -46,7 +49,10 @@ class VoiceCommands : ApplicationCommandModule {
         await ctx.DeferAsync();
         var tracks = await module.GetTrackAsync(search, VGconn.Node);
         if(tracks.Count == 0) {
-            await ctx.EditResponseAsync( "No results found!");
+            await ctx.EditResponseAsync(new DiscordEmbedBuilder {
+                Description = "No results found!",
+                Color = ErrorColor
+            });
             return;
         }
 
@@ -63,7 +69,11 @@ class VoiceCommands : ApplicationCommandModule {
             output += $" and {tracks.Count - 1} more songs";
         }
         output += "!";
-        await ctx.EditResponseAsync(output);
+
+        await ctx.EditResponseAsync(new DiscordEmbedBuilder {
+            Description = output,
+            Color = DefaultColor
+        });
     }
 
     [SlashCommand("skip", "Skip the currently playing song.")]
@@ -75,7 +85,11 @@ class VoiceCommands : ApplicationCommandModule {
 
         VGConn.CurrentTrack = null; //some shitty workaround to avoid looping the current song~!
         await VGConn.ProgressQueue();
-        await ctx.CreateResponseAsync("Skipped!");
+
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = "Skipped!",
+            Color = DefaultColor
+        });
     }
 
     [SlashCommand("volume", "Make your music louder.")]
@@ -86,7 +100,11 @@ class VoiceCommands : ApplicationCommandModule {
 
         Math.Clamp(volume, 1, 200);
         await VGConn.Conn.SetVolumeAsync((int)volume / 2);
-        await ctx.CreateResponseAsync($"Set the volume to {volume}%");
+
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = $"Set the volume to {volume}%",
+            Color = DefaultColor
+        });
     }
 
     [SlashCommand("loop", "Loop your queue")]
@@ -97,7 +115,11 @@ class VoiceCommands : ApplicationCommandModule {
             return;
 
         VGConn.IsLooping = !VGConn.IsLooping;
-        await ctx.CreateResponseAsync($"Looping {(VGConn.IsLooping ? "enabled" : "disabled")}!");
+
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = $"Looping {(VGConn.IsLooping ? "enabled" : "disabled")}!",
+            Color = DefaultColor
+        });
     }
 
     [SlashCommand("shuffle", "Play songs randomly")]
@@ -107,7 +129,11 @@ class VoiceCommands : ApplicationCommandModule {
             return;
 
         VGConn.IsShuffling = !VGConn.IsShuffling;
-        await ctx.CreateResponseAsync($"Shuffling {(VGConn.IsShuffling ? "enabled" : "disabled")}!");
+
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = $"Shuffling {(VGConn.IsShuffling ? "enabled" : "disabled")}!",
+            Color = DefaultColor
+        });
     }
 
     [SlashCommand("pause", "Pause the player.")]
@@ -117,13 +143,19 @@ class VoiceCommands : ApplicationCommandModule {
             return;
 
         VGConn.IsPaused = !VGConn.IsPaused;
+        string description;
         if(VGConn.IsPaused) {
-            await ctx.CreateResponseAsync("Paused!");
+            description = "Paused!";
             await VGConn.Conn.PauseAsync();
         } else {
-            await ctx.CreateResponseAsync("Resuming!");
+            description = "Resuming!";
             await VGConn.Conn.ResumeAsync();
         }
+
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = description,
+            Color = DefaultColor
+        });
     }
 
     [SlashCommand("clear", "Clear the queue.")]
@@ -134,7 +166,11 @@ class VoiceCommands : ApplicationCommandModule {
 
         int songCount = VGConn.TrackQueue.Count();
         VGConn.TrackQueue = new();
-        await ctx.CreateResponseAsync($"Cleared {songCount} songs from queue!");
+
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = $"Cleared {songCount} songs from queue!",
+            Color = DefaultColor
+        });
     }
 
     [SlashCommand("remove", "Remove the song at the specified index..")]
@@ -146,11 +182,18 @@ class VoiceCommands : ApplicationCommandModule {
         index--; //Convert from 1 being the first song to 0
         int songCount = VGConn.TrackQueue.Count();
         if(index > songCount || index < 1) {
-            await ctx.CreateResponseAsync($"Index out of bounds!", true);
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Description = $"Index out of bounds!",
+                Color = ErrorColor
+            }, true);
             return;
         }
         VGConn.TrackQueue.RemoveAt((int)index);
-        await ctx.CreateResponseAsync($"Removed {VGConn.TrackQueue[(int)index].Title} from the queue!");
+
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = $"Removed {VGConn.TrackQueue[(int)index].Title} from the queue!",
+            Color = DefaultColor
+        });
     }
 
     [SlashCommand("queue", "Show the queue")]
@@ -165,7 +208,7 @@ class VoiceCommands : ApplicationCommandModule {
 
         var embed = new DiscordEmbedBuilder {
             Title = "Queue",
-            Color = DiscordColor.Blue
+            Color = DefaultColor
         };
 
         string description = string.Empty;

@@ -138,10 +138,10 @@ class PixelCommands : ApplicationCommandModule {
 
         var embed = new DiscordEmbedBuilder {
             Title = "Pixel",
-            Color = DiscordColor.Blue,
-            ImageUrl = $"attachment://img{ctx.User.Id}.png"
+            Color = DefaultColor,
+            ImageUrl = $"attachment://img{ctx.User.Id}.png",
+            Description = $"{ctx.Guild.Name}'s canvas. ({x},{y}) is selected. {zoom} zoom. {jumpAmount} tiles per move."
         };
-        embed.WithDescription($"{ctx.Guild.Name}'s canvas. ({x},{y}) is selected. {zoom} zoom. {jumpAmount} tiles per move.");
 
         await ctx.CreateResponseAsync("Check DMs for an interactive canvas! (It may take some time to load)", true);
 

@@ -3,12 +3,18 @@
 class UnsortedCommands : ApplicationCommandModule {
     [SlashCommand("ping", "Check if the bot is on.")]
     public async Task Ping(InteractionContext ctx) {
-        await ctx.CreateResponseAsync("Pong!");
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = "Pong!",
+            Color = DefaultColor
+        });
     }
 
     [SlashCommand("how", "Find out how __ you are.")]
     public async Task How(InteractionContext ctx, [Option("what", "how what you are")] string what) {
-        await ctx.CreateResponseAsync($"You are {GenerateRandomNumber(0, 100)}% {what}.");
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = $"You are {GenerateRandomNumber(0, 100)}% {what}.",
+            Color = DefaultColor
+        });
     }
 
     [SlashCommand("scp", "Gives you an SCP article to read")]
@@ -23,7 +29,10 @@ class UnsortedCommands : ApplicationCommandModule {
         }
         link += number.ToString();
 
-        await ctx.CreateResponseAsync(link);
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = link,
+            Color = DefaultColor
+        });
     }
 
     [SlashCommand("8ball", "Ask a question and The Ball shall answer.")]
@@ -47,7 +56,10 @@ class UnsortedCommands : ApplicationCommandModule {
                 break;
 
         }
-        await ctx.CreateResponseAsync($"{ctx.Member.DisplayName} questions The Ball. It {thinkStr}...");
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = $"{ctx.Member.DisplayName} questions The Ball. It {thinkStr}...",
+            Color = DefaultColor
+        });
 
         await Task.Delay(GenerateRandomNumber(1000, 3000));
 
@@ -70,6 +82,10 @@ class UnsortedCommands : ApplicationCommandModule {
                 break;
 
         }
-        await ctx.EditResponseAsync($"{ctx.Member.DisplayName} asks: \"{question}\" \n{output}.");
+        await ctx.EditResponseAsync(new DiscordEmbedBuilder {
+            Description = $"{ctx.Member.DisplayName} asks: \"{question}\" \n{output}.",
+            Color = DefaultColor
+        });
+
     }
 }

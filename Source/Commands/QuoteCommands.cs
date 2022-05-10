@@ -14,12 +14,18 @@ class QuoteCommands : ApplicationCommandModule {
         var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
         data.QuoteChannelId = ctx.Channel.Id;
         Bot.Modules.Quote.SetQuoteData(data);
-        await ctx.CreateResponseAsync($"Set this server's quote channel to {ctx.Channel.Mention}!");
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = $"Set this server's quote channel to {ctx.Channel.Mention}!",
+            Color = SuccessColor
+        });
     }
     [SlashCommand("set_emoji", "Sets this server's quote emoji")]
     public async Task SetQuoteEmoji(InteractionContext ctx) {
         var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
-        await ctx.CreateResponseAsync("React to this message with the emoji to use!");
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = "React to this message with the emoji to use!",
+            Color = DefaultColor
+        });
 
         //Get the user's emoji they want
         var interactivity = ctx.Client.GetInteractivity();
@@ -27,10 +33,16 @@ class QuoteCommands : ApplicationCommandModule {
 
         //Ensure they sent an emoji
         if(reaction.TimedOut) {
-            await ctx.EditResponseAsync($"No response: quote emoji remains as {DiscordEmoji.FromGuildEmote(ctx.Client, data.QuoteEmojiId)}");
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Description = $"No response: quote emoji remains as {DiscordEmoji.FromGuildEmote(ctx.Client, data.QuoteEmojiId)}",
+                Color = WarningColor
+            });
             return;
         }
-        await ctx.EditResponseAsync($"Set the server's quote emoji to {reaction.Result.Emoji}");
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = $"Set the server's quote emoji to {reaction.Result.Emoji}",
+            Color = SuccessColor
+        });
 
         data.QuoteEmojiId = reaction.Result.Emoji.Id;
         Bot.Modules.Quote.SetQuoteData(data);
@@ -40,14 +52,20 @@ class QuoteCommands : ApplicationCommandModule {
         var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
         data.EmojiAmountToQuote = (ushort)amount;
         Bot.Modules.Quote.SetQuoteData(data);
-        await ctx.CreateResponseAsync($"Set emoji amount to {amount}!");
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = $"Set emoji amount to {amount}!",
+            Color = SuccessColor
+        });
     }
     [SlashCommand("toggle", "Enable or disable the quote system")]
     public async Task Toggle(InteractionContext ctx) {
         var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
         data.Enabled = !data.Enabled;
         Bot.Modules.Quote.SetQuoteData(data);
-        await ctx.CreateResponseAsync($"{(data.Enabled ? "Enabled" : "Disabled")} auto quoting!");
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            Description = $"{(data.Enabled ? "Enabled" : "Disabled")} auto quoting!",
+            Color = SuccessColor
+        });
     }
 }
 
