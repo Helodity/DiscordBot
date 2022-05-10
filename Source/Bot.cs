@@ -9,7 +9,7 @@ public class Bot {
         public ulong? TargetServer = null;
 #endif
 
-    public static readonly string BotVersion = "2.1.0";
+    public static readonly string BotVersion = "2.1.1";
 
     public static DiscordClient Client { get; private set; } //will need to change for sharding, deal with when that becomes important
     public static SlashCommandsExtension SlashExtension { get; private set; }
@@ -68,13 +68,9 @@ public class Bot {
         SlashExtension = Client.UseSlashCommands();
 
         SlashExtension.RegisterCommands<UnsortedCommands>(TargetServer);
-
         SlashExtension.RegisterCommands<PixelCommands>(TargetServer);
-
         SlashExtension.RegisterCommands<QuestionCommands>(TargetServer);
-
         SlashExtension.RegisterCommands<VoiceCommands>(TargetServer);
-
         SlashExtension.RegisterCommands<QuoteCommands>(TargetServer);
 
         return Task.CompletedTask;
@@ -82,7 +78,7 @@ public class Bot {
     private async Task OnClientReady(DiscordClient client, ReadyEventArgs e) {
         await Client.UpdateStatusAsync(new DiscordActivity() {
             ActivityType = ActivityType.Playing,
-            Name = Debugging ? $"Version {BotVersion} Debug" : $"Version {BotVersion}!"
+            Name = Debugging ? $"Version {BotVersion}-Debug" : $"Version {BotVersion}"
         }, UserStatus.Online);
         Client.Logger.Log(LogLevel.Debug, "Bot has started!");
     }

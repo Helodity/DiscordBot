@@ -65,10 +65,12 @@ class PixelCommands : ApplicationCommandModule {
     public async Task ViewCanvas(InteractionContext ctx) {
         await ctx.CreateResponseAsync($"Loading...", true);
         SKSurface canvas = GetPixelSurface(ctx, 0, 0, PixelModule.MapHeight);
-        canvas.Snapshot().SaveToPng("img.png");
-        using(var fs = new FileStream($"img.png", FileMode.Open, FileAccess.Read)) {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddFile("img.png", fs).AsEphemeral());
+        string imagePath = $"PixelImages/img{ctx.User.Id}.png";
+        canvas.Snapshot().SaveToPng(imagePath);
+        using(var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read)) {
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddFile(imagePath, fs).AsEphemeral());
         }
+        File.Delete(imagePath);
     }
     [SlashCommand("interact", "look with buttons")]
     public async Task Interact(InteractionContext ctx,
@@ -134,12 +136,14 @@ class PixelCommands : ApplicationCommandModule {
         int y = (int)start_y;
         int zoom = 9;
         int jumpAmount = 1;
+        string imageName = $"img{ctx.User.Id}.png";
+        string imagePath = $"PixelImages/img{ctx.User.Id}.png";
         PixelModule.PixelEnum selectedColorEnum = PixelModule.PixelEnum.White;
 
         var embed = new DiscordEmbedBuilder {
             Title = "Pixel",
             Color = DefaultColor,
-            ImageUrl = $"attachment://img{ctx.User.Id}.png",
+            ImageUrl = $"attachment://{imageName}",
             Description = $"{ctx.Guild.Name}'s canvas. ({x},{y}) is selected. {zoom} zoom. {jumpAmount} tiles per move."
         };
 
@@ -148,11 +152,11 @@ class PixelCommands : ApplicationCommandModule {
         //Create the initial bitmap
         SKSurface surface = GetPixelSurface(ctx, x - zoom / 2, y - zoom / 2, zoom);
         AddInteractUI(surface, zoom, selectedColorEnum);
-        surface.Snapshot().SaveToPng($"PixelImages/img{ctx.User.Id}.png");
+        surface.Snapshot().SaveToPng(imagePath);
 
         DiscordMessage msg;
-        using(var fs = new FileStream($"PixelImages/img{ctx.User.Id}.png", FileMode.Open, FileAccess.Read)) {
-            msg = await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddComponents(row1).AddComponents(row2).AddComponents(row3).AddComponents(row4).AddComponents(row5).AddEmbed(embed).WithFile($"img{ctx.User.Id}.png", fs));
+        using(var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read)) {
+            msg = await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddComponents(row1).AddComponents(row2).AddComponents(row3).AddComponents(row4).AddComponents(row5).AddEmbed(embed).WithFile(imageName, fs));
         }
         var interactivity = ctx.Client.GetInteractivity();
         while(true) {
@@ -240,11 +244,12 @@ class PixelCommands : ApplicationCommandModule {
                 msg = await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddComponents(row1).AddComponents(row2).AddComponents(row3).AddComponents(row4).AddComponents(row5).AddEmbed(embed).WithFile($"img{ctx.User.Id}.png", fs));
             }
         }
-        using(var fs = new FileStream($"img{ctx.User.Id}.png", FileMode.Open, FileAccess.Read)) {
+
+        using(var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read)) {
             await msg.DeleteAsync();
             embed.WithDescription($"{ctx.Guild.Name}'s canvas.");
-            await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed).WithFile($"img{ctx.User.Id}.png", fs));
+            await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed).WithFile(imageName, fs));
         }
-        File.Delete($"img{ctx.User.Id}.png");
+        File.Delete(imagePath);
     }
 }
