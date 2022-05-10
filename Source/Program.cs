@@ -23,6 +23,7 @@ global using System.Text;
 global using System.Threading.Tasks;
 
 global using SkiaSharp;
+global using static DiscordBotRewrite.Global.GlobalFunctions;
 
 namespace DiscordBotRewrite;
 class Program {

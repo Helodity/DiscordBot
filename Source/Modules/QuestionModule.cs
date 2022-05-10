@@ -33,16 +33,16 @@ public class QuestionModule {
     public List<ulong> ParanoiaInProgress = new List<ulong>();
 
     public QuestionModule() {
-        TruthQuestions = BotUtils.LoadJson<List<Question>>(Question.TruthJsonLocation);
-        ParanoiaQuestions = BotUtils.LoadJson<List<Question>>(Question.ParanoiaJsonLocation);
+        TruthQuestions = LoadJson<List<Question>>(Question.TruthJsonLocation);
+        ParanoiaQuestions = LoadJson<List<Question>>(Question.ParanoiaJsonLocation);
 
         if(TruthQuestions.Count == 0) {
             TruthQuestions.Add(new Question("Questions need to be added in the config!", Question.DepthGroup.All));
-            BotUtils.SaveJson(TruthQuestions, Question.TruthJsonLocation);
+            SaveJson(TruthQuestions, Question.TruthJsonLocation);
         }
         if(ParanoiaQuestions.Count == 0) {
             ParanoiaQuestions.Add(new Question("Questions need to be added in the config!", Question.DepthGroup.All));
-            BotUtils.SaveJson(ParanoiaQuestions, Question.ParanoiaJsonLocation);
+            SaveJson(ParanoiaQuestions, Question.ParanoiaJsonLocation);
         }
     }
 
@@ -55,6 +55,6 @@ public class QuestionModule {
         }
         if(validQuestions.Count == 0)
             return new Question("No valid question!", Question.DepthGroup.All);
-        return validQuestions[BotUtils.GenerateRandomNumber(0, validQuestions.Count - 1)];
+        return validQuestions[GenerateRandomNumber(0, validQuestions.Count - 1)];
     }
 }

@@ -60,17 +60,17 @@ public class VoiceModule {
 
         if(connection.Node == null) {
             ctx.Client.Logger.LogError("Lavalink error in CanUseModifyCommand: Node does not exist");
-            await BotUtils.CreateBasicResponse(ctx, "An error occured! My owner has been notified.", true);
+            await ctx.CreateBasicResponse("An error occured! My owner has been notified.", true);
             return (false, connection);
         }
 
         if(connection.Conn == null) {
-            await BotUtils.CreateBasicResponse(ctx, "I'm not connected to a channel!", true);
+            await ctx.CreateBasicResponse("I'm not connected to a channel!", true);
             return (false, connection);
         }
 
         if(IsBeingUsed(connection.Conn) && !MemberInSameVoiceAsBot(connection.Conn, ctx)) {
-            await BotUtils.CreateBasicResponse(ctx, "I'm already being used by someone else!", true);
+            await ctx.CreateBasicResponse("I'm already being used by someone else!", true);
             return (false, connection);
         }
 
@@ -82,17 +82,17 @@ public class VoiceModule {
 
         if(connection.Node == null) {
             ctx.Client.Logger.LogError("Lavalink error in CanUserSummon: Node does not exist");
-            await BotUtils.CreateBasicResponse(ctx, "An error occured! My owner has been notified.", true);
+            await ctx.CreateBasicResponse("An error occured! My owner has been notified.", true);
             return (false, connection);
         }
 
         if(ctx.Member.VoiceState == null) {
-            await BotUtils.CreateBasicResponse(ctx, "You need to be in a voice channel!", true);
+            await ctx.CreateBasicResponse("You need to be in a voice channel!", true);
             return (false, connection);
         }
 
         if(IsBeingUsed(connection.Conn) && !MemberInSameVoiceAsBot(connection.Conn, ctx)) {
-            await BotUtils.CreateBasicResponse(ctx, "I'm already being used by someone else!", true);
+            await ctx.CreateBasicResponse("I'm already being used by someone else!", true);
             return (false, connection);
         }
 
@@ -253,7 +253,7 @@ public class VoiceGuildConnection {
     }
     LavalinkTrack GetNextSongInQueue() {
         //The most recent song queued is index [Count - 1], so if there's enough songs, we reduce the max by one more to prevent repeating!
-        int songIndex = IsShuffling ? BotUtils.GenerateRandomNumber(0, TrackQueue.Count - Math.Min(2, TrackQueue.Count)) : 0;
+        int songIndex = IsShuffling ? GenerateRandomNumber(0, TrackQueue.Count - Math.Min(2, TrackQueue.Count)) : 0;
 
         LavalinkTrack track = TrackQueue[songIndex];
         TrackQueue.RemoveAt(songIndex);

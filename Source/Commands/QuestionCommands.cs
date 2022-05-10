@@ -21,10 +21,10 @@ class QuestionCommands : ApplicationCommandModule {
 
         QuestionModule module = Bot.Modules.Question;
         user ??= ctx.User;
-        DiscordMember member = await BotUtils.IdToMember(ctx.Guild, user.Id);
+        DiscordMember member = await ctx.Guild.GetMemberAsync(user.Id);
 
         if(module.ParanoiaInProgress.Contains(member.Id)) {
-            await BotUtils.CreateBasicResponse(ctx, $"Can't' send question! {member.DisplayName} already has one!");
+            await ctx.CreateBasicResponse($"Can't' send question! {member.DisplayName} already has one!");
             return;
         }
 
@@ -33,20 +33,20 @@ class QuestionCommands : ApplicationCommandModule {
         DiscordDmChannel channel = await member.CreateDmChannelAsync().ConfigureAwait(false);
         await member.SendMessageAsync(ctx.Member.DisplayName + " sent you a question:\n" + usedQuestion.Text + "\nReply with your answer.");
         module.ParanoiaInProgress.Add(user.Id);
-        await BotUtils.CreateBasicResponse(ctx, $"Sent a question to {member.DisplayName}! Awaiting a response.");
+        await ctx.CreateBasicResponse($"Sent a question to {member.DisplayName}! Awaiting a response.");
 
         var interactivity = ctx.Client.GetInteractivity();
         InteractivityResult<DiscordMessage> result = await interactivity.WaitForMessageAsync(x => x.Channel == channel && x.Author == user);
 
         var message = result.Result;
         if(message != null) {
-            if(BotUtils.GenerateRandomNumber(1, 4) > 1)
-                await BotUtils.EditBasicResponse(ctx, $"Question is hidden \n{member.DisplayName} answered: {message.Content}");
+            if(GenerateRandomNumber(1, 4) > 1)
+                await ctx.EditBasicResponse($"Question is hidden \n{member.DisplayName} answered: {message.Content}");
             else
-                await BotUtils.EditBasicResponse(ctx, $"{member.DisplayName} was asked {usedQuestion.Text}. \nThey answered: {message.Content}");
+                await ctx.EditBasicResponse($"{member.DisplayName} was asked {usedQuestion.Text}. \nThey answered: {message.Content}");
         } else {
             await member.SendMessageAsync("Time has expired.").ConfigureAwait(false);
-            await BotUtils.EditBasicResponse(ctx, $"{member.DisplayName} never answered...");
+            await ctx.EditBasicResponse($"{member.DisplayName} never answered...");
         }
         module.ParanoiaInProgress.Remove(user.Id);
     }

@@ -24,11 +24,11 @@ public class Bot {
 
     #region Private
     private bool TryLoadConfig() {
-        Config = BotUtils.LoadJson<GlobalConfig>(GlobalConfig.JsonLocation);
+        Config = LoadJson<GlobalConfig>(GlobalConfig.JsonLocation);
 
         if(string.IsNullOrEmpty(Config.Token)) {
             Console.WriteLine("No token is set! Set one in Json/Config.json");
-            BotUtils.SaveJson(Config, GlobalConfig.JsonLocation);
+            SaveJson(Config, GlobalConfig.JsonLocation);
             Console.ReadLine();
             return false;
         }

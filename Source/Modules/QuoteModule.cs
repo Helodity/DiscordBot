@@ -4,7 +4,7 @@ public class QuoteModule {
     public Dictionary<ulong, QuoteData> QuoteData;
 
     public QuoteModule(DiscordClient client) {
-        QuoteData = BotUtils.LoadJson<Dictionary<ulong, QuoteData>>(Modules.QuoteData.JsonLocation);
+        QuoteData = LoadJson<Dictionary<ulong, QuoteData>>(Modules.QuoteData.JsonLocation);
         client.MessageReactionAdded += TryQuote;
     }
 
@@ -18,7 +18,7 @@ public class QuoteModule {
     }
     public void SetQuoteData(QuoteData data) {
         QuoteData.AddOrUpdate(data.Id, data);
-        BotUtils.SaveJson(QuoteData, Modules.QuoteData.JsonLocation);
+        SaveJson(QuoteData, Modules.QuoteData.JsonLocation);
     }
 
     async Task TryQuote(DiscordClient client, MessageReactionAddEventArgs args) {

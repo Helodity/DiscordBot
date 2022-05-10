@@ -1,6 +1,6 @@
 ﻿namespace DiscordBotRewrite.Global;
 
-//Extensions that do not fit under any one module
+//Extensions that are not module exclusive
 public static class StringExtensions {
     public static string ToItalics(this string value) {
         return "*" + value + "*";
@@ -38,7 +38,7 @@ public static class CollectionExtensions {
         int n = list.Count;  
         while (n > 1) {  
             n--;  
-            int k = BotUtils.GenerateRandomNumber(0, n);
+            int k = GenerateRandomNumber(0, n);
             T value = list[k];  
             list[k] = list[n];  
             list[n] = value;  
@@ -63,5 +63,54 @@ public static class DiscordAttachmentExtensions {
                 return true;
         }
         return false;
+    }
+}
+
+public static class DiscordGuildExtensions {
+    /// <summary>
+    /// Guild.GetMemberAsync() with an error catch
+    /// </summary>
+    public static async Task<DiscordMember> TryGetMember(this DiscordGuild guild, ulong userId) {
+        try {
+            DiscordMember member = await guild.GetMemberAsync(userId);
+            return member;
+        } catch(NotFoundException) {
+            return null;
+        }
+    }
+    /// <summary>
+    /// Returns a list of members.
+    /// </summary>
+    public static async Task<List<DiscordMember>> GetMembersAsync(this DiscordGuild guild, bool includeBots = false) {
+        var members = await guild.GetAllMembersAsync();
+        //Convert members to a list that can be written to.
+        List<DiscordMember> filteredMembers = new List<DiscordMember>();
+        foreach(DiscordMember member in members) {
+            if(!member.IsBot || includeBots)
+                filteredMembers.Add(member);
+        }
+        return filteredMembers;
+    }
+
+    public static List<DiscordRole> GetAllRoles(this DiscordGuild guild) {
+        var roles = guild.Roles;
+        List<DiscordRole> roleList = new List<DiscordRole>();
+        foreach(DiscordRole role in roles.Values) {
+            roleList.Add(role);
+        }
+        return roleList;
+    }
+}
+public static class InteractionContextExtensions {
+    public static async Task CreateBasicResponse(this InteractionContext ctx, string message, bool AsEphemeral = false) {
+        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent(message).AsEphemeral(AsEphemeral));
+    }
+    public static async Task EditBasicResponse(this InteractionContext ctx, string message) {
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(message));
+    }
+}
+public static class DiscordUserExtensions {
+    public static bool IsOwner(this DiscordUser user) {
+        return user.Id == Bot.Config.OwnerId;
     }
 }

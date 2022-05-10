@@ -3,17 +3,17 @@
 class UnsortedCommands : ApplicationCommandModule {
     [SlashCommand("ping", "Check if the bot is on.")]
     public async Task Ping(InteractionContext ctx) {
-        await BotUtils.CreateBasicResponse(ctx, $"Pong!");
+        await ctx.CreateBasicResponse($"Pong!");
     }
 
     [SlashCommand("how", "Find out how __ you are.")]
     public async Task How(InteractionContext ctx, [Option("what", "how what you are")] string what) {
-        await BotUtils.CreateBasicResponse(ctx, $"You are {BotUtils.GenerateRandomNumber(0, 100)}% {what}.");
+        await ctx.CreateBasicResponse($"You are {GenerateRandomNumber(0, 100)}% {what}.");
     }
 
     [SlashCommand("scp", "Gives you an SCP article to read")]
     public async Task RandomScp(InteractionContext ctx) {
-        int number = BotUtils.GenerateRandomNumber(1, 2000);
+        int number = GenerateRandomNumber(1, 2000);
         string output = "http://www.scpwiki.com/scp-";
 
         if(number < 10) {
@@ -23,12 +23,12 @@ class UnsortedCommands : ApplicationCommandModule {
         }
         output += number.ToString();
 
-        await BotUtils.CreateBasicResponse(ctx, output);
+        await ctx.CreateBasicResponse(output);
     }
 
     [SlashCommand("8ball", "Ask a question and The Ball shall answer.")]
     public async Task EightBall(InteractionContext ctx, [Option("question", "The question for The Ball to answer")] string question) {
-        int thinkingNum = BotUtils.GenerateRandomNumber(1, 5);
+        int thinkingNum = GenerateRandomNumber(1, 5);
         string thinkStr;
         switch(thinkingNum) {
             case 1:
@@ -48,12 +48,12 @@ class UnsortedCommands : ApplicationCommandModule {
                 break;
 
         }
-        await BotUtils.CreateBasicResponse(ctx, $"{ctx.Member.DisplayName} questions The Ball. It {thinkStr}...");
+        await ctx.CreateBasicResponse($"{ctx.Member.DisplayName} questions The Ball. It {thinkStr}...");
 
-        int delay = BotUtils.GenerateRandomNumber(1000, 3000);
+        int delay = GenerateRandomNumber(1000, 3000);
         await Task.Delay(delay);
 
-        int result = BotUtils.GenerateRandomNumber(1, 5);
+        int result = GenerateRandomNumber(1, 5);
         string output;
         switch(result) {
             case 1:
@@ -73,6 +73,6 @@ class UnsortedCommands : ApplicationCommandModule {
                 break;
 
         }
-        await BotUtils.EditBasicResponse(ctx, $"{ctx.Member.DisplayName} asks: \"{question}\" \n{output}.");
+        await ctx.EditBasicResponse($"{ctx.Member.DisplayName} asks: \"{question}\" \n{output}.");
     }
 }

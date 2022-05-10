@@ -38,7 +38,7 @@ public class PixelModule {
     };
 
     public PixelModule() {
-        PixelMaps = BotUtils.LoadJson<Dictionary<ulong, PixelMap>>(PixelMap.JsonLocation);
+        PixelMaps = LoadJson<Dictionary<ulong, PixelMap>>(PixelMap.JsonLocation);
     }
 
     public PixelMap GetPixelMap(ulong id) {
@@ -50,7 +50,7 @@ public class PixelModule {
     }
     public void SetPixelMap(PixelMap data) {
         PixelMaps.AddOrUpdate(data.Id, data);
-        BotUtils.SaveJson(PixelMaps, PixelMap.JsonLocation);
+        SaveJson(PixelMaps, PixelMap.JsonLocation);
     }
 
     public class PixelMap {
