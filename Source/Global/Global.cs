@@ -1,6 +1,11 @@
 ﻿namespace DiscordBotRewrite.Global;
 
-public static class GlobalFunctions {
+public static class Global {
+    public static readonly DiscordColor DefaultColor = DiscordColor.Azure;
+    public static readonly DiscordColor WarningColor = DiscordColor.Yellow;
+    public static readonly DiscordColor ErrorColor = DiscordColor.Red;
+    public static readonly DiscordColor SuccessColor = DiscordColor.Green;
+
     /// <summary>
     /// Returns an int with min inclusive and max inclusive
     /// </summary>
