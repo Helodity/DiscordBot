@@ -8,6 +8,9 @@ public class Bot {
         public bool Debugging = false;
         public ulong? TargetServer = null;
 #endif
+
+    public static readonly string BotVersion = "2.1.0";
+
     public static DiscordClient Client { get; private set; } //will need to change for sharding, deal with when that becomes important
     public static SlashCommandsExtension SlashExtension { get; private set; }
     public static GlobalConfig Config { get; private set; }
@@ -79,7 +82,7 @@ public class Bot {
     private async Task OnClientReady(DiscordClient client, ReadyEventArgs e) {
         await Client.UpdateStatusAsync(new DiscordActivity() {
             ActivityType = ActivityType.Playing,
-            Name = Debugging ? "with my code!": "with new Slash Commands!"
+            Name = Debugging ? $"Version {BotVersion} Debug" : $"Version {BotVersion}!"
         }, UserStatus.Online);
         Client.Logger.Log(LogLevel.Debug, "Bot has started!");
     }
