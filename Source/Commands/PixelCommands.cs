@@ -63,7 +63,7 @@ class PixelCommands : ApplicationCommandModule {
 
     [SlashCommand("view", "look at the current canvas")]
     public async Task ViewCanvas(InteractionContext ctx) {
-        await ctx.CreateBasicResponse($"Loading...", true);
+        await ctx.CreateResponseAsync($"Loading...", true);
         SKSurface canvas = GetPixelSurface(ctx, 0, 0, PixelModule.MapHeight);
         canvas.Snapshot().SaveToPng("img.png");
         using(var fs = new FileStream($"img.png", FileMode.Open, FileAccess.Read)) {
@@ -143,7 +143,7 @@ class PixelCommands : ApplicationCommandModule {
         };
         embed.WithDescription($"{ctx.Guild.Name}'s canvas. ({x},{y}) is selected. {zoom} zoom. {jumpAmount} tiles per move.");
 
-        await ctx.CreateBasicResponse("Check DMs for an interactive canvas! (It may take some time to load)", true);
+        await ctx.CreateResponseAsync("Check DMs for an interactive canvas! (It may take some time to load)", true);
 
         //Create the initial bitmap
         SKSurface surface = GetPixelSurface(ctx, x - zoom / 2, y - zoom / 2, zoom);

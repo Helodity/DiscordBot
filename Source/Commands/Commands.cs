@@ -3,12 +3,12 @@
 class UnsortedCommands : ApplicationCommandModule {
     [SlashCommand("ping", "Check if the bot is on.")]
     public async Task Ping(InteractionContext ctx) {
-        await ctx.CreateBasicResponse($"Pong!");
+        await ctx.CreateResponseAsync("Pong!");
     }
 
     [SlashCommand("how", "Find out how __ you are.")]
     public async Task How(InteractionContext ctx, [Option("what", "how what you are")] string what) {
-        await ctx.CreateBasicResponse($"You are {GenerateRandomNumber(0, 100)}% {what}.");
+        await ctx.CreateResponseAsync($"You are {GenerateRandomNumber(0, 100)}% {what}.");
     }
 
     [SlashCommand("scp", "Gives you an SCP article to read")]
@@ -23,7 +23,7 @@ class UnsortedCommands : ApplicationCommandModule {
         }
         link += number.ToString();
 
-        await ctx.CreateBasicResponse(link);
+        await ctx.CreateResponseAsync(link);
     }
 
     [SlashCommand("8ball", "Ask a question and The Ball shall answer.")]
@@ -47,7 +47,7 @@ class UnsortedCommands : ApplicationCommandModule {
                 break;
 
         }
-        await ctx.CreateBasicResponse($"{ctx.Member.DisplayName} questions The Ball. It {thinkStr}...");
+        await ctx.CreateResponseAsync($"{ctx.Member.DisplayName} questions The Ball. It {thinkStr}...");
 
         await Task.Delay(GenerateRandomNumber(1000, 3000));
 
@@ -70,6 +70,6 @@ class UnsortedCommands : ApplicationCommandModule {
                 break;
 
         }
-        await ctx.EditBasicResponse($"{ctx.Member.DisplayName} asks: \"{question}\" \n{output}.");
+        await ctx.EditResponseAsync($"{ctx.Member.DisplayName} asks: \"{question}\" \n{output}.");
     }
 }

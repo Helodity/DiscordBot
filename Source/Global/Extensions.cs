@@ -102,11 +102,8 @@ public static class DiscordGuildExtensions {
     }
 }
 public static class InteractionContextExtensions {
-    public static async Task CreateBasicResponse(this InteractionContext ctx, string message, bool AsEphemeral = false) {
-        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent(message).AsEphemeral(AsEphemeral));
-    }
-    public static async Task EditBasicResponse(this InteractionContext ctx, string message) {
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(message));
+    public static async Task<DiscordMessage> EditResponseAsync(this InteractionContext ctx, string message) {
+        return await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(message));
     }
 }
 public static class DiscordUserExtensions {

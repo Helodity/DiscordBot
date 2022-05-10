@@ -24,7 +24,7 @@ class QuestionCommands : ApplicationCommandModule {
         DiscordMember member = await ctx.Guild.GetMemberAsync(user.Id);
 
         if(module.ParanoiaInProgress.Contains(member.Id)) {
-            await ctx.CreateBasicResponse($"Can't' send question! {member.DisplayName} already has one!");
+            await ctx.CreateResponseAsync($"Can't' send question! {member.DisplayName} already has one!");
             return;
         }
 
@@ -33,7 +33,7 @@ class QuestionCommands : ApplicationCommandModule {
         DiscordDmChannel channel = await member.CreateDmChannelAsync().ConfigureAwait(false);
         await member.SendMessageAsync(ctx.Member.DisplayName + " sent you a question:\n" + usedQuestion.Text + "\nReply with your answer.");
         module.ParanoiaInProgress.Add(user.Id);
-        await ctx.CreateBasicResponse($"Sent a question to {member.DisplayName}! Awaiting a response.");
+        await ctx.CreateResponseAsync($"Sent a question to {member.DisplayName}! Awaiting a response.");
 
         var interactivity = ctx.Client.GetInteractivity();
         InteractivityResult<DiscordMessage> result = await interactivity.WaitForMessageAsync(x => x.Channel == channel && x.Author == user);
@@ -41,12 +41,12 @@ class QuestionCommands : ApplicationCommandModule {
         var message = result.Result;
         if(message != null) {
             if(GenerateRandomNumber(1, 4) > 1)
-                await ctx.EditBasicResponse($"Question is hidden \n{member.DisplayName} answered: {message.Content}");
+                await ctx.EditResponseAsync($"Question is hidden \n{member.DisplayName} answered: {message.Content}");
             else
-                await ctx.EditBasicResponse($"{member.DisplayName} was asked {usedQuestion.Text}. \nThey answered: {message.Content}");
+                await ctx.EditResponseAsync($"{member.DisplayName} was asked {usedQuestion.Text}. \nThey answered: {message.Content}");
         } else {
             await member.SendMessageAsync("Time has expired.").ConfigureAwait(false);
-            await ctx.EditBasicResponse($"{member.DisplayName} never answered...");
+            await ctx.EditResponseAsync($"{member.DisplayName} never answered...");
         }
         module.ParanoiaInProgress.Remove(user.Id);
     }

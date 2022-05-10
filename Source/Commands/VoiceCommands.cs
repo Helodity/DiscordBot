@@ -10,7 +10,7 @@ class VoiceCommands : ApplicationCommandModule {
             return;
 
         await VGconn.Connect(ctx.Member.VoiceState.Channel);
-        await ctx.CreateBasicResponse($"Joined {ctx.Member.VoiceState.Channel.Name}!");
+        await ctx.CreateResponseAsync($"Joined {ctx.Member.VoiceState.Channel.Name}!");
     }
 
     [SlashCommand("leave", "Leave channel")]
@@ -20,7 +20,7 @@ class VoiceCommands : ApplicationCommandModule {
             return;
 
         await VGconn.Disconnect();
-        await ctx.CreateBasicResponse($"Left {ctx.Member.VoiceState.Channel.Name}!");
+        await ctx.CreateResponseAsync($"Left {ctx.Member.VoiceState.Channel.Name}!");
     }
 
     [SlashCommand("play", "Play a song")]
@@ -46,7 +46,7 @@ class VoiceCommands : ApplicationCommandModule {
         await ctx.DeferAsync();
         var tracks = await module.GetTrackAsync(search, VGconn.Node);
         if(tracks.Count == 0) {
-            await ctx.EditBasicResponse( "No results found!");
+            await ctx.EditResponseAsync( "No results found!");
             return;
         }
 
@@ -63,7 +63,7 @@ class VoiceCommands : ApplicationCommandModule {
             output += $" and {tracks.Count - 1} more songs";
         }
         output += "!";
-        await ctx.EditBasicResponse(output);
+        await ctx.EditResponseAsync(output);
     }
 
     [SlashCommand("skip", "Skip the currently playing song.")]
@@ -75,7 +75,7 @@ class VoiceCommands : ApplicationCommandModule {
 
         VGConn.CurrentTrack = null; //some shitty workaround to avoid looping the current song~!
         await VGConn.ProgressQueue();
-        await ctx.CreateBasicResponse("Skipped!");
+        await ctx.CreateResponseAsync("Skipped!");
     }
 
     [SlashCommand("volume", "Make your music louder.")]
@@ -86,7 +86,7 @@ class VoiceCommands : ApplicationCommandModule {
 
         Math.Clamp(volume, 1, 200);
         await VGConn.Conn.SetVolumeAsync((int)volume / 2);
-        await ctx.CreateBasicResponse($"Set the volume to {volume}%");
+        await ctx.CreateResponseAsync($"Set the volume to {volume}%");
     }
 
     [SlashCommand("loop", "Loop your queue")]
@@ -97,7 +97,7 @@ class VoiceCommands : ApplicationCommandModule {
             return;
 
         VGConn.IsLooping = !VGConn.IsLooping;
-        await ctx.CreateBasicResponse($"Looping {(VGConn.IsLooping ? "enabled" : "disabled")}!");
+        await ctx.CreateResponseAsync($"Looping {(VGConn.IsLooping ? "enabled" : "disabled")}!");
     }
 
     [SlashCommand("shuffle", "Play songs randomly")]
@@ -107,7 +107,7 @@ class VoiceCommands : ApplicationCommandModule {
             return;
 
         VGConn.IsShuffling = !VGConn.IsShuffling;
-        await ctx.CreateBasicResponse($"Shuffling {(VGConn.IsShuffling ? "enabled" : "disabled")}!");
+        await ctx.CreateResponseAsync($"Shuffling {(VGConn.IsShuffling ? "enabled" : "disabled")}!");
     }
 
     [SlashCommand("pause", "Pause the player.")]
@@ -118,10 +118,10 @@ class VoiceCommands : ApplicationCommandModule {
 
         VGConn.IsPaused = !VGConn.IsPaused;
         if(VGConn.IsPaused) {
-            await ctx.CreateBasicResponse("Paused!");
+            await ctx.CreateResponseAsync("Paused!");
             await VGConn.Conn.PauseAsync();
         } else {
-            await ctx.CreateBasicResponse("Resuming!");
+            await ctx.CreateResponseAsync("Resuming!");
             await VGConn.Conn.ResumeAsync();
         }
     }
@@ -134,7 +134,7 @@ class VoiceCommands : ApplicationCommandModule {
 
         int songCount = VGConn.TrackQueue.Count();
         VGConn.TrackQueue = new();
-        await ctx.CreateBasicResponse($"Cleared {songCount} songs from queue!");
+        await ctx.CreateResponseAsync($"Cleared {songCount} songs from queue!");
     }
 
     [SlashCommand("remove", "Remove the song at the specified index..")]
@@ -146,11 +146,11 @@ class VoiceCommands : ApplicationCommandModule {
         index--; //Convert from 1 being the first song to 0
         int songCount = VGConn.TrackQueue.Count();
         if(index > songCount || index < 1) {
-            await ctx.CreateBasicResponse($"Index out of bounds!", true);
+            await ctx.CreateResponseAsync($"Index out of bounds!", true);
             return;
         }
         VGConn.TrackQueue.RemoveAt((int)index);
-        await ctx.CreateBasicResponse($"Removed {VGConn.TrackQueue[(int)index].Title} from the queue!");
+        await ctx.CreateResponseAsync($"Removed {VGConn.TrackQueue[(int)index].Title} from the queue!");
     }
 
     [SlashCommand("queue", "Show the queue")]

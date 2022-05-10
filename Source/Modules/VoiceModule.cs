@@ -60,17 +60,17 @@ public class VoiceModule {
 
         if(connection.Node == null) {
             ctx.Client.Logger.LogError("Lavalink error in CanUseModifyCommand: Node does not exist");
-            await ctx.CreateBasicResponse("An error occured! My owner has been notified.", true);
+            await ctx.CreateResponseAsync("An error occured! My owner has been notified.", true);
             return (false, connection);
         }
 
         if(connection.Conn == null) {
-            await ctx.CreateBasicResponse("I'm not connected to a channel!", true);
+            await ctx.CreateResponseAsync("I'm not connected to a channel!", true);
             return (false, connection);
         }
 
         if(IsBeingUsed(connection.Conn) && !MemberInSameVoiceAsBot(connection.Conn, ctx)) {
-            await ctx.CreateBasicResponse("I'm already being used by someone else!", true);
+            await ctx.CreateResponseAsync("I'm already being used by someone else!", true);
             return (false, connection);
         }
 
@@ -82,17 +82,17 @@ public class VoiceModule {
 
         if(connection.Node == null) {
             ctx.Client.Logger.LogError("Lavalink error in CanUserSummon: Node does not exist");
-            await ctx.CreateBasicResponse("An error occured! My owner has been notified.", true);
+            await ctx.CreateResponseAsync("An error occured! My owner has been notified.", true);
             return (false, connection);
         }
 
         if(ctx.Member.VoiceState == null) {
-            await ctx.CreateBasicResponse("You need to be in a voice channel!", true);
+            await ctx.CreateResponseAsync("You need to be in a voice channel!", true);
             return (false, connection);
         }
 
         if(IsBeingUsed(connection.Conn) && !MemberInSameVoiceAsBot(connection.Conn, ctx)) {
-            await ctx.CreateBasicResponse("I'm already being used by someone else!", true);
+            await ctx.CreateResponseAsync("I'm already being used by someone else!", true);
             return (false, connection);
         }
 
