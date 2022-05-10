@@ -14,23 +14,22 @@ class UnsortedCommands : ApplicationCommandModule {
     [SlashCommand("scp", "Gives you an SCP article to read")]
     public async Task RandomScp(InteractionContext ctx) {
         int number = GenerateRandomNumber(1, 2000);
-        string output = "http://www.scpwiki.com/scp-";
+        string link = "http://www.scpwiki.com/scp-";
 
-        if(number < 10) {
-            output += "00";
-        } else if(number < 100) {
-            output += "0";
+        //SCP articles are titled 001, 096, with a minimum of three digits. Add any extra zeros here.
+        int numLength = number.ToString().Length;
+        for(int i = numLength; i < 3; i++) {
+            link += "0";
         }
-        output += number.ToString();
+        link += number.ToString();
 
-        await ctx.CreateBasicResponse(output);
+        await ctx.CreateBasicResponse(link);
     }
 
     [SlashCommand("8ball", "Ask a question and The Ball shall answer.")]
     public async Task EightBall(InteractionContext ctx, [Option("question", "The question for The Ball to answer")] string question) {
-        int thinkingNum = GenerateRandomNumber(1, 5);
         string thinkStr;
-        switch(thinkingNum) {
+        switch(GenerateRandomNumber(1, 5)) {
             case 1:
                 thinkStr = "ponders";
                 break;
@@ -50,12 +49,10 @@ class UnsortedCommands : ApplicationCommandModule {
         }
         await ctx.CreateBasicResponse($"{ctx.Member.DisplayName} questions The Ball. It {thinkStr}...");
 
-        int delay = GenerateRandomNumber(1000, 3000);
-        await Task.Delay(delay);
+        await Task.Delay(GenerateRandomNumber(1000, 3000));
 
-        int result = GenerateRandomNumber(1, 5);
         string output;
-        switch(result) {
+        switch(GenerateRandomNumber(1, 5)) {
             case 1:
                 output = "Likely";
                 break;

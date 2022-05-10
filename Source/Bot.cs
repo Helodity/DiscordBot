@@ -3,7 +3,7 @@
 public class Bot {
 #if DEBUG
     public bool Debugging = true;
-        public ulong? TargetServer = 941558436561305630;
+    public ulong? TargetServer = 941558436561305630; //This is my private testing server, if you want to debug the bot you'll have to manually change this as any release won't use this code
 #else
         public bool Debugging = false;
         public ulong? TargetServer = null;
