@@ -17,20 +17,7 @@ public static class Global {
     }
     public static T LoadJson<T>(string path) {
         if(!File.Exists(path)) {
-            string[] directories = path.Split("/");
-            for(int i = 1; i < directories.Length; i++) {
-                string cur_path = "";
-                for(int j = 0; j < i; j++) {
-                    if(j > 0)
-                        cur_path += "/";
-                    cur_path += directories[j];
-                }
-                if(!Directory.Exists(cur_path)) {
-                    Directory.CreateDirectory(cur_path);
-                }
-            }
-
-            File.Create(path);
+            FileExtension.CreateFileWithPath(path);
             return (T)Activator.CreateInstance(typeof(T));
         }
         using(var fs = File.OpenRead(path)){

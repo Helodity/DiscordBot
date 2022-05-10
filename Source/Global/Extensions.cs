@@ -109,6 +109,16 @@ public static class InteractionContextExtensions {
         return await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
     }
 }
+public static class FileExtension {
+    //Creates all sub directories needed and then the file
+    public static void CreateFileWithPath(string path) {
+        string directoryPath = Path.GetDirectoryName(path);
+        if(!Directory.Exists(directoryPath)) {
+            Directory.CreateDirectory(directoryPath);
+        }
+        File.Create(path).Dispose();
+    } 
+}
 public static class DiscordUserExtensions {
     public static bool IsOwner(this DiscordUser user) {
         return user.Id == Bot.Config.OwnerId;
