@@ -6,7 +6,7 @@ class PixelCommands : ApplicationCommandModule {
     public async Task ViewCanvas(InteractionContext ctx) {
         await ctx.CreateResponseAsync($"Loading...", true);
         string imagePath = $"PixelImages/img{ctx.User.Id}.png";
-        Bot.Modules.Pixel.CreateImage(ctx, PixelModule.MapWidth / 2, PixelModule.MapHeight / 2, PixelModule.MapHeight);
+        Bot.Modules.Pixel.CreateImage(ctx);
         using(var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read)) {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddFile(imagePath, fs).AsEphemeral());
         }
@@ -61,8 +61,10 @@ class PixelCommands : ApplicationCommandModule {
 
         DiscordSelectComponent colorSelectComponent = new DiscordSelectComponent("color", "Select color to place:", colorOptions);
 
-        int curX = (int)Math.Clamp(x, 0, PixelModule.MapWidth - 1);
-        int curY = (int)Math.Clamp(y, 0, PixelModule.MapWidth - 1);
+        Point mapSize = Bot.Modules.Pixel.GetMapSize(ctx.Guild.Id);
+
+        int curX = (int)Math.Clamp(x, 0, mapSize.X - 1);
+        int curY = (int)Math.Clamp(y, 0, mapSize.Y - 1);
         int zoom = 9;
         int jumpAmount = 1;
         string imagePath = $"PixelImages/img{ctx.User.Id}.png";
@@ -119,7 +121,7 @@ class PixelCommands : ApplicationCommandModule {
             }
             if(input.Result.Id == "moveDown") {
                 for(int i = 0; i < jumpAmount; i++) {
-                    if(curY <= PixelModule.MapHeight)
+                    if(curY <= mapSize.Y)
                         curY++;
                 }
             }
@@ -131,7 +133,7 @@ class PixelCommands : ApplicationCommandModule {
             }
             if(input.Result.Id == "moveRight") {
                 for(int i = 0; i < jumpAmount; i++) {
-                    if(curX <= PixelModule.MapHeight)
+                    if(curX <= mapSize.X)
                         curX++;
                 }
             }
@@ -160,5 +162,14 @@ class PixelCommands : ApplicationCommandModule {
             await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed).WithFile(Path.GetFileName(imagePath), fs));
         }
         File.Delete(imagePath);
+    }
+
+    [SlashCommand("resize", "make that canvas bigger")]
+    public async Task Resize(InteractionContext ctx, 
+        [Option("x", "new x size")] long x,
+        [Option("y", "new y size")] long y) {
+
+        Bot.Modules.Pixel.ResizeMap(ctx.Guild.Id, (int)x, (int)y);
+        await ctx.CreateResponseAsync($"Resized Canvas to ({x},{y})!");
     }
 }
