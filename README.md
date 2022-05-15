@@ -1,5 +1,5 @@
-# DiscordBotRewrite
-Its a bot but a pretty good one!
+# Discord Bot
+Its a bot!
 
 ![Lines](https://img.shields.io/tokei/lines/github/Helodity/DiscordBot?color=purple&label=Total%20Lines&style=flat-square)
 
