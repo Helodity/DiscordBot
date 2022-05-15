@@ -1,4 +1,4 @@
-﻿namespace DiscordBotRewrite.Modules;
+﻿namespace DiscordBotRewrite.Attributes;
 public class UserAbleToSummonAttribute : VoiceAttribute {
     public override async Task<bool> ExecuteChecksAsync(InteractionContext ctx) {
         VoiceGuildConnection connection = Bot.Modules.Voice.GetGuildConnection(ctx);

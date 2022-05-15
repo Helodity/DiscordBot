@@ -1,4 +1,4 @@
-﻿namespace DiscordBotRewrite.Modules;
+﻿namespace DiscordBotRewrite.Attributes;
 public abstract class VoiceAttribute : SlashCheckBaseAttribute {
     public bool IsBeingUsed(LavalinkGuildConnection conn) {
         return conn != null && conn.CurrentState.CurrentTrack != null && conn.AmountOfMembersInChannel() > 0;
