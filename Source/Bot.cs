@@ -13,7 +13,7 @@ public class Bot {
 
     public static DiscordClient Client { get; private set; } //will need to change for sharding, deal with when that becomes important
     public static SlashCommandsExtension SlashExtension { get; private set; }
-    public static GlobalConfig Config { get; private set; }
+    public static Config Config { get; private set; }
     public static ModuleContainer Modules { get; private set; }
 
     public async Task Start() {
@@ -27,11 +27,11 @@ public class Bot {
 
     #region Private
     private bool TryLoadConfig() {
-        Config = LoadJson<GlobalConfig>(GlobalConfig.JsonLocation);
+        Config = LoadJson<Config>(Config.JsonLocation);
 
         if(string.IsNullOrEmpty(Config.Token)) {
             Console.WriteLine("No token is set! Set one in Json/Config.json");
-            SaveJson(Config, GlobalConfig.JsonLocation);
+            SaveJson(Config, Config.JsonLocation);
             Console.ReadLine();
             return false;
         }

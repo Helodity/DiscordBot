@@ -1,6 +1,6 @@
 ﻿namespace DiscordBotRewrite;
 
-public readonly struct GlobalConfig {
+public readonly struct Config {
     public const string JsonLocation = "Config.json";
 
     [JsonProperty("token")]
