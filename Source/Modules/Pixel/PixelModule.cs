@@ -70,7 +70,7 @@ public class PixelModule {
 
     public SKPoint GetMapSize(ulong guildId) {
         var map = GetPixelMap(guildId);
-        return new Point(map.Width, map.Height);
+        return new SKPoint(map.Width, map.Height);
     }
 
     public void ResizeMap(ulong guildId, int width, int height) {

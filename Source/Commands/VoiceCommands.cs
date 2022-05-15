@@ -205,6 +205,8 @@ class VoiceCommands : ApplicationCommandModule {
         if(pageCount == 0) {
             description = "Queue is empty!";
         } else {
+            if(VGConn.IsShuffling)
+                description += "Shuffling is **enabled**, queue position will not reflect what song is played next\n";
             for(int i = (activePage - 1) * 10; i < endNumber; i++) {
                 description += $"**{i + 1}:** `{VGConn.TrackQueue[i].Title}` by `{VGConn.TrackQueue[i].Author}` \n";
             }
