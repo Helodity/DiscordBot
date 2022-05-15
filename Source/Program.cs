@@ -28,16 +28,20 @@ global using static DiscordBotRewrite.Global.Global;
 namespace DiscordBotRewrite;
 class Program {
     static void Main(string[] args) {
-        AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
-        {
-            if(eventArgs.Exception is BadRequestException)
-                Bot.Client.Logger.LogError(((BadRequestException)eventArgs.Exception).JsonMessage);
-            if(eventArgs.Exception is Not​Found​Exception)
-                Bot.Client.Logger.LogError(((Not​Found​Exception)eventArgs.Exception).JsonMessage);
-            if(eventArgs.Exception is Server​Error​Exception)
-                Bot.Client.Logger.LogError(((Server​Error​Exception)eventArgs.Exception).JsonMessage);
+        SetupExceptionHandler();
+        new Bot().Start().GetAwaiter().GetResult();
+    }
+
+    static void SetupExceptionHandler() {
+        AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) => {
+            switch(eventArgs.Exception) {
+                case DiscordException:
+                    Bot.Client.Logger.LogCritical(((DiscordException)eventArgs.Exception).JsonMessage);
+                    break;
+                default:
+                    Bot.Client.Logger.LogCritical(eventArgs.Exception.Message);
+                    break;
+            }
         };
-        Bot bot = new Bot();
-        bot.Start().GetAwaiter().GetResult();
     }
 }
