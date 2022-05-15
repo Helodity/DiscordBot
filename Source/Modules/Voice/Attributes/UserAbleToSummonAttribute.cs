@@ -4,8 +4,8 @@ public class UserAbleToSummonAttribute : VoiceAttribute {
         VoiceGuildConnection connection = Bot.Modules.Voice.GetGuildConnection(ctx);
 
         if(connection.Node == null) {
-            ctx.Client.Logger.LogError("Lavalink error in CanUserSummon: Node does not exist");
-            await ctx.CreateResponseAsync("An error occured! My owner has been notified.", true);
+            ctx.Client.Logger.LogError("Lavalink error in UserAbleToSummonAttribute: Node does not exist");
+            await ctx.CreateResponseAsync("An error occured!", true);
             return false;
         }
 
@@ -14,7 +14,7 @@ public class UserAbleToSummonAttribute : VoiceAttribute {
             return false;
         }
 
-        if(IsBeingUsed(connection.Conn) && !MemberInSameVoiceAsBot(connection.Conn, ctx)) {
+        if(IsBeingUsed(connection.Conn)) {
             await ctx.CreateResponseAsync("I'm already being used by someone else!", true);
             return false;
         }

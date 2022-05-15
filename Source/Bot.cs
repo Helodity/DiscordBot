@@ -29,7 +29,7 @@ public class Bot {
     private bool TryLoadConfig() {
         Config = LoadJson<Config>(Config.JsonLocation);
 
-        if(string.IsNullOrEmpty(Config.Token)) {
+        if(string.IsNullOrWhiteSpace(Config.Token)) {
             Console.WriteLine("No token is set! Set one in Json/Config.json");
             SaveJson(Config, Config.JsonLocation);
             Console.ReadLine();

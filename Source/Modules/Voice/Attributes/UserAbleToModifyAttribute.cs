@@ -4,21 +4,15 @@ public class UserAbleToModifyAttribute : VoiceAttribute {
         VoiceGuildConnection connection = Bot.Modules.Voice.GetGuildConnection(ctx);
 
         if(connection.Node == null) {
-            ctx.Client.Logger.LogError("Lavalink error in CanUseModifyCommand: Node does not exist");
-            await ctx.CreateResponseAsync("An error occured! My owner has been notified.", true);
+            ctx.Client.Logger.LogError("Lavalink error in UserAbleToModifyAttribute: Node does not exist");
+            await ctx.CreateResponseAsync("An error occured!", true);
             return false;
         }
 
-        if(connection.Conn == null) {
-            await ctx.CreateResponseAsync("I'm not connected to a channel!", true);
+        if(!MemberInSameVoiceAsBot(connection.Conn, ctx)) {
+            await ctx.CreateResponseAsync("You need to be in the same channel as me!", true);
             return false;
         }
-
-        if(IsBeingUsed(connection.Conn) && !MemberInSameVoiceAsBot(connection.Conn, ctx)) {
-            await ctx.CreateResponseAsync("I'm already being used by someone else!", true);
-            return false;
-        }
-
         return true;
     }
 }
