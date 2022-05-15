@@ -65,7 +65,7 @@ class PixelCommands : ApplicationCommandModule {
 
         DiscordSelectComponent colorSelectComponent = new DiscordSelectComponent("color", "Select color to place:", colorOptions);
 
-        SKPoint mapSize = Bot.Modules.Pixel.GetMapSize(ctx.Guild.Id);
+        SKPointI mapSize = Bot.Modules.Pixel.GetMapSize(ctx.Guild.Id);
 
         int curX = (int)Math.Clamp(x, 0, mapSize.X - 1);
         int curY = (int)Math.Clamp(y, 0, mapSize.Y - 1);

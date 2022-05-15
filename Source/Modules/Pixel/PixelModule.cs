@@ -46,20 +46,32 @@ public class PixelModule {
     }
     public void CreateImage(InteractionContext ctx) {
         PixelMap map = GetPixelMap(ctx.Guild.Id);
-        int pixelSize = 500 / Math.Max(map.Width, map.Height);
-        SKSurface surface = CreateSurface(map, 0, 0, map.Width - 1, map.Height - 1, Math.Max(1, pixelSize));
+
+        int pixelSize = Math.Max(1, 500 / Math.Max(map.Width, map.Height));
+        SKPointI anchor = new SKPointI(0, 0);
+        SKPointI end = new SKPointI(map.Width - 1, map.Height - 1);
+
+        SKSurface surface = CreateSurface(map, anchor, end, pixelSize);
         surface.Snapshot().SaveToPng($"PixelImages/img{ctx.User.Id}.png");
     }
     public void CreateImage(InteractionContext ctx, int x, int y, int zoom) {
         PixelMap map = GetPixelMap(ctx.Guild.Id);
+
         int halfDistance = zoom / 2;
-        SKSurface surface = CreateSurface(map, x - halfDistance, y - halfDistance, x + halfDistance, y + halfDistance, 500 / zoom);
+        SKPointI anchor = new SKPointI(x - halfDistance, y - halfDistance);
+        SKPointI end = new SKPointI(x + halfDistance, y + halfDistance);
+
+        SKSurface surface = CreateSurface(map, anchor, end, 500 / zoom);
         surface.Snapshot().SaveToPng($"PixelImages/img{ctx.User.Id}.png");
     }
+
     public void CreateImageWithUI(InteractionContext ctx, int x, int y, int zoom, PixelEnum selectedPixel) {
         PixelMap map = GetPixelMap(ctx.Guild.Id);
         int halfDistance = zoom / 2;
-        SKSurface surface = CreateSurface(map, x - halfDistance, y - halfDistance, x + halfDistance, y + halfDistance, 500 / zoom);
+        SKPointI anchor = new SKPointI(x - halfDistance, y - halfDistance);
+        SKPointI end = new SKPointI(x + halfDistance, y + halfDistance);
+
+        SKSurface surface = CreateSurface(map, anchor, end, 500 / zoom);
 
         if(PixelDict.TryGetValue((uint)selectedPixel, out SKColor color))
             DrawCenterPixel(surface.Canvas, zoom, color);
@@ -68,9 +80,9 @@ public class PixelModule {
         surface.Snapshot().SaveToPng($"PixelImages/img{ctx.User.Id}.png");
     }
 
-    public SKPoint GetMapSize(ulong guildId) {
+    public SKPointI GetMapSize(ulong guildId) {
         var map = GetPixelMap(guildId);
-        return new SKPoint(map.Width, map.Height);
+        return new SKPointI(map.Width, map.Height);
     }
 
     public void ResizeMap(ulong guildId, int width, int height) {
@@ -98,9 +110,9 @@ public class PixelModule {
         PixelMaps.AddOrUpdate(data.Id, data);
         SaveJson(PixelMaps, PixelMap.JsonLocation);
     }
-    SKSurface CreateSurface(PixelMap map, int anchorX, int anchorY, int endX, int endY, int pixelSize) {
-        int xDist = endX + 1 - anchorX;
-        int yDist = endY + 1 - anchorY;
+    SKSurface CreateSurface(PixelMap map, SKPointI anchor, SKPointI end, int pixelSize) {
+        int xDist = end.X + 1 - anchor.X;
+        int yDist = end.Y + 1 - anchor.Y;
 
         SKImageInfo imageInfo = new SKImageInfo(xDist * pixelSize, yDist * pixelSize);
         SKSurface surface = SKSurface.Create(imageInfo);
@@ -111,12 +123,12 @@ public class PixelModule {
         paint.IsAntialias = false;
         for(int x = 0; x < xDist; x++) {
             for(int y = 0; y < yDist; y++) {
-                int absX = x + anchorX;
-                int absY = y + anchorY;
+                int absX = x + anchor.X;
+                int absY = y + anchor.Y;
                 SKColor color;
                 bool exists = true;
                 if(absX < 0 || absX >= map.Width || absY < 0 || absY >= map.Height) {
-                    color = SKColors.Red.WithAlpha(255);
+                    color = SKColors.Black.WithAlpha(255);
                     exists = false;
                 } else if(!PixelDict.TryGetValue((uint)map.PixelState[absX, absY], out color)) {
                     color = SKColors.White;

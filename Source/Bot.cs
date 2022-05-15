@@ -9,8 +9,6 @@ public class Bot {
         public ulong? TargetServer = null;
 #endif
 
-    public static readonly string BotVersion = "2.1.2";
-
     public static DiscordClient Client { get; private set; } //will need to change for sharding, deal with when that becomes important
     public static SlashCommandsExtension SlashExtension { get; private set; }
     public static Config Config { get; private set; }
