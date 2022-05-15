@@ -20,7 +20,7 @@ public static class Global {
             FileExtension.CreateFileWithPath(path);
             return (T)Activator.CreateInstance(typeof(T));
         }
-        using(var fs = File.OpenRead(path)){
+        using(var fs = File.OpenRead(path)) {
             using(var sr = new StreamReader(fs, new UTF8Encoding(false))) {
                 string output = sr.ReadToEnd();
                 T obj = default(T);

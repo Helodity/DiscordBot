@@ -15,12 +15,12 @@ public static class SKExtensions {
         SKPath path = new SKPath();
         for(int i = 0; i < w; i += hatchDistance) {
             path.MoveTo(x + i, y);
-            float size = Math.Min(h,Math.Min(w, w - i));
+            float size = Math.Min(h, Math.Min(w, w - i));
             path.LineTo(x + i + size, y + size);
         }
         for(int i = 0; i < h; i += hatchDistance) {
             path.MoveTo(x, y + i);
-            float size = Math.Min(w,Math.Min(h, h - i));
+            float size = Math.Min(w, Math.Min(h, h - i));
             path.LineTo(x + size, y + i + size);
         }
         //Hatching only works with stroke paint, temporarily set it to that to ensure proper drawing

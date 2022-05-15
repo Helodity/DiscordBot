@@ -34,7 +34,7 @@ public class VoiceModule {
     #endregion
 
     #region Connection Interface
-    public  VoiceGuildConnection GetGuildConnection(InteractionContext ctx) {
+    public VoiceGuildConnection GetGuildConnection(InteractionContext ctx) {
         if(GuildConnections.ContainsKey(ctx.Guild.Id)) {
             return GuildConnections[ctx.Guild.Id];
         }
@@ -78,7 +78,7 @@ public class VoiceModule {
         //Soundcloud
         loadResult = await node.Rest.GetTracksAsync(search, LavalinkSearchType.SoundCloud);
         if(loadResult.LoadResultType != LavalinkLoadResultType.LoadFailed
-            && loadResult.LoadResultType != LavalinkLoadResultType.NoMatches 
+            && loadResult.LoadResultType != LavalinkLoadResultType.NoMatches
             && loadResult.Tracks.Count() > 0) {
             List<LavalinkTrack> track = new List<LavalinkTrack> {
                 loadResult.Tracks.First()

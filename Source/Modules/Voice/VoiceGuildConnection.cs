@@ -1,4 +1,4 @@
-﻿namespace DiscordBotRewrite.Modules; 
+﻿namespace DiscordBotRewrite.Modules;
 public class VoiceGuildConnection {
     public LavalinkNodeConnection Node;
     public LavalinkGuildConnection Conn;

@@ -37,7 +37,7 @@ public class QuoteModule {
         var reactions = await proper_message.GetReactionsAsync(await args.Guild.GetEmojiAsync(data.QuoteEmojiId));
         int quoteReactions = reactions.Count;
 
-        DiscordAttachment attachment= null;
+        DiscordAttachment attachment = null;
         if(proper_message.Attachments.Count > 0)
             attachment = proper_message.Attachments.FirstOrDefault(x => x.IsImage());
 
@@ -56,7 +56,7 @@ public class QuoteModule {
 
             DiscordChannel channel = await client.GetChannelAsync(data.QuoteChannelId);
             await client.SendMessageAsync(channel, embed);
-            
+
             //Save the quote to avoid repeating the same quote
             data.QuotedMessages.Add(proper_message.Id);
             SetQuoteData(data);

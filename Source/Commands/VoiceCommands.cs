@@ -192,7 +192,7 @@ class VoiceCommands : ApplicationCommandModule {
     [SlashCommand("queue", "Show the queue")]
     public async Task Queue(InteractionContext ctx, [Option("page", "what page")] long page = 1) {
         VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-        int pageCount = (int)Math.Ceiling((decimal)VGConn.TrackQueue.Count / (decimal)10);
+        int pageCount = (int)Math.Ceiling(VGConn.TrackQueue.Count / (decimal)10);
         int activePage = Math.Min(Math.Max(1, (int)page), pageCount);
         int endNumber = Math.Min(activePage * 10, VGConn.TrackQueue.Count());
 

@@ -9,7 +9,7 @@ class QuestionCommands : ApplicationCommandModule {
 
         QuestionModule module = Bot.Modules.Question;
         Question usedQuestion = module.PickQuestion(module.TruthQuestions.ToList(), rating);
-        await ctx.CreateResponseAsync(new DiscordEmbedBuilder { 
+        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
             Description = usedQuestion.Text,
             Color = DefaultColor
         });

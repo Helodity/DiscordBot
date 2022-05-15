@@ -58,14 +58,14 @@ class PixelCommands : ApplicationCommandModule {
         };
 
         List<DiscordSelectComponentOption> colorOptions = new();
-        ((int[])Enum.GetValues(typeof(PixelModule.PixelEnum))).ToList().ForEach(x => { 
-            string name = Enum.GetName(typeof(PixelModule.PixelEnum), x); 
+        ((int[])Enum.GetValues(typeof(PixelModule.PixelEnum))).ToList().ForEach(x => {
+            string name = Enum.GetName(typeof(PixelModule.PixelEnum), x);
             colorOptions.Add(new DiscordSelectComponentOption(name, name));
         });
 
         DiscordSelectComponent colorSelectComponent = new DiscordSelectComponent("color", "Select color to place:", colorOptions);
 
-        Point mapSize = Bot.Modules.Pixel.GetMapSize(ctx.Guild.Id);
+        SKPoint mapSize = Bot.Modules.Pixel.GetMapSize(ctx.Guild.Id);
 
         int curX = (int)Math.Clamp(x, 0, mapSize.X - 1);
         int curY = (int)Math.Clamp(y, 0, mapSize.Y - 1);
@@ -171,7 +171,7 @@ class PixelCommands : ApplicationCommandModule {
 
     #region Resize
     [SlashCommand("resize", "make that canvas bigger")]
-    public async Task Resize(InteractionContext ctx, 
+    public async Task Resize(InteractionContext ctx,
         [Option("x", "new x size")] long x,
         [Option("y", "new y size")] long y) {
 

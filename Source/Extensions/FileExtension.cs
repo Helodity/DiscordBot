@@ -12,5 +12,5 @@ public static class FileExtension {
             }
         }
         File.Create(path).Dispose();
-    } 
+    }
 }

@@ -1,7 +1,7 @@
 ﻿namespace DiscordBotRewrite.Modules;
 public class PixelModule {
     #region Constants
-    //Make sure to update both when adding a color
+    //Update both when adding a color
     readonly Dictionary<uint, SKColor> PixelDict = new Dictionary<uint, SKColor>()
     {
         {0,  SKColors.White},
@@ -68,7 +68,7 @@ public class PixelModule {
         surface.Snapshot().SaveToPng($"PixelImages/img{ctx.User.Id}.png");
     }
 
-    public Point GetMapSize(ulong guildId) {
+    public SKPoint GetMapSize(ulong guildId) {
         var map = GetPixelMap(guildId);
         return new Point(map.Width, map.Height);
     }
@@ -159,5 +159,5 @@ public class PixelModule {
         canvas.DrawHatchedRect(pixelSize * (zoom / 2), pixelSize * (zoom / 2), pixelSize, pixelSize, paint, 5);
     }
 
-#endregion
+    #endregion
 }

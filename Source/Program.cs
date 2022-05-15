@@ -1,7 +1,6 @@
-﻿global using DiscordBotRewrite.Global;
-global using DiscordBotRewrite.Modules;
-global using DiscordBotRewrite.Commands;
+﻿global using DiscordBotRewrite.Commands;
 global using DiscordBotRewrite.Extensions;
+global using DiscordBotRewrite.Modules;
 global using DSharpPlus;
 global using DSharpPlus.Entities;
 global using DSharpPlus.EventArgs;
@@ -15,6 +14,7 @@ global using DSharpPlus.SlashCommands;
 global using Microsoft.Extensions.Logging;
 global using Newtonsoft.Json;
 global using Newtonsoft.Json.Converters;
+global using SkiaSharp;
 global using System;
 global using System.Collections.Generic;
 global using System.Diagnostics;
@@ -22,8 +22,6 @@ global using System.IO;
 global using System.Linq;
 global using System.Text;
 global using System.Threading.Tasks;
-
-global using SkiaSharp;
 global using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite;
