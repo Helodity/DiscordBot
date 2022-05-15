@@ -33,68 +33,12 @@ public static class Global {
     }
     public static void SaveJson(object toSave, string path) {
         using(StringWriter sw = new StringWriter())
-        using(CustomIndentingJsonTextWriter jw = new CustomIndentingJsonTextWriter(sw)) {
+        using(CustomJsonTextWriter jw = new CustomJsonTextWriter(sw)) {
             jw.MaxIndentDepth = 3;
             JsonSerializer ser = new JsonSerializer();
             ser.Serialize(jw, toSave);
             sw.ToString();
             File.WriteAllText(path, sw.ToString());
         }
-    }
-}
-public class CustomIndentingJsonTextWriter : JsonTextWriter {
-    public int? MaxIndentDepth { get; set; }
-
-    public CustomIndentingJsonTextWriter(TextWriter writer) : base(writer) {
-        Formatting = Formatting.Indented;
-    }
-
-    public override void WriteStartArray() {
-        base.WriteStartArray();
-        if(MaxIndentDepth.HasValue && Top > MaxIndentDepth.Value)
-            Formatting = Formatting.None;
-    }
-
-    public override void WriteStartObject() {
-        base.WriteStartObject();
-        if(MaxIndentDepth.HasValue && Top > MaxIndentDepth.Value)
-            Formatting = Formatting.None;
-    }
-
-    public override void WriteEndArray() {
-        base.WriteEndArray();
-        if(MaxIndentDepth.HasValue && Top <= MaxIndentDepth.Value)
-            Formatting = Formatting.Indented;
-    }
-
-    public override void WriteEndObject() {
-        base.WriteEndObject();
-        if(MaxIndentDepth.HasValue && Top <= MaxIndentDepth.Value)
-            Formatting = Formatting.Indented;
-    }
-}
-public readonly struct Cooldown {
-    readonly DateTime EndTime;
-    public Cooldown(DateTime endTime) {
-        EndTime = endTime;
-    }
-    public bool IsOver => DateTime.Compare(DateTime.Now, EndTime) >= 0;
-
-    public static bool UserHasCooldown(ulong userId, ref Dictionary<ulong, Cooldown> cooldowns) {
-        if(cooldowns.TryGetValue(userId, out Cooldown cooldown)) {
-            if(!cooldown.IsOver)
-                return true;
-            cooldowns.Remove(userId);
-        }
-        return false;
-    }
-}
-
-public struct Point {
-    public int X;
-    public int Y;
-    public Point(int x, int y) {
-        X = x;
-        Y = y;
     }
 }
