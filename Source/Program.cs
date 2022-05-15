@@ -1,6 +1,7 @@
 ﻿global using DiscordBotRewrite.Global;
 global using DiscordBotRewrite.Modules;
 global using DiscordBotRewrite.Commands;
+global using DiscordBotRewrite.Extensions;
 global using DSharpPlus;
 global using DSharpPlus.Entities;
 global using DSharpPlus.EventArgs;
