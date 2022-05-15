@@ -1,7 +1,7 @@
 ﻿namespace DiscordBotRewrite;
 
 public readonly struct GlobalConfig {
-    public const string JsonLocation = "Json/Config.json";
+    public const string JsonLocation = "Config.json";
 
     [JsonProperty("token")]
     public readonly string Token;
