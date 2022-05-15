@@ -4,12 +4,10 @@
 class VoiceCommands : ApplicationCommandModule {
 
     [SlashCommand("join", "Join Channel")]
+    [UserAbleToSummon]
     public async Task JoinChannel(InteractionContext ctx) {
-        (bool canUse, var VGconn) = await Bot.Modules.Voice.CanUserSummon(ctx);
-        if(!canUse)
-            return;
-
-        await VGconn.Connect(ctx.Member.VoiceState.Channel);
+        VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+        await VGConn.Connect(ctx.Member.VoiceState.Channel);
         await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
             Description = $"Joined {ctx.Member.VoiceState.Channel.Name}!",
             Color = DefaultColor
@@ -17,11 +15,9 @@ class VoiceCommands : ApplicationCommandModule {
     }
 
     [SlashCommand("leave", "Leave channel")]
+    [UserAbleToModify]
     public async Task LeaveChannel(InteractionContext ctx) {
-        (bool canUse, var VGconn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
-        if(!canUse)
-            return;
-
+        VoiceGuildConnection VGconn = Bot.Modules.Voice.GetGuildConnection(ctx);
         await VGconn.Disconnect();
         await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
             Description = $"Left {ctx.Member.VoiceState.Channel.Name}!",
@@ -30,27 +26,16 @@ class VoiceCommands : ApplicationCommandModule {
     }
 
     [SlashCommand("play", "Play a song")]
+    [UserAbleToPlay]
     public async Task Play(InteractionContext ctx, [Option("search", "what to play")] string search) {
         VoiceModule module = Bot.Modules.Voice;
         VoiceGuildConnection VGconn = module.GetGuildConnection(ctx);
-        bool canUse;
-        if(VGconn.IsConnected) {
-            (canUse, VGconn) = await module.CanUserSummon(ctx);
-        } else {
-            if(module.IsBeingUsed(VGconn.Conn))
-                (canUse, VGconn) = await module.CanUserUseModifyCommand(ctx);
-            else
-                (canUse, VGconn) = await module.CanUserSummon(ctx);
-        }
-
-        if(!canUse)
-            return;
 
         if(!VGconn.IsConnected)
             await VGconn.Connect(ctx.Member.VoiceState.Channel);
 
         await ctx.DeferAsync();
-        var tracks = await module.GetTrackAsync(search, VGconn.Node);
+        var tracks = await module.GetTracksAsync(search, VGconn.Node);
         if(tracks.Count == 0) {
             await ctx.EditResponseAsync(new DiscordEmbedBuilder {
                 Description = "No results found!",
@@ -80,12 +65,9 @@ class VoiceCommands : ApplicationCommandModule {
     }
 
     [SlashCommand("skip", "Skip the currently playing song.")]
+    [UserAbleToModify]
     public async Task Skip(InteractionContext ctx) {
-        (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
-
-        if(!canUse)
-            return;
-
+        VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
         VGConn.CurrentTrack = null; //some shitty workaround to avoid looping the current song~!
         await VGConn.ProgressQueue();
 
@@ -96,11 +78,9 @@ class VoiceCommands : ApplicationCommandModule {
     }
 
     [SlashCommand("volume", "Make your music louder.")]
+    [UserAbleToModify]
     public async Task Volume(InteractionContext ctx, [Option("volume", "how loud")] long volume) {
-        (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
-        if(!canUse)
-            return;
-
+        VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
         Math.Clamp(volume, 1, 200);
         await VGConn.Conn.SetVolumeAsync((int)volume / 2);
 
@@ -111,12 +91,9 @@ class VoiceCommands : ApplicationCommandModule {
     }
 
     [SlashCommand("loop", "Loop your queue")]
+    [UserAbleToModify]
     public async Task Loop(InteractionContext ctx) {
-        (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
-
-        if(!canUse)
-            return;
-
+        VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
         VGConn.IsLooping = !VGConn.IsLooping;
 
         await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -126,11 +103,9 @@ class VoiceCommands : ApplicationCommandModule {
     }
 
     [SlashCommand("shuffle", "Play songs randomly")]
+    [UserAbleToModify]
     public async Task Shuffle(InteractionContext ctx) {
-        (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
-        if(!canUse)
-            return;
-
+        VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
         VGConn.IsShuffling = !VGConn.IsShuffling;
 
         await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -140,11 +115,9 @@ class VoiceCommands : ApplicationCommandModule {
     }
 
     [SlashCommand("pause", "Pause the player.")]
+    [UserAbleToModify]
     public async Task Pause(InteractionContext ctx) {
-        (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
-        if(!canUse)
-            return;
-
+        VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
         VGConn.IsPaused = !VGConn.IsPaused;
         string description;
         if(VGConn.IsPaused) {
@@ -162,11 +135,9 @@ class VoiceCommands : ApplicationCommandModule {
     }
 
     [SlashCommand("clear", "Clear the queue.")]
+    [UserAbleToModify]
     public async Task Clear(InteractionContext ctx) {
-        (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
-        if(!canUse)
-            return;
-
+        VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
         int songCount = VGConn.TrackQueue.Count();
         VGConn.TrackQueue = new();
 
@@ -177,11 +148,9 @@ class VoiceCommands : ApplicationCommandModule {
     }
 
     [SlashCommand("remove", "Remove the song at the specified index..")]
+    [UserAbleToModify]
     public async Task Clear(InteractionContext ctx, [Option("index", "index")] long index) {
-        (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
-        if(!canUse)
-            return;
-
+        VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
         index--; //Convert from 1 being the first song to 0
         int songCount = VGConn.TrackQueue.Count();
         if(index > songCount || index < 1) {
@@ -200,11 +169,8 @@ class VoiceCommands : ApplicationCommandModule {
     }
 
     [SlashCommand("queue", "Show the queue")]
-    public async Task List(InteractionContext ctx, [Option("page", "what page")] long page = 1) {
-        (bool canUse, var VGConn) = await Bot.Modules.Voice.CanUserUseModifyCommand(ctx);
-        if(!canUse)
-            return;
-
+    public async Task Queue(InteractionContext ctx, [Option("page", "what page")] long page = 1) {
+        VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
         int pageCount = (int)Math.Ceiling((decimal)VGConn.TrackQueue.Count / (decimal)10);
         int activePage = Math.Min(Math.Max(1, (int)page), pageCount);
         int endNumber = Math.Min(activePage * 10, VGConn.TrackQueue.Count());

@@ -53,64 +53,7 @@ public class VoiceModule {
 
     #endregion
 
-    #region Command Checks
-    public async Task<(bool, VoiceGuildConnection)> CanUserUseModifyCommand(InteractionContext ctx) {
-
-        VoiceGuildConnection connection = GetGuildConnection(ctx);
-
-        if(connection.Node == null) {
-            ctx.Client.Logger.LogError("Lavalink error in CanUseModifyCommand: Node does not exist");
-            await ctx.CreateResponseAsync("An error occured! My owner has been notified.", true);
-            return (false, connection);
-        }
-
-        if(connection.Conn == null) {
-            await ctx.CreateResponseAsync("I'm not connected to a channel!", true);
-            return (false, connection);
-        }
-
-        if(IsBeingUsed(connection.Conn) && !MemberInSameVoiceAsBot(connection.Conn, ctx)) {
-            await ctx.CreateResponseAsync("I'm already being used by someone else!", true);
-            return (false, connection);
-        }
-
-        return (true, connection);
-    }
-    public async Task<(bool, VoiceGuildConnection)> CanUserSummon(InteractionContext ctx) {
-
-        VoiceGuildConnection connection = GetGuildConnection(ctx);
-
-        if(connection.Node == null) {
-            ctx.Client.Logger.LogError("Lavalink error in CanUserSummon: Node does not exist");
-            await ctx.CreateResponseAsync("An error occured! My owner has been notified.", true);
-            return (false, connection);
-        }
-
-        if(ctx.Member.VoiceState == null) {
-            await ctx.CreateResponseAsync("You need to be in a voice channel!", true);
-            return (false, connection);
-        }
-
-        if(IsBeingUsed(connection.Conn) && !MemberInSameVoiceAsBot(connection.Conn, ctx)) {
-            await ctx.CreateResponseAsync("I'm already being used by someone else!", true);
-            return (false, connection);
-        }
-
-        return (true, connection);
-    }
-    public bool IsBeingUsed(LavalinkGuildConnection conn) {
-      return conn != null && conn.CurrentState.CurrentTrack != null && conn.AmountOfMembersInChannel() > 0;
-    }
-    public bool IsBeingUsed(InteractionContext ctx, out VoiceGuildConnection VGConn) {
-        VGConn = GetGuildConnection(ctx);
-        return IsBeingUsed(VGConn.Conn);
-    }
-
-    bool MemberInSameVoiceAsBot(LavalinkGuildConnection conn, InteractionContext ctx) {
-        return ctx.Member.VoiceState != null && ctx.Member.VoiceState.Channel == conn.Channel;
-    }
-    #endregion
-    public async Task<List<LavalinkTrack>> GetTrackAsync(string search, LavalinkNodeConnection node) {
+    public async Task<List<LavalinkTrack>> GetTracksAsync(string search, LavalinkNodeConnection node) {
         LavalinkLoadResult loadResult;
 
         Uri uri = new(search, UriKind.RelativeOrAbsolute);
@@ -272,4 +215,93 @@ public static class LavalinkGuildExtensions {
         }
         return totalMembers;
     }
+}
+
+public abstract class VoiceAttribute : SlashCheckBaseAttribute {
+    public bool IsBeingUsed(LavalinkGuildConnection conn) {
+        return conn != null && conn.CurrentState.CurrentTrack != null && conn.AmountOfMembersInChannel() > 0;
+    }
+    public bool MemberInSameVoiceAsBot(LavalinkGuildConnection conn, InteractionContext ctx) {
+        return ctx.Member.VoiceState != null && ctx.Member.VoiceState.Channel == conn.Channel;
+    }
+}
+
+public class UserAbleToSummonAttribute : VoiceAttribute {
+    public override async Task<bool> ExecuteChecksAsync(InteractionContext ctx) {
+        VoiceGuildConnection connection = Bot.Modules.Voice.GetGuildConnection(ctx);
+
+        if(connection.Node == null) {
+            ctx.Client.Logger.LogError("Lavalink error in CanUserSummon: Node does not exist");
+            await ctx.CreateResponseAsync("An error occured! My owner has been notified.", true);
+            return false;
+        }
+
+        if(ctx.Member.VoiceState == null) {
+            await ctx.CreateResponseAsync("You need to be in a voice channel!", true);
+            return false;
+        }
+
+        if(IsBeingUsed(connection.Conn) && !MemberInSameVoiceAsBot(connection.Conn, ctx)) {
+            await ctx.CreateResponseAsync("I'm already being used by someone else!", true);
+            return false;
+        }
+
+        return true;
+    }
+}
+
+public class UserAbleToModifyAttribute : VoiceAttribute {
+    public override async Task<bool> ExecuteChecksAsync(InteractionContext ctx) {
+        VoiceGuildConnection connection = Bot.Modules.Voice.GetGuildConnection(ctx);
+
+        if(connection.Node == null) {
+            ctx.Client.Logger.LogError("Lavalink error in CanUseModifyCommand: Node does not exist");
+            await ctx.CreateResponseAsync("An error occured! My owner has been notified.", true);
+            return false;
+        }
+
+        if(connection.Conn == null) {
+            await ctx.CreateResponseAsync("I'm not connected to a channel!", true);
+            return false;
+        }
+
+        if(IsBeingUsed(connection.Conn) && !MemberInSameVoiceAsBot(connection.Conn, ctx)) {
+            await ctx.CreateResponseAsync("I'm already being used by someone else!", true);
+            return false;
+        }
+
+        return true;
+    }
+}
+
+public class UserAbleToPlayAttribute : VoiceAttribute {
+    public override async Task<bool> ExecuteChecksAsync(InteractionContext ctx) {
+        VoiceGuildConnection connection = Bot.Modules.Voice.GetGuildConnection(ctx);
+
+        if(connection.Node == null) {
+            ctx.Client.Logger.LogError("Lavalink error in CanUseModifyCommand: Node does not exist");
+            await ctx.CreateResponseAsync("An error occured! My owner has been notified.", true);
+            return false;
+        }
+
+        if(connection.IsConnected || !IsBeingUsed(connection.Conn)) {
+            if(ctx.Member.VoiceState == null) {
+                await ctx.CreateResponseAsync("You need to be in a voice channel!", true);
+                return false;
+            }
+        } else {
+            if(connection.Conn == null) {
+                await ctx.CreateResponseAsync("I'm not connected to a channel!", true);
+                return false;
+            }
+        }
+
+        if(IsBeingUsed(connection.Conn) && !MemberInSameVoiceAsBot(connection.Conn, ctx)) {
+            await ctx.CreateResponseAsync("I'm already being used by someone else!", true);
+            return false;
+        }
+
+        return true;
+    }
+
 }
