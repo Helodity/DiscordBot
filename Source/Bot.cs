@@ -76,9 +76,12 @@ public class Bot {
         return Task.CompletedTask;
     }
     private async Task OnClientReady(DiscordClient client, ReadyEventArgs e) {
+        Assembly thisAssem = typeof(Bot).Assembly;
+        AssemblyName thisAssemName = thisAssem.GetName();
+
         await Client.UpdateStatusAsync(new DiscordActivity() {
             ActivityType = ActivityType.Playing,
-            Name = Debugging ? $"Version {BotVersion}-Debug" : $"Version {BotVersion}"
+            Name = Debugging ? $"Version {thisAssemName.Version}-Debug" : $"Version {thisAssemName.Version}"
         }, UserStatus.Online);
         Client.Logger.Log(LogLevel.Debug, "Bot has started!");
     }
