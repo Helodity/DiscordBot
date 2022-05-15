@@ -2,6 +2,7 @@
 
 [SlashCommandGroup("pixel", "r/place but inside a discord bot")]
 class PixelCommands : ApplicationCommandModule {
+    #region View
     [SlashCommand("view", "look at the current canvas")]
     public async Task ViewCanvas(InteractionContext ctx) {
         await ctx.CreateResponseAsync($"Loading...", true);
@@ -12,6 +13,9 @@ class PixelCommands : ApplicationCommandModule {
         }
         File.Delete(imagePath);
     }
+    #endregion
+
+    #region Interact
     [SlashCommand("interact", "look with buttons")]
     public async Task Interact(InteractionContext ctx,
         [Option("x", "x to start at")] long x = 5,
@@ -163,13 +167,19 @@ class PixelCommands : ApplicationCommandModule {
         }
         File.Delete(imagePath);
     }
+    #endregion
 
+    #region Resize
     [SlashCommand("resize", "make that canvas bigger")]
     public async Task Resize(InteractionContext ctx, 
         [Option("x", "new x size")] long x,
         [Option("y", "new y size")] long y) {
 
+        if(!ctx.Member.Permissions.HasPermission(Permissions.Administrator))
+            return;
+
         Bot.Modules.Pixel.ResizeMap(ctx.Guild.Id, (int)x, (int)y);
         await ctx.CreateResponseAsync($"Resized Canvas to ({x},{y})!");
     }
+    #endregion
 }

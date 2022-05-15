@@ -1,6 +1,7 @@
 ﻿namespace DiscordBotRewrite.Commands;
 
 class UnsortedCommands : ApplicationCommandModule {
+    #region Ping
     [SlashCommand("ping", "Check if the bot is on.")]
     public async Task Ping(InteractionContext ctx) {
         await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -8,7 +9,9 @@ class UnsortedCommands : ApplicationCommandModule {
             Color = DefaultColor
         });
     }
+    #endregion
 
+    #region How
     [SlashCommand("how", "Find out how __ you are.")]
     public async Task How(InteractionContext ctx, [Option("what", "how what you are")] string what) {
         await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -16,7 +19,9 @@ class UnsortedCommands : ApplicationCommandModule {
             Color = DefaultColor
         });
     }
+    #endregion
 
+    #region SCP
     [SlashCommand("scp", "Gives you an SCP article to read")]
     public async Task RandomScp(InteractionContext ctx) {
         int number = GenerateRandomNumber(1, 2000);
@@ -31,7 +36,9 @@ class UnsortedCommands : ApplicationCommandModule {
 
         await ctx.CreateResponseAsync(link);
     }
+    #endregion
 
+    #region Eight Ball
     [SlashCommand("8ball", "Ask a question and The Ball shall answer.")]
     public async Task EightBall(InteractionContext ctx, [Option("question", "The question for The Ball to answer")] string question) {
         string thinkStr;
@@ -85,4 +92,5 @@ class UnsortedCommands : ApplicationCommandModule {
         });
 
     }
+    #endregion
 }

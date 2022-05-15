@@ -2,7 +2,7 @@
 
 [SlashCommandGroup("ask", "its like truth or dare")]
 class QuestionCommands : ApplicationCommandModule {
-    #region truth
+    #region Truth
     [SlashCommand("truth", "Asks a truth question")]
     public async Task AskTruth(InteractionContext ctx,
         [Option("rating", "How risky is the question?")] Question.DepthGroup rating = Question.DepthGroup.G) {
@@ -16,7 +16,7 @@ class QuestionCommands : ApplicationCommandModule {
     }
     #endregion
 
-    #region paranoia
+    #region Paranoia
     [SlashCommand("paranoia", "Asks a paranoia question")]
     public async Task AskParanoia(InteractionContext ctx,
         [Option("user", "Who is recieving the question?")] DiscordUser user = null,

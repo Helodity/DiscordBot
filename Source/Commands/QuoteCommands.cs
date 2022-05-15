@@ -3,6 +3,7 @@
 [SlashCommandGroup("quote", "its like truth or dare")]
 class QuoteCommands : ApplicationCommandModule {
 
+    #region Set Channel
     [SlashCommand("set_channel", "Sets this channel to the server's quote channel")]
     public async Task SetQuoteChannel(InteractionContext ctx) {
         //Ensure we picked a text channel
@@ -19,6 +20,9 @@ class QuoteCommands : ApplicationCommandModule {
             Color = SuccessColor
         });
     }
+    #endregion
+
+    #region Set Emoji
     [SlashCommand("set_emoji", "Sets this server's quote emoji")]
     public async Task SetQuoteEmoji(InteractionContext ctx) {
         var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
@@ -47,6 +51,9 @@ class QuoteCommands : ApplicationCommandModule {
         data.QuoteEmojiId = reaction.Result.Emoji.Id;
         Bot.Modules.Quote.SetQuoteData(data);
     }
+    #endregion
+
+    #region Set Emoji Amount
     [SlashCommand("set_emoji_amount", "Sets how many reactions are needed to quote a message")]
     public async Task SetQuoteEmojiAmount(InteractionContext ctx, [Option("amount", "how many")] long amount) {
         var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
@@ -57,6 +64,9 @@ class QuoteCommands : ApplicationCommandModule {
             Color = SuccessColor
         });
     }
+    #endregion
+
+    #region Toggle
     [SlashCommand("toggle", "Enable or disable the quote system")]
     public async Task Toggle(InteractionContext ctx) {
         var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
@@ -67,5 +77,6 @@ class QuoteCommands : ApplicationCommandModule {
             Color = SuccessColor
         });
     }
+    #endregion
 }
 
