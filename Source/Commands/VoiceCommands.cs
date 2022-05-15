@@ -3,6 +3,7 @@
 [SlashCommandGroup("voice", "voice")]
 class VoiceCommands : ApplicationCommandModule {
 
+    #region Join
     [SlashCommand("join", "Join Channel")]
     [UserAbleToSummon]
     public async Task JoinChannel(InteractionContext ctx) {
@@ -13,7 +14,9 @@ class VoiceCommands : ApplicationCommandModule {
             Color = DefaultColor
         });
     }
+    #endregion
 
+    #region Leave
     [SlashCommand("leave", "Leave channel")]
     [UserAbleToModify]
     public async Task LeaveChannel(InteractionContext ctx) {
@@ -24,7 +27,9 @@ class VoiceCommands : ApplicationCommandModule {
             Color = DefaultColor
         });
     }
+    #endregion
 
+    #region Play
     [SlashCommand("play", "Play a song")]
     [UserAbleToPlay]
     public async Task Play(InteractionContext ctx, [Option("search", "what to play")] string search) {
@@ -63,7 +68,9 @@ class VoiceCommands : ApplicationCommandModule {
             Color = DefaultColor
         });
     }
+    #endregion
 
+    #region Skip
     [SlashCommand("skip", "Skip the currently playing song.")]
     [UserAbleToModify]
     public async Task Skip(InteractionContext ctx) {
@@ -76,7 +83,9 @@ class VoiceCommands : ApplicationCommandModule {
             Color = DefaultColor
         });
     }
+    #endregion
 
+    #region Volume
     [SlashCommand("volume", "Make your music louder.")]
     [UserAbleToModify]
     public async Task Volume(InteractionContext ctx, [Option("volume", "how loud")] long volume) {
@@ -89,7 +98,9 @@ class VoiceCommands : ApplicationCommandModule {
             Color = DefaultColor
         });
     }
+    #endregion
 
+    #region Loop
     [SlashCommand("loop", "Loop your queue")]
     [UserAbleToModify]
     public async Task Loop(InteractionContext ctx) {
@@ -101,7 +112,9 @@ class VoiceCommands : ApplicationCommandModule {
             Color = DefaultColor
         });
     }
+    #endregion
 
+    #region Shuffle
     [SlashCommand("shuffle", "Play songs randomly")]
     [UserAbleToModify]
     public async Task Shuffle(InteractionContext ctx) {
@@ -113,7 +126,9 @@ class VoiceCommands : ApplicationCommandModule {
             Color = DefaultColor
         });
     }
+    #endregion
 
+    #region Pause
     [SlashCommand("pause", "Pause the player.")]
     [UserAbleToModify]
     public async Task Pause(InteractionContext ctx) {
@@ -133,7 +148,9 @@ class VoiceCommands : ApplicationCommandModule {
             Color = DefaultColor
         });
     }
+    #endregion
 
+    #region Clear
     [SlashCommand("clear", "Clear the queue.")]
     [UserAbleToModify]
     public async Task Clear(InteractionContext ctx) {
@@ -146,7 +163,9 @@ class VoiceCommands : ApplicationCommandModule {
             Color = DefaultColor
         });
     }
+    #endregion
 
+    #region Remove
     [SlashCommand("remove", "Remove the song at the specified index..")]
     [UserAbleToModify]
     public async Task Clear(InteractionContext ctx, [Option("index", "index")] long index) {
@@ -167,7 +186,9 @@ class VoiceCommands : ApplicationCommandModule {
             Color = DefaultColor
         });
     }
+    #endregion
 
+    #region Queue
     [SlashCommand("queue", "Show the queue")]
     public async Task Queue(InteractionContext ctx, [Option("page", "what page")] long page = 1) {
         VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
@@ -193,4 +214,5 @@ class VoiceCommands : ApplicationCommandModule {
         embed.WithFooter($"Page {activePage} / {pageCount}");
         await ctx.CreateResponseAsync(embed);
     }
+    #endregion
 }
