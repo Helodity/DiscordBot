@@ -1,28 +1,28 @@
-﻿namespace DiscordBotRewrite.Modules; 
+﻿namespace DiscordBotRewrite.Modules;
 public class QuoteModule {
 
-    public Dictionary<ulong, QuoteData> QuoteData;
+    public Dictionary<ulong, Quote> QuoteData;
 
     public QuoteModule(DiscordClient client) {
-        QuoteData = LoadJson<Dictionary<ulong, QuoteData>>(Modules.QuoteData.JsonLocation);
+        QuoteData = LoadJson<Dictionary<ulong, Quote>>(Modules.Quote.JsonLocation);
         client.MessageReactionAdded += TryQuote;
     }
 
-    public QuoteData GetQuoteData(ulong id) {
+    public Quote GetQuoteData(ulong id) {
         //Create new data if it doesn't already exist
-        if(!QuoteData.TryGetValue(id, out QuoteData userData)) {
-            userData = new QuoteData(id);
+        if(!QuoteData.TryGetValue(id, out Quote userData)) {
+            userData = new Quote(id);
             QuoteData.Add(id, userData);
         }
         return userData;
     }
-    public void SetQuoteData(QuoteData data) {
+    public void SetQuoteData(Quote data) {
         QuoteData.AddOrUpdate(data.Id, data);
-        SaveJson(QuoteData, Modules.QuoteData.JsonLocation);
+        SaveJson(QuoteData, Modules.Quote.JsonLocation);
     }
 
     async Task TryQuote(DiscordClient client, MessageReactionAddEventArgs args) {
-        QuoteData data = GetQuoteData(args.Guild.Id);
+        Quote data = GetQuoteData(args.Guild.Id);
 
         //This isn't enabled in the server, ignore the reaction
         if(!data.Enabled) return;
@@ -61,43 +61,5 @@ public class QuoteModule {
             data.QuotedMessages.Add(proper_message.Id);
             SetQuoteData(data);
         }
-    }
-}
-
-public class QuoteData {
-    //Reference to the Json file's relative path
-    public const string JsonLocation = "Json/Quotes.json";
-
-    //The guild this data is for
-    [JsonProperty("guild_id")]
-    public readonly ulong Id;
-
-    //The guild this data is for
-    [JsonProperty("enabled")]
-    public bool Enabled;
-
-    //Which channel to send quotes?
-    [JsonProperty("quote_channel")]
-    public ulong QuoteChannelId;
-
-    //What emoji do we look for when quoting
-    [JsonProperty("quote_emoji")]
-    public ulong QuoteEmojiId;
-
-    //How many of these emojis need to be added to quote a message
-    [JsonProperty("emoji_amount_to_quote")]
-    public ushort EmojiAmountToQuote;
-
-    //List of already quoted messages
-    [JsonProperty("quotes")]
-    public List<ulong> QuotedMessages;
-
-    public QuoteData(ulong id) {
-        Id = id;
-        Enabled = true;
-        QuoteChannelId = 0;
-        QuoteEmojiId = 0;
-        EmojiAmountToQuote = 1;
-        QuotedMessages = new();
     }
 }
