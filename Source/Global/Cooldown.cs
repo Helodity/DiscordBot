@@ -15,8 +15,16 @@ public readonly struct Cooldown {
         }
         return false;
     }
+    public static TimeSpan TimeUntilExpiration(ulong userId, ref Dictionary<ulong, Cooldown> cooldowns) {
+        if(cooldowns.TryGetValue(userId, out Cooldown cooldown)) {
+            if(!cooldown.IsOver)
+                return cooldown.TimeUntilExpiration();
+            cooldowns.Remove(userId);
+        }
+        return TimeSpan.Zero;
+    }
 
-    public int SecondsUntilExpiration() {
-        return (int)(EndTime - DateTime.Now).TotalSeconds;
+    public TimeSpan TimeUntilExpiration() {
+        return EndTime - DateTime.Now;
     }
 }

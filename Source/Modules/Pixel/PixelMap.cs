@@ -40,11 +40,6 @@ public class PixelMap {
     }
 
     public int TimeUntilNextPlace(ulong userId) {
-        if(PlaceCooldowns.TryGetValue(userId, out var cooldown)) {
-            if(cooldown.IsOver)
-                return 0;
-            return cooldown.SecondsUntilExpiration();
-        }
-        return 0;
+        return (int)Cooldown.TimeUntilExpiration(userId, ref PlaceCooldowns).TotalSeconds;
     }
 }
