@@ -15,4 +15,8 @@ public readonly struct Cooldown {
         }
         return false;
     }
+
+    public int SecondsUntilExpiration() {
+        return (int)(EndTime - DateTime.Now).TotalSeconds;
+    }
 }

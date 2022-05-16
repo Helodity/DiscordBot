@@ -65,10 +65,10 @@ class PixelCommands : ApplicationCommandModule {
 
         DiscordSelectComponent colorSelectComponent = new DiscordSelectComponent("color", "Select color to place:", colorOptions);
 
-        SKPointI mapSize = Bot.Modules.Pixel.GetMapSize(ctx.Guild.Id);
+        PixelMap map = Bot.Modules.Pixel.GetPixelMap(ctx.Guild.Id);
 
-        int curX = (int)Math.Clamp(x, 0, mapSize.X - 1);
-        int curY = (int)Math.Clamp(y, 0, mapSize.Y - 1);
+        int curX = (int)Math.Clamp(x, 0, map.Width - 1);
+        int curY = (int)Math.Clamp(y, 0, map.Height - 1);
         int zoom = 9;
         int jumpAmount = 1;
         string imagePath = $"PixelImages/img{ctx.User.Id}.png";
@@ -115,7 +115,8 @@ class PixelCommands : ApplicationCommandModule {
                 break;
             }
             if(input.Result.Id == "place") {
-                Bot.Modules.Pixel.PlacePixel(ctx.Guild.Id, curX, curY, curColor);
+                if(!Bot.Modules.Pixel.TryPlacePixel(ctx.Guild.Id, ctx.User.Id, curX, curY, curColor))
+                    await ctx.Member.SendMessageAsync($"Can't place a pixel, wait {map.TimeUntilNextPlace(ctx.User.Id)} seconds!");
             }
             if(input.Result.Id == "moveUp") {
                 for(int i = 0; i < jumpAmount; i++) {
@@ -125,7 +126,7 @@ class PixelCommands : ApplicationCommandModule {
             }
             if(input.Result.Id == "moveDown") {
                 for(int i = 0; i < jumpAmount; i++) {
-                    if(curY <= mapSize.Y)
+                    if(curY <= map.Height)
                         curY++;
                 }
             }
@@ -137,7 +138,7 @@ class PixelCommands : ApplicationCommandModule {
             }
             if(input.Result.Id == "moveRight") {
                 for(int i = 0; i < jumpAmount; i++) {
-                    if(curX <= mapSize.X)
+                    if(curX <= map.Width)
                         curX++;
                 }
             }
@@ -178,6 +179,16 @@ class PixelCommands : ApplicationCommandModule {
 
         Bot.Modules.Pixel.ResizeMap(ctx.Guild.Id, (int)x, (int)y);
         await ctx.CreateResponseAsync($"Resized Canvas to ({x},{y})!");
+    }
+    #endregion
+
+    #region Set Cooldown
+    [SlashCommand("cooldown", "Change how often a pixel can be placed")]
+    [RequirePermissions(Permissions.Administrator)]
+    public async Task Cooldown(InteractionContext ctx, [Option("duration", "Time in seconds")] long duration) {
+        duration = Math.Max(0, duration);
+        Bot.Modules.Pixel.SetCooldown(ctx.Guild.Id, (uint)duration);
+        await ctx.CreateResponseAsync($"Set cooldown to {duration} seconds");
     }
     #endregion
 }

@@ -39,10 +39,16 @@ public class PixelModule {
     }
 
     #region Public
-    public void PlacePixel(ulong guildId, int x, int y, PixelEnum color) {
+    public bool TryPlacePixel(ulong guildId, ulong userId, int x, int y, PixelEnum color) {
         var map = GetPixelMap(guildId);
+
+        if(Cooldown.UserHasCooldown(userId, ref map.PlaceCooldowns)) {
+            return false;
+        }
+        map.PlaceCooldowns.Add(userId, new Cooldown(DateTime.Now.AddSeconds(map.PlaceCooldown)));
         map.PixelState[x, y] = color;
         SavePixelMap(map);
+        return true;
     }
     public void CreateImage(InteractionContext ctx) {
         PixelMap map = GetPixelMap(ctx.Guild.Id);
@@ -79,33 +85,33 @@ public class PixelModule {
 
         surface.Snapshot().SaveToPng($"PixelImages/img{ctx.User.Id}.png");
     }
-
-    public SKPointI GetMapSize(ulong guildId) {
-        var map = GetPixelMap(guildId);
-        return new SKPointI(map.Width, map.Height);
-    }
-
-    public void ResizeMap(ulong guildId, int width, int height) {
-        var map = GetPixelMap(guildId);
-        map.ChangeSize(width, height);
-        SavePixelMap(map);
-    }
-    #endregion
-
-    #region Private
-    PixelMap GetPixelMap(ulong id) {
+    public PixelMap GetPixelMap(ulong id) {
         if(!PixelMaps.TryGetValue(id, out PixelMap pixelMap)) {
             pixelMap = new PixelMap(id);
             PixelMaps.Add(id, pixelMap);
         }
 
         if(pixelMap.Width * pixelMap.Height != pixelMap.PixelState.Length) {
-            pixelMap.ChangeSize(pixelMap.PixelState.GetLength(0), pixelMap.PixelState.GetLength(1));
+            pixelMap.Resize(pixelMap.PixelState.GetLength(0), pixelMap.PixelState.GetLength(1));
             SavePixelMap(pixelMap);
         }
 
         return pixelMap;
     }
+    public void ResizeMap(ulong guildId, int width, int height) {
+        var map = GetPixelMap(guildId);
+        map.Resize(width, height);
+        SavePixelMap(map);
+    }
+
+    public void SetCooldown(ulong guildId, uint duration) {
+        var map = GetPixelMap(guildId);
+        map.PlaceCooldown = duration;
+        SavePixelMap(map);
+    }
+    #endregion
+
+    #region Private
     void SavePixelMap(PixelMap data) {
         PixelMaps.AddOrUpdate(data.Id, data);
         SaveJson(PixelMaps, PixelMap.JsonLocation);

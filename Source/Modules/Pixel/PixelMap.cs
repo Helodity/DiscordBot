@@ -9,17 +9,22 @@ public class PixelMap {
     public int Width;
     [JsonProperty("height")]
     public int Height;
+    [JsonProperty("cooldown_sec")]
+    public uint PlaceCooldown;
     [JsonProperty("pixel_data")]
     public PixelEnum[,] PixelState;
+
+    public Dictionary<ulong, Cooldown> PlaceCooldowns = new();
 
     public PixelMap(ulong id, int width = 100, int height = 100) {
         Width = width;
         Height = height;
         PixelState = new PixelEnum[Width, Height];
         Id = id;
+        PlaceCooldown = 0;
     }
 
-    public void ChangeSize(int width, int height) {
+    public void Resize(int width, int height) {
         PixelEnum[,] old = PixelState;
         int maxY = Math.Min(old.GetLength(1), height);
         int maxX = Math.Min(old.GetLength(0), width);
@@ -34,4 +39,12 @@ public class PixelMap {
         }
     }
 
+    public int TimeUntilNextPlace(ulong userId) {
+        if(PlaceCooldowns.TryGetValue(userId, out var cooldown)) {
+            if(cooldown.IsOver)
+                return 0;
+            return cooldown.SecondsUntilExpiration();
+        }
+        return 0;
+    }
 }

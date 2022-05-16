@@ -8,6 +8,7 @@ public class VoiceModule {
 
     Dictionary<ulong, VoiceGuildConnection> GuildConnections = new();
 
+
     #region Setup
     public VoiceModule(DiscordClient client) {
         var endpoint = new ConnectionEndpoint {
