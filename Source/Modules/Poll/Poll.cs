@@ -1,5 +1,8 @@
 ﻿namespace DiscordBotRewrite.Modules;
 public class Poll {
+    [JsonProperty("guild_id")]
+    public readonly ulong GuildId;
+
     [JsonProperty("message_id")]
     public readonly ulong MessageId;
 
@@ -10,8 +13,9 @@ public class Poll {
     [JsonProperty("votes")]
     public Dictionary<string, uint> Votes;
 
-    public Poll(ulong messageId, List<string> choices, DateTime endTime) {
-        MessageId = messageId;
+    public Poll(DiscordMessage message, List<string> choices, DateTime endTime) {
+        GuildId = message.Channel.Guild.Id;
+        MessageId = message.Id;
         EndTime = endTime;
         foreach(string choice in choices) {
             Votes.Add(choice, 0);
