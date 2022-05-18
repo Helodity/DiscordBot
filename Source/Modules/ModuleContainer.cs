@@ -9,6 +9,7 @@ public class ModuleContainer {
 
     public QuestionModule Question;
 
+    public PollModule Poll;
 
     public ModuleContainer(DiscordClient client) {
         Quote = new QuoteModule(client);
@@ -16,6 +17,8 @@ public class ModuleContainer {
         Question = new QuestionModule();
 
         Pixel = new PixelModule();
+
+        Poll = new PollModule(client);
 
         Voice = new VoiceModule(client);
         Voice.EnableLavalink().Wait();
