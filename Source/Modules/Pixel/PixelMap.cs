@@ -1,10 +1,8 @@
 ﻿namespace DiscordBotRewrite.Modules;
 using static DiscordBotRewrite.Modules.PixelModule;
-public class PixelMap {
+public class PixelMap : ModuleData {
     public const string JsonLocation = "Json/PixelMaps.json";
 
-    [JsonProperty("guild_id")]
-    public readonly ulong Id;
     [JsonProperty("width")]
     public int Width;
     [JsonProperty("height")]
@@ -16,11 +14,10 @@ public class PixelMap {
 
     public Dictionary<ulong, Cooldown> PlaceCooldowns = new();
 
-    public PixelMap(ulong id, int width = 100, int height = 100) {
+    public PixelMap(ulong id, int width = 100, int height = 100) : base(id) {
         Width = width;
         Height = height;
         PixelState = new PixelEnum[Width, Height];
-        Id = id;
         PlaceCooldown = 0;
     }
 

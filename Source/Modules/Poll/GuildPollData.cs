@@ -1,11 +1,7 @@
 ﻿namespace DiscordBotRewrite.Modules;
-public class GuildPollData {
+public class GuildPollData : ModuleData {
     //Reference to the Json file's relative path
     public const string JsonLocation = "Json/Polls.json";
-
-    //The guild this data is for
-    [JsonProperty("guild_id")]
-    public readonly ulong Id;
 
     //Which channel to send polls?
     [JsonProperty("poll_channel")]
@@ -15,8 +11,7 @@ public class GuildPollData {
     [JsonProperty("polls")]
     public List<Poll> ActivePolls;
 
-    public GuildPollData(ulong id) {
-        Id = id;
+    public GuildPollData(ulong id) : base(id) {
         PollChannelId = 0;
         ActivePolls = new();
     }
