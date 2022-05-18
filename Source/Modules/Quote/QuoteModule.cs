@@ -1,28 +1,28 @@
 ﻿namespace DiscordBotRewrite.Modules;
 public class QuoteModule {
 
-    public Dictionary<ulong, Quote> QuoteData;
+    public Dictionary<ulong, GuildQuoteData> QuoteData;
 
     public QuoteModule(DiscordClient client) {
-        QuoteData = LoadJson<Dictionary<ulong, Quote>>(Modules.Quote.JsonLocation);
+        QuoteData = LoadJson<Dictionary<ulong, GuildQuoteData>>(Modules.GuildQuoteData.JsonLocation);
         client.MessageReactionAdded += TryQuote;
     }
 
-    public Quote GetQuoteData(ulong id) {
+    public GuildQuoteData GetQuoteData(ulong id) {
         //Create new data if it doesn't already exist
-        if(!QuoteData.TryGetValue(id, out Quote userData)) {
-            userData = new Quote(id);
+        if(!QuoteData.TryGetValue(id, out GuildQuoteData userData)) {
+            userData = new GuildQuoteData(id);
             QuoteData.Add(id, userData);
         }
         return userData;
     }
-    public void SetQuoteData(Quote data) {
+    public void SetQuoteData(GuildQuoteData data) {
         QuoteData.AddOrUpdate(data.Id, data);
-        SaveJson(QuoteData, Modules.Quote.JsonLocation);
+        SaveJson(QuoteData, Modules.GuildQuoteData.JsonLocation);
     }
 
     async Task TryQuote(DiscordClient client, MessageReactionAddEventArgs args) {
-        Quote data = GetQuoteData(args.Guild.Id);
+        GuildQuoteData data = GetQuoteData(args.Guild.Id);
 
         //This isn't enabled in the server, ignore the reaction
         if(!data.Enabled) return;

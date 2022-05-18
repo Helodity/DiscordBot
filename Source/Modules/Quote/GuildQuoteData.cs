@@ -1,6 +1,6 @@
 ﻿namespace DiscordBotRewrite.Modules;
 
-public class Quote {
+public class GuildQuoteData {
     //Reference to the Json file's relative path
     public const string JsonLocation = "Json/Quotes.json";
 
@@ -8,7 +8,7 @@ public class Quote {
     [JsonProperty("guild_id")]
     public readonly ulong Id;
 
-    //The guild this data is for
+    //Does this server have quoting enabled?
     [JsonProperty("enabled")]
     public bool Enabled;
 
@@ -28,7 +28,7 @@ public class Quote {
     [JsonProperty("quotes")]
     public List<ulong> QuotedMessages;
 
-    public Quote(ulong id) {
+    public GuildQuoteData(ulong id) {
         Id = id;
         Enabled = true;
         QuoteChannelId = 0;
