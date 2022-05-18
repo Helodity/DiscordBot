@@ -5,8 +5,8 @@ public class Bot {
     public bool Debugging = true;
     public ulong? TargetServer = 941558436561305630; //This is my private testing server, if you want to debug the bot you'll have to manually change this as any release won't use this code
 #else
-        public bool Debugging = false;
-        public ulong? TargetServer = null;
+    public bool Debugging = false;
+    public ulong? TargetServer = null;
 #endif
 
     public static DiscordClient Client { get; private set; } //will need to change for sharding, deal with when that becomes important
@@ -17,7 +17,7 @@ public class Bot {
     public async Task Start() {
         if(!TryLoadConfig()) return;
         await InitClient();
-        await InitModules();
+        Modules = new ModuleContainer(Client);
         await InitCommands();
         await Client.ConnectAsync();
         await Task.Delay(-1);
@@ -49,18 +49,6 @@ public class Bot {
             Timeout = TimeSpan.FromSeconds(30)
         });
         return Task.CompletedTask;
-    }
-    private async Task InitModules() {
-        Modules = new ModuleContainer();
-
-        Modules.Quote = new QuoteModule(Client);
-
-        Modules.Question = new QuestionModule();
-
-        Modules.Pixel = new PixelModule();
-
-        Modules.Voice = new VoiceModule(Client);
-        await Modules.Voice.EnableLavalink();
     }
     private Task InitCommands() {
         SlashExtension = Client.UseSlashCommands();
