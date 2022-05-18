@@ -7,7 +7,12 @@
     <StartupObject>DiscordBotRewrite.Program</StartupObject>
     <AnalysisLevel>preview-minimum</AnalysisLevel>
   </PropertyGroup>
-
+  
+	<PropertyGroup>
+	   <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	   <Deterministic>False</Deterministic>
+	</PropertyGroup>
+	
   <ItemGroup>
     <COMReference Include="{215d64d2-031c-33c7-96e3-61794cd1ee61}">
       <WrapperTool>tlbimp</WrapperTool>
@@ -37,17 +42,14 @@
     <PackageReference Include="SkiaSharp" Version="2.80.3" />
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="'$(Configuration)' == 'Debug' ">
     <Version VersionFile="Properties\version.txt" Major="2" Minor="1" Build="2" RevisionType="BuildIncrement">
       <Output TaskParameter="Major" PropertyName="Major" />
       <Output TaskParameter="Minor" PropertyName="Minor" />
       <Output TaskParameter="Build" PropertyName="Build" />
       <Output TaskParameter="Revision" PropertyName="Revision" />
     </Version>
-    <AssemblyInfo CodeLanguage="CS"
-                  OutputFile="Properties\VersionInfo.cs"
-                  AssemblyVersion="$(Major).$(Minor).$(Build).$(Revision)"
-                  AssemblyFileVersion="$(Major).$(Minor).$(Build).$(Revision)" />
+    <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\VersionInfo.cs" AssemblyVersion="$(Major).$(Minor).$(Build).$(Revision)" AssemblyFileVersion="$(Major).$(Minor).$(Build).$(Revision)" />
   </Target>
 	
 </Project>
