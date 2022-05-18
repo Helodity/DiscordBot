@@ -4,7 +4,7 @@ public class QuoteModule {
     public Dictionary<ulong, GuildQuoteData> QuoteData;
 
     public QuoteModule(DiscordClient client) {
-        QuoteData = LoadJson<Dictionary<ulong, GuildQuoteData>>(Modules.GuildQuoteData.JsonLocation);
+        QuoteData = LoadJson<Dictionary<ulong, GuildQuoteData>>(GuildQuoteData.JsonLocation);
         client.MessageReactionAdded += TryQuote;
     }
 
@@ -18,7 +18,7 @@ public class QuoteModule {
     }
     public void SetQuoteData(GuildQuoteData data) {
         QuoteData.AddOrUpdate(data.Id, data);
-        SaveJson(QuoteData, Modules.GuildQuoteData.JsonLocation);
+        SaveJson(QuoteData, GuildQuoteData.JsonLocation);
     }
 
     async Task TryQuote(DiscordClient client, MessageReactionAddEventArgs args) {
@@ -34,8 +34,11 @@ public class QuoteModule {
         DiscordMessage proper_message = await args.Channel.GetMessageAsync(args.Message.Id);
 
         //Grab each reaction and count up the amount that are the server's quote emoji
-        var reactions = await proper_message.GetReactionsAsync(await args.Guild.GetEmojiAsync(data.QuoteEmojiId));
-        int quoteReactions = reactions.Count;
+        var potentialReactions = await proper_message.GetReactionsAsync(await args.Guild.GetEmojiAsync(data.QuoteEmojiId));
+
+        //Ignore the author's reaction because really you're gonna upvote your own post
+        var countedReactions = potentialReactions.Where(x => x.Id != proper_message.Author.Id);
+        int quoteReactions = countedReactions.Count();
 
         DiscordAttachment attachment = null;
         if(proper_message.Attachments.Count > 0)
