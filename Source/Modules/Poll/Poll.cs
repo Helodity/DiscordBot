@@ -1,15 +1,18 @@
 ﻿namespace DiscordBotRewrite.Modules;
 public class Poll {
+    //The guild this poll is posted in
     [JsonProperty("guild_id")]
     public readonly ulong GuildId;
 
+    //The message ID of this poll
     [JsonProperty("message_id")]
     public readonly ulong MessageId;
 
+    //When this poll ends
     [JsonProperty("end_time")]
     public DateTime EndTime;
 
-    //Choice name, votes
+    //List of choices and their respective vote count
     [JsonProperty("votes")]
     public Dictionary<string, uint> Votes;
 

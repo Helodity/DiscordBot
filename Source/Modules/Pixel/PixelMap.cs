@@ -1,5 +1,6 @@
-﻿namespace DiscordBotRewrite.Modules;
-using static DiscordBotRewrite.Modules.PixelModule;
+﻿using static DiscordBotRewrite.Modules.PixelModule;
+namespace DiscordBotRewrite.Modules;
+
 public class PixelMap : ModuleData {
     public const string JsonLocation = "Json/PixelMaps.json";
 
