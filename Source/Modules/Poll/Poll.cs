@@ -12,16 +12,19 @@ public class Poll {
     [JsonProperty("end_time")]
     public DateTime EndTime;
 
-    //List of choices and their respective vote count
+    //Potential choices
+    [JsonProperty("choices")]
+    public List<string> Choices;
+
+    //List of votes and a corresponding user id
     [JsonProperty("votes")]
-    public Dictionary<string, uint> Votes;
+    public Dictionary<ulong, Vote> Votes;
 
     public Poll(DiscordMessage message, List<string> choices, DateTime endTime) {
         GuildId = message.Channel.Guild.Id;
         MessageId = message.Id;
         EndTime = endTime;
-        foreach(string choice in choices) {
-            Votes.Add(choice, 0);
-        }
+        Choices = choices;
+        Votes = new Dictionary<ulong, Vote>();
     }
 }

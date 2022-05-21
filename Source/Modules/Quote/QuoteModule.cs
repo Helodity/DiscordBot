@@ -17,7 +17,7 @@ public class QuoteModule {
         return userData;
     }
     public void SetQuoteData(GuildQuoteData data) {
-        QuoteData.AddOrUpdate(data.Id, data);
+        QuoteData.AddOrUpdate(data.GuildId, data);
         SaveJson(QuoteData, GuildQuoteData.JsonLocation);
     }
 

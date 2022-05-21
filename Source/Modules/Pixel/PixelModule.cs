@@ -113,7 +113,7 @@ public class PixelModule {
 
     #region Private
     void SavePixelMap(PixelMap data) {
-        PixelMaps.AddOrUpdate(data.Id, data);
+        PixelMaps.AddOrUpdate(data.GuildId, data);
         SaveJson(PixelMaps, PixelMap.JsonLocation);
     }
     SKSurface CreateSurface(PixelMap map, SKPointI anchor, SKPointI end, int pixelSize) {
