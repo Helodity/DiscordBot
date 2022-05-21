@@ -22,13 +22,13 @@ public class GuildQuoteData : ModuleData {
 
     //List of already quoted messages
     [JsonProperty("quotes")]
-    public List<ulong> QuotedMessages;
+    public List<Quote> Quotes;
 
     public GuildQuoteData(ulong id) : base(id) {
         Enabled = true;
         QuoteChannelId = 0;
         QuoteEmojiId = 0;
         EmojiAmountToQuote = 1;
-        QuotedMessages = new();
+        Quotes = new();
     }
 }

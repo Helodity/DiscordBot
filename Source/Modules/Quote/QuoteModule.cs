@@ -28,7 +28,7 @@ public class QuoteModule {
         if(!data.Enabled) return;
 
         //Already quoted, no need to continue
-        if(data.QuotedMessages.Contains(args.Message.Id)) return;
+        if(data.Quotes.Where(x => x.OriginalMessage == args.Message.Id).Count() > 0) return;
 
         //For some reason not all data is given from event args, so we get it manually here
         DiscordMessage proper_message = await args.Channel.GetMessageAsync(args.Message.Id);
@@ -50,18 +50,21 @@ public class QuoteModule {
             //Quote it!
             var embed = new DiscordEmbedBuilder()
                 .WithColor(DiscordColor.LightGray)
-                .WithAuthor($"{author.Username}#{author.Discriminator}", iconUrl: string.IsNullOrEmpty(author.AvatarHash) ? author.DefaultAvatarUrl : author.AvatarUrl)
-                .WithDescription(proper_message.Content + $"\n\n[Context]({proper_message.JumpLink})");
+                .WithAuthor($"{author.Username}#{author.Discriminator}", iconUrl: string.IsNullOrEmpty(author.AvatarHash) ? author.DefaultAvatarUrl : author.AvatarUrl);
 
             if(attachment != null) {
                 embed.WithImageUrl(attachment.Url);
             }
-
             DiscordChannel channel = await client.GetChannelAsync(data.QuoteChannelId);
-            await client.SendMessageAsync(channel, embed);
+            var msgBuilder = new DiscordMessageBuilder()
+                .WithEmbed(embed)
+                .AddComponents(new DiscordLinkButtonComponent(proper_message.JumpLink.ToString(), "Context"));
+
+            ulong quoteId = (await client.SendMessageAsync(channel, msgBuilder)).Id;
 
             //Save the quote to avoid repeating the same quote
-            data.QuotedMessages.Add(proper_message.Id);
+
+            data.Quotes.Add(new Quote(proper_message.Id, quoteId));
             SetQuoteData(data);
         }
     }
