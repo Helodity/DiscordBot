@@ -41,7 +41,7 @@ class Program {
                     Bot.Client.Logger.LogCritical(((DiscordException)eventArgs.Exception).JsonMessage);
                     break;
                 default:
-                    Bot.Client.Logger.LogCritical(eventArgs.Exception.Message);
+                    Bot.Client.Logger.LogCritical($"{eventArgs.Exception.Message} : {eventArgs.Exception.StackTrace}");
                     break;
             }
         };
