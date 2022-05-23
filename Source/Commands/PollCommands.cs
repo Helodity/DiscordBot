@@ -29,12 +29,12 @@ class PollCommands : ApplicationCommandModule {
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = "Started the poll!",
                 Color = SuccessColor
-            });
+            }, true);
         };
     }
 
     #region Set Channel
-    [SlashCommand("set_channel", "Sets this channel to the server's poll channel")]
+    [SlashCommand("channel", "Sets this channel to the server's poll channel")]
     public async Task SetPollChannel(InteractionContext ctx) {
         //Ensure we picked a text channel
         if(ctx.Channel.Type != ChannelType.Text) {

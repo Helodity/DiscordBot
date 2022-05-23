@@ -1,6 +1,7 @@
 ﻿namespace DiscordBotRewrite;
 
 public class Bot {
+    #region Build Type Specifics
 #if DEBUG
     public bool Debugging = true;
     public ulong? TargetServer = 941558436561305630; //This is my private testing server, if you want to debug the bot you'll have to manually change this as any release won't use this code
@@ -8,6 +9,7 @@ public class Bot {
     public bool Debugging = false;
     public ulong? TargetServer = null;
 #endif
+    #endregion
 
     public static DiscordClient Client { get; private set; } //will need to change for sharding, deal with when that becomes important
     public static SlashCommandsExtension SlashExtension { get; private set; }
@@ -56,9 +58,9 @@ public class Bot {
         SlashExtension.RegisterCommands<UnsortedCommands>(TargetServer);
         SlashExtension.RegisterCommands<PixelCommands>(TargetServer);
         SlashExtension.RegisterCommands<QuestionCommands>(TargetServer);
-        SlashExtension.RegisterCommands<VoiceCommands>(TargetServer);
         SlashExtension.RegisterCommands<QuoteCommands>(TargetServer);
         SlashExtension.RegisterCommands<PollCommands>(TargetServer);
+        if(Config.UseVoice) SlashExtension.RegisterCommands<VoiceCommands>(TargetServer);
 
         return Task.CompletedTask;
     }

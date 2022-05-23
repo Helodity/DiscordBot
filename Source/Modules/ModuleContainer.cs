@@ -19,8 +19,9 @@ public class ModuleContainer {
         Pixel = new PixelModule();
 
         Poll = new PollModule(client);
-
-        Voice = new VoiceModule(client);
-        Voice.EnableLavalink().Wait();
+        if(Bot.Config.UseVoice) {
+            Voice = new VoiceModule(client);
+            Voice.EnableLavalink().Wait();
+        }
     }
 }

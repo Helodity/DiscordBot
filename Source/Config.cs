@@ -5,6 +5,8 @@ public readonly struct Config {
 
     [JsonProperty("token")]
     public readonly string Token;
-    [JsonProperty("bot_owner")]
-    public readonly ulong OwnerId;
+
+    //Lavalink violates terms of service, so allow an option to disable it
+    [JsonProperty("use_voice")]
+    public readonly bool UseVoice;
 }
