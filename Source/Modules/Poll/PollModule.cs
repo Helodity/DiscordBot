@@ -80,7 +80,7 @@ public class PollModule {
         var channel = ctx.Guild.GetChannel((ulong)pollData.PollChannelId);
         var message = await channel.SendMessageAsync(messageBuilder);
 
-        Poll poll = new Poll(message, choices, endTime);
+        Poll poll = new Poll(message, question, choices, endTime);
         pollData.ActivePolls.Add(poll);
         SavePollData(pollData);
         return true;
@@ -140,7 +140,7 @@ public class PollModule {
         var message = await channel.GetMessageAsync(poll.MessageId);
 
         var builder = new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder {
-            Description = $"Poll has ended {poll.EndTime.ToTimestamp()}! \n{voteString}",
+            Description = $"Poll has ended {poll.EndTime.ToTimestamp()}!\n {poll.Question.ToBold()} \n{voteString}",
             Color = DefaultColor
         });
 

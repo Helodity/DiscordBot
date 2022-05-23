@@ -8,6 +8,10 @@ public class Poll {
     [JsonProperty("message_id")]
     public readonly ulong MessageId;
 
+    //The question to be answered
+    [JsonProperty("question")]
+    public readonly string Question;
+
     //When this poll ends
     [JsonProperty("end_time")]
     public DateTime EndTime;
@@ -21,9 +25,10 @@ public class Poll {
     public Dictionary<ulong, Vote> Votes;
 
     [JsonConstructor]
-    public Poll(ulong guildId, ulong messageId, List<string> choices, DateTime endTime) {
+    public Poll(ulong guildId, ulong messageId, string question, List<string> choices, DateTime endTime) {
         GuildId = guildId;
         MessageId = messageId;
+        Question = question;
         EndTime = endTime;
         Choices = choices;
         Votes = new Dictionary<ulong, Vote>();
@@ -39,9 +44,10 @@ public class Poll {
     }
 
 
-    public Poll(DiscordMessage message, List<string> choices, DateTime endTime) {
+    public Poll(DiscordMessage message, string question, List<string> choices, DateTime endTime) {
         GuildId = message.Channel.Guild.Id;
         MessageId = message.Id;
+        Question = question;
         EndTime = endTime;
         Choices = choices;
         Votes = new Dictionary<ulong, Vote>();
