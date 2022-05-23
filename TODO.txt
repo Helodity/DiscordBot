@@ -2,5 +2,9 @@ Features
 - Application Theme
 	- JSON file to change console and embed colors
 
-Fixes
+Improvements
 - Cleanup Poll Module files
+
+Bugs / Unhandled Edge Cases
+- Very long polls (leading to more than int.max milliseconds)
+- Mobile doesn't work, why????

@@ -44,6 +44,8 @@ public class PollModule {
     // Returns whether the poll was sucessfully created
     public async Task<bool> StartPoll(InteractionContext ctx, string question, List<string> choices, DateTime endTime) {
         GuildPollData pollData = GetPollData(ctx.Guild.Id);
+
+        //Make sure we can make the poll without problems
         if(!pollData.HasChannelSet()) {
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = "No poll channel has been set!",
@@ -58,15 +60,15 @@ public class PollModule {
             }, true);
             return false;
         }
-        //Create buttons based on given choices
+        //Create the selection component based on given choices
         List<DiscordSelectComponentOption> choiceSelections = new();
         for(int i = 0; i < choices.Count; i++) {
             choiceSelections.Add(new DiscordSelectComponentOption(choices[i], choices[i]));
         }
         choiceSelections.Add(new DiscordSelectComponentOption("Clear", "Clear"));
-
         var selectionComponent = new DiscordSelectComponent("choice", "Vote here!", choiceSelections);
 
+        //Build the message and send it
         var messageBuilder = new DiscordMessageBuilder()
             .AddEmbed(new DiscordEmbedBuilder {
                 Description = $"Poll ends {endTime.ToTimestamp()}! \n {question.ToBold()}",
@@ -133,15 +135,18 @@ public class PollModule {
 
         var guild = await Bot.Client.GetGuildAsync(poll.GuildId);
         var channel = guild.GetChannel((ulong)pData.PollChannelId);
-        var message = await channel.GetMessageAsync(poll.MessageId);
 
-        var builder = new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder {
-            Description = $"Poll has ended {poll.EndTime.ToTimestamp()}!\n {poll.Question.ToBold()} \n{voteString}",
-            Color = DefaultColor
-        });
+        try {
+            var message = await channel.GetMessageAsync(poll.MessageId);
+            var builder = new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder {
+                Description = $"Poll has ended {poll.EndTime.ToTimestamp()}!\n {poll.Question.ToBold()} \n{voteString}",
+                Color = DefaultColor
+            });
 
-        await message.ModifyAsync(builder);
+            await message.ModifyAsync(builder);
+        } catch {
+            //We couldn't get the message, so just don't edit the message
+            return;
+        }
     }
-
-
 }

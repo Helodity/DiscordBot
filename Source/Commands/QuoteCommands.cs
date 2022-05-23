@@ -43,6 +43,15 @@ class QuoteCommands : ApplicationCommandModule {
             });
             return;
         }
+
+        if(!DiscordEmoji.TryFromGuildEmote(ctx.Client, reaction.Result.Emoji.Id, out DiscordEmoji emoji)) {
+            await ctx.EditResponseAsync(new DiscordEmbedBuilder {
+                Description = $"This emoji is from a different server!",
+                Color = ErrorColor
+            });
+            return;
+        }
+
         await ctx.EditResponseAsync(new DiscordEmbedBuilder {
             Description = $"Set the server's quote emoji to {reaction.Result.Emoji}",
             Color = SuccessColor
