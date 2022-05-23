@@ -2,7 +2,7 @@
 
 class UnsortedCommands : ApplicationCommandModule {
     #region Ping
-    [SlashCommand("ping", "Check if the bot is on.")]
+    [SlashCommand("ping", "Check if the bot is on")]
     public async Task Ping(InteractionContext ctx) {
         await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
             Description = "Pong!",
@@ -12,7 +12,7 @@ class UnsortedCommands : ApplicationCommandModule {
     #endregion
 
     #region How
-    [SlashCommand("how", "Find out how __ you are.")]
+    [SlashCommand("how", "Find out how __ you are")]
     public async Task How(InteractionContext ctx, [Option("what", "how what you are")] string what) {
         await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
             Description = $"You are {GenerateRandomNumber(0, 100)}% {what}.",
@@ -22,7 +22,7 @@ class UnsortedCommands : ApplicationCommandModule {
     #endregion
 
     #region SCP
-    [SlashCommand("scp", "Gives you an SCP article to read")]
+    [SlashCommand("scp", "Get an SCP article to read")]
     public async Task RandomScp(InteractionContext ctx) {
         int number = GenerateRandomNumber(1, 2000);
         string link = "http://www.scpwiki.com/scp-";
@@ -39,7 +39,7 @@ class UnsortedCommands : ApplicationCommandModule {
     #endregion
 
     #region Eight Ball
-    [SlashCommand("8ball", "Ask a question and The Ball shall answer.")]
+    [SlashCommand("8ball", "Ask a question and The Ball shall answer")]
     public async Task EightBall(InteractionContext ctx, [Option("question", "The question for The Ball to answer")] string question) {
         string thinkStr;
         switch(GenerateRandomNumber(1, 5)) {

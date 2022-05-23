@@ -16,7 +16,7 @@ class PixelCommands : ApplicationCommandModule {
     #endregion
 
     #region Interact
-    [SlashCommand("interact", "look with buttons")]
+    [SlashCommand("interact", "View an interactable map")]
     public async Task Interact(InteractionContext ctx,
         [Option("x", "x to start at")] long x = 5,
         [Option("y", "y to start at")] long y = 5) {
@@ -171,7 +171,7 @@ class PixelCommands : ApplicationCommandModule {
     #endregion
 
     #region Resize
-    [SlashCommand("resize", "make that canvas bigger")]
+    [SlashCommand("resize", "Scale the canvas to fit your needs")]
     [RequirePermissions(Permissions.Administrator)]
     public async Task Resize(InteractionContext ctx,
         [Option("x", "new x size")] long x,
@@ -183,7 +183,7 @@ class PixelCommands : ApplicationCommandModule {
     #endregion
 
     #region Set Cooldown
-    [SlashCommand("cooldown", "Change how often a pixel can be placed")]
+    [SlashCommand("cooldown", "Set how often a pixel can be placed")]
     [RequirePermissions(Permissions.Administrator)]
     public async Task Cooldown(InteractionContext ctx, [Option("duration", "Time in seconds")] long duration) {
         duration = Math.Max(0, duration);

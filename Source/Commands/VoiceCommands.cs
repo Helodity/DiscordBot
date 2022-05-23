@@ -71,7 +71,7 @@ class VoiceCommands : ApplicationCommandModule {
     #endregion
 
     #region Skip
-    [SlashCommand("skip", "Skip the currently playing song.")]
+    [SlashCommand("skip", "Skip the currently playing song")]
     [UserAbleToModify]
     public async Task Skip(InteractionContext ctx) {
         VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
@@ -86,7 +86,7 @@ class VoiceCommands : ApplicationCommandModule {
     #endregion
 
     #region Volume
-    [SlashCommand("volume", "Make your music louder.")]
+    [SlashCommand("volume", "Make the music louder")]
     [UserAbleToModify]
     public async Task Volume(InteractionContext ctx, [Option("volume", "how loud")] long volume) {
         VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
@@ -101,7 +101,7 @@ class VoiceCommands : ApplicationCommandModule {
     #endregion
 
     #region Loop
-    [SlashCommand("loop", "Loop your queue")]
+    [SlashCommand("loop", "Loop the queue")]
     [UserAbleToModify]
     public async Task Loop(InteractionContext ctx) {
         VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
@@ -151,7 +151,7 @@ class VoiceCommands : ApplicationCommandModule {
     #endregion
 
     #region Clear
-    [SlashCommand("clear", "Clear the queue.")]
+    [SlashCommand("clear", "Clear the queue")]
     [UserAbleToModify]
     public async Task Clear(InteractionContext ctx) {
         VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
@@ -166,7 +166,7 @@ class VoiceCommands : ApplicationCommandModule {
     #endregion
 
     #region Remove
-    [SlashCommand("remove", "Remove the song at the specified index..")]
+    [SlashCommand("remove", "Remove the song at the specified index")]
     [UserAbleToModify]
     public async Task Clear(InteractionContext ctx, [Option("index", "index")] long index) {
         VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);

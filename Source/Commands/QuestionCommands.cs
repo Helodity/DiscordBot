@@ -1,9 +1,9 @@
 ﻿namespace DiscordBotRewrite.Commands;
 
-[SlashCommandGroup("ask", "its like truth or dare")]
+[SlashCommandGroup("ask", "Its like truth or dare")]
 class QuestionCommands : ApplicationCommandModule {
     #region Truth
-    [SlashCommand("truth", "Asks a truth question")]
+    [SlashCommand("truth", "Ask a truth question")]
     public async Task AskTruth(InteractionContext ctx,
         [Option("rating", "How risky is the question?")] Question.DepthGroup rating = Question.DepthGroup.G) {
 
@@ -17,7 +17,7 @@ class QuestionCommands : ApplicationCommandModule {
     #endregion
 
     #region Paranoia
-    [SlashCommand("paranoia", "Asks a paranoia question")]
+    [SlashCommand("paranoia", "Ask a paranoia question")]
     public async Task AskParanoia(InteractionContext ctx,
         [Option("user", "Who is recieving the question?")] DiscordUser user = null,
         [Option("rating", "How risky is the question?")] Question.DepthGroup rating = Question.DepthGroup.G) {
