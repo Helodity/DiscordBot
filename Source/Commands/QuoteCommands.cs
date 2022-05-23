@@ -14,7 +14,7 @@ class QuoteCommands : ApplicationCommandModule {
 
         var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
         data.QuoteChannelId = ctx.Channel.Id;
-        Bot.Modules.Quote.SetQuoteData(data);
+        Bot.Modules.Quote.SaveQuoteData(data);
         await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
             Description = $"Set this server's quote channel to {ctx.Channel.Mention}!",
             Color = SuccessColor
@@ -49,7 +49,7 @@ class QuoteCommands : ApplicationCommandModule {
         });
 
         data.QuoteEmojiId = reaction.Result.Emoji.Id;
-        Bot.Modules.Quote.SetQuoteData(data);
+        Bot.Modules.Quote.SaveQuoteData(data);
     }
     #endregion
 
@@ -58,7 +58,7 @@ class QuoteCommands : ApplicationCommandModule {
     public async Task SetQuoteEmojiAmount(InteractionContext ctx, [Option("amount", "how many")] long amount) {
         var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
         data.EmojiAmountToQuote = (ushort)amount;
-        Bot.Modules.Quote.SetQuoteData(data);
+        Bot.Modules.Quote.SaveQuoteData(data);
         await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
             Description = $"Set emoji amount to {amount}!",
             Color = SuccessColor
@@ -71,7 +71,7 @@ class QuoteCommands : ApplicationCommandModule {
     public async Task Toggle(InteractionContext ctx) {
         var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
         data.Enabled = !data.Enabled;
-        Bot.Modules.Quote.SetQuoteData(data);
+        Bot.Modules.Quote.SaveQuoteData(data);
         await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
             Description = $"{(data.Enabled ? "Enabled" : "Disabled")} auto quoting!",
             Color = SuccessColor

@@ -58,6 +58,7 @@ public class Bot {
         SlashExtension.RegisterCommands<QuestionCommands>(TargetServer);
         SlashExtension.RegisterCommands<VoiceCommands>(TargetServer);
         SlashExtension.RegisterCommands<QuoteCommands>(TargetServer);
+        SlashExtension.RegisterCommands<PollCommands>(TargetServer);
 
         return Task.CompletedTask;
     }

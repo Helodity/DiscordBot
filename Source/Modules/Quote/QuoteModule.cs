@@ -16,7 +16,7 @@ public class QuoteModule {
         }
         return userData;
     }
-    public void SetQuoteData(GuildQuoteData data) {
+    public void SaveQuoteData(GuildQuoteData data) {
         QuoteData.AddOrUpdate(data.GuildId, data);
         SaveJson(QuoteData, GuildQuoteData.JsonLocation);
     }
@@ -65,7 +65,7 @@ public class QuoteModule {
             //Save the quote to avoid repeating the same quote
 
             data.Quotes.Add(new Quote(proper_message.Id, quoteId));
-            SetQuoteData(data);
+            SaveQuoteData(data);
         }
     }
 }
