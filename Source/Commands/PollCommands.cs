@@ -6,7 +6,8 @@ class PollCommands : ApplicationCommandModule {
     [SlashCommand("start", "Start a new poll")]
     public async Task StartPoll(InteractionContext ctx,
         [Option("Question", "What's your question")] string question,
-        [Option("Duration", "How long (in hours) will this poll last?")] long hours,
+        [Option("Duration", "How long (in units) will this poll last?")] long unitAmt,
+        [Option("Units", "How long is a unit?")] TimeUnit unit,
         [Option("Choice_1", "First Choice")] string choice1,
         [Option("Choice_2", "Second Choice")] string choice2,
         [Option("Choice_3", "Third Choice")] string choice3 = null,
@@ -22,7 +23,9 @@ class PollCommands : ApplicationCommandModule {
 
         choices = choices.Distinct().ToList();
 
-        if(await Bot.Modules.Poll.StartPoll(ctx, question, choices, (int)hours)) {
+        DateTime endTime = DateTime.Now.AddTime((int)unitAmt, unit);
+
+        if(await Bot.Modules.Poll.StartPoll(ctx, question, choices, endTime)) {
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = "Started the poll!",
                 Color = SuccessColor

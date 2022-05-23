@@ -5,22 +5,20 @@ public class PollModule {
     public PollModule(DiscordClient client) {
         PollData = LoadJson<Dictionary<ulong, GuildPollData>>(GuildPollData.JsonLocation);
         client.ComponentInteractionCreated += OnInteraction;
-        client.Ready += RemoveFinishedPolls;
+        client.GuildDownloadCompleted += RemoveFinishedPolls;
     }
 
-    private Task RemoveFinishedPolls(DiscordClient sender, ReadyEventArgs e) {
+    private Task RemoveFinishedPolls(DiscordClient sender, GuildDownloadCompletedEventArgs e) {
+        //Compile polls to be completed
         List<Poll> toComplete = new();
         foreach(var item in PollData) {
             toComplete.AddRange(item.Value.ActivePolls.Where(x => (x.EndTime - DateTime.Now).TotalMilliseconds < 0));
         }
 
-        //Ensure the client has enough time to connect.
-        //We aren't depending on this being ran right away, so no need to await it and slow down everything else.
-        Task.Delay(1000).ContinueWith(x => {
-            foreach(Poll p in toComplete) {
-                OnPollEnd(p);
-            }
-        });
+        //Complete the polls
+        foreach(Poll p in toComplete) {
+            OnPollEnd(p);
+        }
         return Task.CompletedTask;
     }
 
@@ -31,11 +29,11 @@ public class PollModule {
         }
         return pollData;
     }
+
     void SavePollData(GuildPollData data) {
         PollData.AddOrUpdate(data.GuildId, data);
         SaveJson(PollData, GuildPollData.JsonLocation);
     }
-
 
     public void SetPollChannel(InteractionContext ctx) {
         var data = Bot.Modules.Poll.GetPollData(ctx.Guild.Id);
@@ -44,7 +42,7 @@ public class PollModule {
     }
 
     // Returns whether the poll was sucessfully created
-    public async Task<bool> StartPoll(InteractionContext ctx, string question, List<string> choices, int hours = 24) {
+    public async Task<bool> StartPoll(InteractionContext ctx, string question, List<string> choices, DateTime endTime) {
         GuildPollData pollData = GetPollData(ctx.Guild.Id);
         if(!pollData.HasChannelSet()) {
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -68,8 +66,6 @@ public class PollModule {
         choiceSelections.Add(new DiscordSelectComponentOption("Clear", "Clear"));
 
         var selectionComponent = new DiscordSelectComponent("choice", "Vote here!", choiceSelections);
-
-        DateTime endTime = DateTime.Now.AddHours(hours);
 
         var messageBuilder = new DiscordMessageBuilder()
             .AddEmbed(new DiscordEmbedBuilder {
