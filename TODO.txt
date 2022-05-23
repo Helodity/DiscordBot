@@ -1,0 +1,6 @@
+Features
+- Application Theme
+	- JSON file to change console and embed colors
+
+Fixes
+- Cleanup Poll Module files
