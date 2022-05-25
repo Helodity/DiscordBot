@@ -64,7 +64,7 @@ public class QuoteModule {
 
             //Save the quote to avoid repeating the same quote
 
-            data.Quotes.Add(new Quote(proper_message.Id, quoteId));
+            data.Quotes.Add(new Quote(quoteId, proper_message.Id));
             SaveQuoteData(data);
         }
     }
