@@ -8,20 +8,7 @@ public class PollModule {
         client.GuildDownloadCompleted += RemoveFinishedPolls;
     }
 
-    private Task RemoveFinishedPolls(DiscordClient sender, GuildDownloadCompletedEventArgs e) {
-        //Compile polls to be completed
-        List<Poll> toComplete = new();
-        foreach(var item in PollData) {
-            toComplete.AddRange(item.Value.ActivePolls.Where(x => (x.EndTime - DateTime.Now).TotalMilliseconds < 0));
-        }
-
-        //Complete the polls
-        foreach(Poll p in toComplete) {
-            OnPollEnd(p);
-        }
-        return Task.CompletedTask;
-    }
-
+    #region Public
     public GuildPollData GetPollData(ulong guildId) {
         if(!PollData.TryGetValue(guildId, out GuildPollData pollData)) {
             pollData = new GuildPollData(guildId);
@@ -29,18 +16,11 @@ public class PollModule {
         }
         return pollData;
     }
-
-    void SavePollData(GuildPollData data) {
-        PollData.AddOrUpdate(data.GuildId, data);
-        SaveJson(PollData, GuildPollData.JsonLocation);
-    }
-
     public void SetPollChannel(InteractionContext ctx) {
         var data = Bot.Modules.Poll.GetPollData(ctx.Guild.Id);
         data.PollChannelId = ctx.Channel.Id;
         Bot.Modules.Poll.SavePollData(data);
     }
-
     // Returns whether the poll was sucessfully created
     public async Task<bool> StartPoll(InteractionContext ctx, string question, List<string> choices, DateTime endTime) {
         GuildPollData pollData = GetPollData(ctx.Guild.Id);
@@ -83,38 +63,6 @@ public class PollModule {
         SavePollData(pollData);
         return true;
     }
-
-    async Task OnInteraction(DiscordClient sender, ComponentInteractionCreateEventArgs e) {
-        //Make sure we aren't checking dms
-        if(e.Guild == null)
-            return;
-
-        //Check if message is a poll message
-        GuildPollData pollData = GetPollData(e.Guild.Id);
-        var potentialPolls = pollData.ActivePolls.Where(x => x.MessageId == e.Message.Id);
-
-        if(!potentialPolls.Any()) {
-            return;
-        }
-
-        //There can only be one message in any guild with an ID, so we can just choose the first poll in the list.
-        Poll poll = potentialPolls.First();
-
-        if(e.Values.First() == "Clear") {
-            //Remove Vote
-            poll.Votes.Remove(e.User.Id);
-        } else {
-            //Add Vote
-            Vote vote = new Vote(e.User.Id, e.Values.First());
-            poll.Votes.AddOrUpdate(e.User.Id, vote);
-        }
-
-        //Save poll status and respond to the interaction
-        SavePollData(pollData);
-
-        await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
-    }
-
     public async void OnPollEnd(Poll poll) {
         var pData = GetPollData(poll.GuildId);
         pData.ActivePolls.Remove(poll);
@@ -149,4 +97,55 @@ public class PollModule {
             return;
         }
     }
+    #endregion
+
+    #region Private
+    Task RemoveFinishedPolls(DiscordClient sender, GuildDownloadCompletedEventArgs e) {
+        //Compile polls to be completed
+        List<Poll> toComplete = new();
+        foreach(var item in PollData) {
+            toComplete.AddRange(item.Value.ActivePolls.Where(x => (x.EndTime - DateTime.Now).TotalMilliseconds < 0));
+        }
+
+        //Complete the polls
+        foreach(Poll p in toComplete) {
+            OnPollEnd(p);
+        }
+        return Task.CompletedTask;
+    }
+    void SavePollData(GuildPollData data) {
+        PollData.AddOrUpdate(data.GuildId, data);
+        SaveJson(PollData, GuildPollData.JsonLocation);
+    }
+    async Task OnInteraction(DiscordClient sender, ComponentInteractionCreateEventArgs e) {
+        //Make sure we aren't checking dms
+        if(e.Guild == null)
+            return;
+
+        //Check if message is a poll message
+        GuildPollData pollData = GetPollData(e.Guild.Id);
+        var potentialPolls = pollData.ActivePolls.Where(x => x.MessageId == e.Message.Id);
+
+        if(!potentialPolls.Any()) {
+            return;
+        }
+
+        //There can only be one message in any guild with an ID, so we can just choose the first poll in the list.
+        Poll poll = potentialPolls.First();
+
+        if(e.Values.First() == "Clear") {
+            //Remove Vote
+            poll.Votes.Remove(e.User.Id);
+        } else {
+            //Add Vote
+            Vote vote = new Vote(e.User.Id, e.Values.First());
+            poll.Votes.AddOrUpdate(e.User.Id, vote);
+        }
+
+        //Save poll status and respond to the interaction
+        SavePollData(pollData);
+
+        await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+    }
+    #endregion
 }

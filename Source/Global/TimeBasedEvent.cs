@@ -3,9 +3,7 @@
 public class TimeBasedEvent {
 
     DateTime RunTime;
-
     Action OnTimer;
-
     bool RunIfTimeIsAlreadyExpired;
 
     public TimeBasedEvent(int duration, TimeUnit unit, Action onEnd, bool runIfAlreadyExpired = true) {
@@ -21,7 +19,6 @@ public class TimeBasedEvent {
     }
 
     public async void Start() {
-
         if(!RunIfTimeIsAlreadyExpired) {
             if(DateTime.Compare(DateTime.Now, RunTime) >= 0)
                 return;
