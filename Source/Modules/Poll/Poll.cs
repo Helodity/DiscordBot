@@ -33,14 +33,7 @@ public class Poll {
         Choices = choices;
         Votes = new Dictionary<ulong, Vote>();
 
-        //Setup poll end event, this should automatically end any polls that ended while the bot is off
-        int durationMs = (int)(EndTime - DateTime.Now).TotalMilliseconds;
-
-        if(durationMs > 0) {
-            Task.Delay(durationMs).ContinueWith(x => {
-                Bot.Modules.Poll.OnPollEnd(this);
-            });
-        }
+        new TimeBasedEvent(endTime, () => { EndPoll(); }, false).Start();
     }
 
 
@@ -52,12 +45,12 @@ public class Poll {
         Choices = choices;
         Votes = new Dictionary<ulong, Vote>();
 
-        //Setup poll end event, this should automatically end any polls that ended while the bot is off
-        int durationMs = (int)(EndTime - DateTime.Now).TotalMilliseconds;
-
-        Task.Delay(durationMs).ContinueWith(x => {
-            Bot.Modules.Poll.OnPollEnd(this);
-        });
+        new TimeBasedEvent(endTime, () => { EndPoll(); }, false).Start();
     }
+
+    void EndPoll() {
+        Bot.Modules.Poll.OnPollEnd(this);
+    }
+
 
 }

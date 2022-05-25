@@ -18,12 +18,3 @@ public static class DateTimeExtensions {
         }
     }
 }
-public enum TimeUnit {
-    Milliseconds,
-    Seconds,
-    Minutes,
-    Hours,
-    Days,
-    Months,
-    Years
-};
