@@ -7,5 +7,4 @@ Improvements
 - Move lavalink config to its own file instead of being hard coded
 
 Bugs / Unhandled Edge Cases
-- Very long polls (leading to more than int.max milliseconds)
 - Mobile doesn't work, why????

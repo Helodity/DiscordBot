@@ -70,7 +70,6 @@ public class PixelModule {
         SKSurface surface = CreateSurface(map, anchor, end, 500 / zoom);
         surface.Snapshot().SaveToPng($"PixelImages/img{ctx.User.Id}.png");
     }
-
     public void CreateImageWithUI(InteractionContext ctx, int x, int y, int zoom, PixelEnum selectedPixel) {
         PixelMap map = GetPixelMap(ctx.Guild.Id);
         int halfDistance = zoom / 2;
@@ -103,7 +102,6 @@ public class PixelModule {
         map.Resize(width, height);
         SavePixelMap(map);
     }
-
     public void SetCooldown(ulong guildId, uint duration) {
         var map = GetPixelMap(guildId);
         map.PlaceCooldown = duration;
