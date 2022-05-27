@@ -50,6 +50,7 @@ public class QuoteModule {
             //Quote it!
             var embed = new DiscordEmbedBuilder()
                 .WithColor(DiscordColor.LightGray)
+                .WithDescription(proper_message.Content)
                 .WithAuthor($"{author.Username}#{author.Discriminator}", iconUrl: string.IsNullOrEmpty(author.AvatarHash) ? author.DefaultAvatarUrl : author.AvatarUrl);
 
             if(attachment != null) {
