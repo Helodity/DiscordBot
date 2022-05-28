@@ -1,4 +1,9 @@
-﻿namespace DiscordBotRewrite.Attributes {
+﻿using System.Threading.Tasks;
+
+using DSharpPlus;
+using DSharpPlus.SlashCommands;
+
+namespace DiscordBotRewrite.Attributes {
     public class RequirePermissionsAttribute : SlashCheckBaseAttribute {
 
         public Permissions Permissions { get; }

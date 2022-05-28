@@ -1,22 +1,26 @@
-﻿namespace DiscordBotRewrite.Modules;
-public class GuildPollData : ModuleData {
-    //Reference to the Json file's relative path
-    public const string JsonLocation = "Json/Polls.json";
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
-    //Which channel to send polls?
-    [JsonProperty("poll_channel")]
-    public ulong? PollChannelId;
+namespace DiscordBotRewrite.Modules {
+    public class GuildPollData : ModuleData {
+        //Reference to the Json file's relative path
+        public const string JsonLocation = "Json/Polls.json";
 
-    //List of currently running polls
-    [JsonProperty("polls")]
-    public List<Poll> ActivePolls;
+        //Which channel to send polls?
+        [JsonProperty("poll_channel")]
+        public ulong? PollChannelId;
 
-    public GuildPollData(ulong id) : base(id) {
-        PollChannelId = null;
-        ActivePolls = new();
-    }
+        //List of currently running polls
+        [JsonProperty("polls")]
+        public List<Poll> ActivePolls;
 
-    public bool HasChannelSet() {
-        return PollChannelId != null;
+        public GuildPollData(ulong id) : base(id) {
+            PollChannelId = null;
+            ActivePolls = new List<Poll>();
+        }
+
+        public bool HasChannelSet() {
+            return PollChannelId != null;
+        }
     }
 }

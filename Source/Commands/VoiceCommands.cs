@@ -1,220 +1,232 @@
-﻿namespace DiscordBotRewrite.Commands;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using DiscordBotRewrite.Attributes;
+using DiscordBotRewrite.Extensions;
+using DiscordBotRewrite.Modules;
+using DSharpPlus.Entities;
+using DSharpPlus.Lavalink;
+using DSharpPlus.SlashCommands;
+using static DiscordBotRewrite.Global.Global;
 
-[SlashCommandGroup("voice", "voice")]
-class VoiceCommands : ApplicationCommandModule {
+namespace DiscordBotRewrite.Commands {
+    [SlashCommandGroup("voice", "voice")]
+    class VoiceCommands : ApplicationCommandModule {
 
-    #region Join
-    [SlashCommand("join", "Join Channel")]
-    [UserAbleToSummon]
-    public async Task JoinChannel(InteractionContext ctx) {
-        VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-        await VGConn.Connect(ctx.Member.VoiceState.Channel);
-        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-            Description = $"Joined {ctx.Member.VoiceState.Channel.Name}!",
-            Color = DefaultColor
-        });
-    }
-    #endregion
-
-    #region Leave
-    [SlashCommand("leave", "Leave channel")]
-    [UserAbleToModify]
-    public async Task LeaveChannel(InteractionContext ctx) {
-        VoiceGuildConnection VGconn = Bot.Modules.Voice.GetGuildConnection(ctx);
-        await VGconn.Disconnect();
-        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-            Description = $"Left {ctx.Member.VoiceState.Channel.Name}!",
-            Color = DefaultColor
-        });
-    }
-    #endregion
-
-    #region Play
-    [SlashCommand("play", "Play a song")]
-    [UserAbleToPlay]
-    public async Task Play(InteractionContext ctx, [Option("search", "what to play")] string search) {
-        VoiceModule module = Bot.Modules.Voice;
-        VoiceGuildConnection VGconn = module.GetGuildConnection(ctx);
-
-        if(!VGconn.IsConnected && VGconn.Conn.Channel == ctx.Member.VoiceState.Channel)
-            await VGconn.Connect(ctx.Member.VoiceState.Channel);
-
-        await ctx.DeferAsync();
-        var tracks = await module.GetTracksAsync(search, VGconn.Node);
-        if(tracks.Count == 0) {
-            await ctx.EditResponseAsync(new DiscordEmbedBuilder {
-                Description = "No results found!",
-                Color = ErrorColor
-            });
-            return;
-        }
-
-        bool canPlayFirstSong = VGconn.CurrentTrack == null;
-        if(VGconn.IsShuffling)
-            tracks.Randomize();
-
-        foreach(var track in tracks) {
-            await VGconn.RequestTrackAsync(track);
-        }
-
-        string output = canPlayFirstSong ? $"Now playing `{tracks[0].Title}`" : $"Enqueued `{tracks[0].Title}`";
-        if(tracks.Count > 1) {
-            output += $" and {tracks.Count - 1} more songs";
-        }
-        output += "!";
-
-        await ctx.EditResponseAsync(new DiscordEmbedBuilder {
-            Description = output,
-            Color = DefaultColor
-        });
-    }
-    #endregion
-
-    #region Skip
-    [SlashCommand("skip", "Skip the currently playing song")]
-    [UserAbleToModify]
-    public async Task Skip(InteractionContext ctx) {
-        VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-        VGConn.CurrentTrack = null; //some shitty workaround to avoid looping the current song~!
-        await VGConn.ProgressQueue();
-
-        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-            Description = "Skipped!",
-            Color = DefaultColor
-        });
-    }
-    #endregion
-
-    #region Volume
-    [SlashCommand("volume", "Make the music louder")]
-    [UserAbleToModify]
-    public async Task Volume(InteractionContext ctx, [Option("volume", "how loud")] long volume) {
-        VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-        Math.Clamp(volume, 1, 200);
-        await VGConn.Conn.SetVolumeAsync((int)volume / 2);
-
-        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-            Description = $"Set the volume to {volume}%",
-            Color = DefaultColor
-        });
-    }
-    #endregion
-
-    #region Loop
-    [SlashCommand("loop", "Loop the queue")]
-    [UserAbleToModify]
-    public async Task Loop(InteractionContext ctx) {
-        VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-        VGConn.IsLooping = !VGConn.IsLooping;
-
-        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-            Description = $"Looping {(VGConn.IsLooping ? "enabled" : "disabled")}!",
-            Color = DefaultColor
-        });
-    }
-    #endregion
-
-    #region Shuffle
-    [SlashCommand("shuffle", "Play songs randomly")]
-    [UserAbleToModify]
-    public async Task Shuffle(InteractionContext ctx) {
-        VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-        VGConn.IsShuffling = !VGConn.IsShuffling;
-
-        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-            Description = $"Shuffling {(VGConn.IsShuffling ? "enabled" : "disabled")}!",
-            Color = DefaultColor
-        });
-    }
-    #endregion
-
-    #region Pause
-    [SlashCommand("pause", "Pause the player.")]
-    [UserAbleToModify]
-    public async Task Pause(InteractionContext ctx) {
-        VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-        VGConn.IsPaused = !VGConn.IsPaused;
-        string description;
-        if(VGConn.IsPaused) {
-            description = "Paused!";
-            await VGConn.Conn.PauseAsync();
-        } else {
-            description = "Resuming!";
-            await VGConn.Conn.ResumeAsync();
-        }
-
-        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-            Description = description,
-            Color = DefaultColor
-        });
-    }
-    #endregion
-
-    #region Clear
-    [SlashCommand("clear", "Clear the queue")]
-    [UserAbleToModify]
-    public async Task Clear(InteractionContext ctx) {
-        VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-        int songCount = VGConn.TrackQueue.Count();
-        VGConn.TrackQueue = new();
-
-        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-            Description = $"Cleared {songCount} songs from queue!",
-            Color = DefaultColor
-        });
-    }
-    #endregion
-
-    #region Remove
-    [SlashCommand("remove", "Remove the song at the specified index")]
-    [UserAbleToModify]
-    public async Task Clear(InteractionContext ctx, [Option("index", "index")] long index) {
-        VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-        index--; //Convert from 1 being the first song to 0
-        int songCount = VGConn.TrackQueue.Count();
-        if(index > songCount || index < 1) {
+        #region Join
+        [SlashCommand("join", "Join Channel")]
+        [UserAbleToSummon]
+        public async Task JoinChannel(InteractionContext ctx) {
+            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+            await VGConn.Connect(ctx.Member.VoiceState.Channel);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                Description = $"Index out of bounds!",
-                Color = ErrorColor
-            }, true);
-            return;
+                Description = $"Joined {ctx.Member.VoiceState.Channel.Name}!",
+                Color = DefaultColor
+            });
         }
-        VGConn.TrackQueue.RemoveAt((int)index);
+        #endregion
 
-        await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-            Description = $"Removed {VGConn.TrackQueue[(int)index].Title} from the queue!",
-            Color = DefaultColor
-        });
-    }
-    #endregion
+        #region Leave
+        [SlashCommand("leave", "Leave channel")]
+        [UserAbleToModify]
+        public async Task LeaveChannel(InteractionContext ctx) {
+            VoiceGuildConnection VGconn = Bot.Modules.Voice.GetGuildConnection(ctx);
+            await VGconn.Disconnect();
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Description = $"Left {ctx.Member.VoiceState.Channel.Name}!",
+                Color = DefaultColor
+            });
+        }
+        #endregion
 
-    #region Queue
-    [SlashCommand("queue", "Show the queue")]
-    public async Task Queue(InteractionContext ctx, [Option("page", "what page")] long page = 1) {
-        VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-        int pageCount = (int)Math.Ceiling(VGConn.TrackQueue.Count / (decimal)10);
-        int activePage = Math.Min(Math.Max(1, (int)page), pageCount);
-        int endNumber = Math.Min(activePage * 10, VGConn.TrackQueue.Count());
+        #region Play
+        [SlashCommand("play", "Play a song")]
+        [UserAbleToPlay]
+        public async Task Play(InteractionContext ctx, [Option("search", "what to play")] string search) {
+            VoiceModule module = Bot.Modules.Voice;
+            VoiceGuildConnection VGconn = module.GetGuildConnection(ctx);
 
-        var embed = new DiscordEmbedBuilder {
-            Title = "Queue",
-            Color = DefaultColor
-        };
+            if(!VGconn.IsConnected && VGconn.Conn.Channel == ctx.Member.VoiceState.Channel)
+                await VGconn.Connect(ctx.Member.VoiceState.Channel);
 
-        string description = string.Empty;
-        if(pageCount == 0) {
-            description = "Queue is empty!";
-        } else {
-            if(VGConn.IsShuffling)
-                description += "Shuffling is **enabled**, queue position will not reflect what song is played next\n";
-            for(int i = (activePage - 1) * 10; i < endNumber; i++) {
-                description += $"**{i + 1}:** `{VGConn.TrackQueue[i].Title}` by `{VGConn.TrackQueue[i].Author}` \n";
+            await ctx.DeferAsync();
+            var tracks = await module.GetTracksAsync(search, VGconn.Node);
+            if(tracks.Count == 0) {
+                await ctx.EditResponseAsync(new DiscordEmbedBuilder {
+                    Description = "No results found!",
+                    Color = ErrorColor
+                });
+                return;
             }
-        }
-        embed.WithDescription(description);
 
-        embed.WithFooter($"Page {activePage} / {pageCount}");
-        await ctx.CreateResponseAsync(embed);
+            bool canPlayFirstSong = VGconn.CurrentTrack == null;
+            if(VGconn.IsShuffling)
+                tracks.Randomize();
+
+            foreach(var track in tracks) {
+                await VGconn.RequestTrackAsync(track);
+            }
+
+            string output = canPlayFirstSong ? $"Now playing `{tracks[0].Title}`" : $"Enqueued `{tracks[0].Title}`";
+            if(tracks.Count > 1) {
+                output += $" and {tracks.Count - 1} more songs";
+            }
+            output += "!";
+
+            await ctx.EditResponseAsync(new DiscordEmbedBuilder {
+                Description = output,
+                Color = DefaultColor
+            });
+        }
+        #endregion
+
+        #region Skip
+        [SlashCommand("skip", "Skip the currently playing song")]
+        [UserAbleToModify]
+        public async Task Skip(InteractionContext ctx) {
+            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+            VGConn.CurrentTrack = null; //some shitty workaround to avoid looping the current song~!
+            await VGConn.ProgressQueue();
+
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Description = "Skipped!",
+                Color = DefaultColor
+            });
+        }
+        #endregion
+
+        #region Volume
+        [SlashCommand("volume", "Make the music louder")]
+        [UserAbleToModify]
+        public async Task Volume(InteractionContext ctx, [Option("volume", "how loud")] long volume) {
+            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+            Math.Clamp(volume, 1, 200);
+            await VGConn.Conn.SetVolumeAsync((int)volume / 2);
+
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Description = $"Set the volume to {volume}%",
+                Color = DefaultColor
+            });
+        }
+        #endregion
+
+        #region Loop
+        [SlashCommand("loop", "Loop the queue")]
+        [UserAbleToModify]
+        public async Task Loop(InteractionContext ctx) {
+            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+            VGConn.IsLooping = !VGConn.IsLooping;
+
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Description = $"Looping {(VGConn.IsLooping ? "enabled" : "disabled")}!",
+                Color = DefaultColor
+            });
+        }
+        #endregion
+
+        #region Shuffle
+        [SlashCommand("shuffle", "Play songs randomly")]
+        [UserAbleToModify]
+        public async Task Shuffle(InteractionContext ctx) {
+            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+            VGConn.IsShuffling = !VGConn.IsShuffling;
+
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Description = $"Shuffling {(VGConn.IsShuffling ? "enabled" : "disabled")}!",
+                Color = DefaultColor
+            });
+        }
+        #endregion
+
+        #region Pause
+        [SlashCommand("pause", "Pause the player.")]
+        [UserAbleToModify]
+        public async Task Pause(InteractionContext ctx) {
+            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+            VGConn.IsPaused = !VGConn.IsPaused;
+            string description;
+            if(VGConn.IsPaused) {
+                description = "Paused!";
+                await VGConn.Conn.PauseAsync();
+            } else {
+                description = "Resuming!";
+                await VGConn.Conn.ResumeAsync();
+            }
+
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Description = description,
+                Color = DefaultColor
+            });
+        }
+        #endregion
+
+        #region Clear
+        [SlashCommand("clear", "Clear the queue")]
+        [UserAbleToModify]
+        public async Task Clear(InteractionContext ctx) {
+            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+            int songCount = VGConn.TrackQueue.Count();
+            VGConn.TrackQueue = new List<LavalinkTrack>();
+
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Description = $"Cleared {songCount} songs from queue!",
+                Color = DefaultColor
+            });
+        }
+        #endregion
+
+        #region Remove
+        [SlashCommand("remove", "Remove the song at the specified index")]
+        [UserAbleToModify]
+        public async Task Clear(InteractionContext ctx, [Option("index", "index")] long index) {
+            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+            index--; //Convert from 1 being the first song to 0
+            int songCount = VGConn.TrackQueue.Count();
+            if(index > songCount || index < 1) {
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = $"Index out of bounds!",
+                    Color = ErrorColor
+                }, true);
+                return;
+            }
+            VGConn.TrackQueue.RemoveAt((int)index);
+
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Description = $"Removed {VGConn.TrackQueue[(int)index].Title} from the queue!",
+                Color = DefaultColor
+            });
+        }
+        #endregion
+
+        #region Queue
+        [SlashCommand("queue", "Show the queue")]
+        public async Task Queue(InteractionContext ctx, [Option("page", "what page")] long page = 1) {
+            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+            int pageCount = (int)Math.Ceiling(VGConn.TrackQueue.Count / (decimal)10);
+            int activePage = Math.Min(Math.Max(1, (int)page), pageCount);
+            int endNumber = Math.Min(activePage * 10, VGConn.TrackQueue.Count());
+
+            var embed = new DiscordEmbedBuilder {
+                Title = "Queue",
+                Color = DefaultColor
+            };
+
+            string description = string.Empty;
+            if(pageCount == 0) {
+                description = "Queue is empty!";
+            } else {
+                if(VGConn.IsShuffling)
+                    description += "Shuffling is **enabled**, queue position will not reflect what song is played next\n";
+                for(int i = (activePage - 1) * 10; i < endNumber; i++) {
+                    description += $"**{i + 1}:** `{VGConn.TrackQueue[i].Title}` by `{VGConn.TrackQueue[i].Author}` \n";
+                }
+            }
+            embed.WithDescription(description);
+
+            embed.WithFooter($"Page {activePage} / {pageCount}");
+            await ctx.CreateResponseAsync(embed);
+        }
+        #endregion
     }
-    #endregion
 }

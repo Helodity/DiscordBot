@@ -1,16 +1,19 @@
-﻿namespace DiscordBotRewrite.Modules;
-public class Quote {
+﻿using Newtonsoft.Json;
 
-    //The message that the bot sends
-    [JsonProperty("quote_message")]
-    public ulong QuoteMessage;
+namespace DiscordBotRewrite.Modules {
+    public class Quote {
 
-    //The message being quoted by the bot
-    [JsonProperty("original_message")]
-    public ulong OriginalMessage;
+        //The message that the bot sends
+        [JsonProperty("quote_message")]
+        public ulong QuoteMessage;
 
-    public Quote(ulong quote, ulong original) {
-        QuoteMessage = quote;
-        OriginalMessage = original;
+        //The message being quoted by the bot
+        [JsonProperty("original_message")]
+        public ulong OriginalMessage;
+
+        public Quote(ulong quote, ulong original) {
+            QuoteMessage = quote;
+            OriginalMessage = original;
+        }
     }
 }
