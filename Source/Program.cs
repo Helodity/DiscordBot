@@ -1,5 +1,6 @@
-﻿using DSharpPlus.Exceptions;
-using System;
+﻿using System;
+using DSharpPlus.Exceptions;
+using Microsoft.Extensions.Logging;
 
 namespace DiscordBotRewrite {
     class Program {
@@ -10,13 +11,10 @@ namespace DiscordBotRewrite {
 
         static void SetupExceptionHandler() {
             AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) => {
-                switch(eventArgs.Exception) {
-                    case DiscordException:
-                        Bot.Client.Logger.LogCritical(((DiscordException)eventArgs.Exception).JsonMessage);
-                        break;
-                    default:
-                        Bot.Client.Logger.LogCritical($"{eventArgs.Exception.Message} : {eventArgs.Exception.StackTrace}");
-                        break;
+                if(eventArgs.Exception is DiscordException) {
+                    Bot.Client.Logger.LogCritical(((DiscordException)eventArgs.Exception).JsonMessage);
+                } else {
+                    Bot.Client.Logger.LogCritical($"{eventArgs.Exception.Message} : {eventArgs.Exception.StackTrace}");
                 }
             };
         }

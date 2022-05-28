@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -33,7 +34,18 @@ namespace DiscordBotRewrite.Modules {
                 RestEndpoint = endpoint,
                 SocketEndpoint = endpoint
             };
-            Process.Start("Lavalink/lava_start.bat");
+
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                Process.Start(new ProcessStartInfo() {
+                    FileName = "Lavalink/lava_start.bat"
+                });
+            } else if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+                Process.Start(new ProcessStartInfo() {
+                    FileName = "/bin/bash",
+                    Arguments = "./Lavalink/lava_start.bat"
+                });
+            }
+
             Client = client;
             Client.Ready += OnClientReady;
         }
