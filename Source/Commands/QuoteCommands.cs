@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using DiscordBotRewrite.Attributes;
 using DiscordBotRewrite.Extensions;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -8,11 +9,12 @@ using DSharpPlus.SlashCommands;
 using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite.Commands {
-    [SlashCommandGroup("quote", "its like truth or dare")]
+    [SlashCommandGroup("quote", "auto quoting config")]
     class QuoteCommands : ApplicationCommandModule {
 
         #region Set Channel
         [SlashCommand("channel", "Set this channel to the server's quote channel")]
+        [RequirePermissions(Permissions.Administrator)]
         public async Task SetQuoteChannel(InteractionContext ctx) {
             //Ensure we picked a text channel
             if(ctx.Channel.Type != ChannelType.Text) {
@@ -32,6 +34,7 @@ namespace DiscordBotRewrite.Commands {
 
         #region Set Emoji
         [SlashCommand("emoji", "Set this server's quote emoji")]
+        [RequirePermissions(Permissions.Administrator)]
         public async Task SetQuoteEmoji(InteractionContext ctx) {
             var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -72,6 +75,7 @@ namespace DiscordBotRewrite.Commands {
 
         #region Set Emoji Amount
         [SlashCommand("emoji_amount", "Set how many reactions are needed to quote a message")]
+        [RequirePermissions(Permissions.Administrator)]
         public async Task SetQuoteEmojiAmount(InteractionContext ctx, [Option("amount", "how many")] long amount) {
             var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
             data.EmojiAmountToQuote = (ushort)amount;
@@ -85,6 +89,7 @@ namespace DiscordBotRewrite.Commands {
 
         #region Toggle
         [SlashCommand("toggle", "Enable or disable the quote system")]
+        [RequirePermissions(Permissions.Administrator)]
         public async Task Toggle(InteractionContext ctx) {
             var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
             data.Enabled = !data.Enabled;

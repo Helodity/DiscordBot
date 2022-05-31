@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DiscordBotRewrite.Attributes;
 using DiscordBotRewrite.Extensions;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -44,6 +45,7 @@ namespace DiscordBotRewrite.Commands {
 
         #region Set Channel
         [SlashCommand("channel", "Sets this channel to the server's poll channel")]
+        [RequirePermissions(Permissions.Administrator)]
         public async Task SetPollChannel(InteractionContext ctx) {
             //Ensure we picked a text channel
             if(ctx.Channel.Type != ChannelType.Text) {
