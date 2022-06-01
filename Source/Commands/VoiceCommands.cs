@@ -47,7 +47,7 @@ namespace DiscordBotRewrite.Commands {
             VoiceModule module = Bot.Modules.Voice;
             VoiceGuildConnection VGconn = module.GetGuildConnection(ctx);
 
-            if(!VGconn.IsConnected && VGconn.Conn.Channel == ctx.Member.VoiceState.Channel)
+            if(!VGconn.IsConnected || VGconn.Conn.Channel == ctx.Member.VoiceState.Channel)
                 await VGconn.Connect(ctx.Member.VoiceState.Channel);
 
             await ctx.DeferAsync();

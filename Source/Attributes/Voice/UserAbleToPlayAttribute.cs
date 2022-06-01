@@ -15,14 +15,14 @@ namespace DiscordBotRewrite.Attributes {
             }
 
             if(!MemberInSameVoiceAsBot(connection.Conn, ctx)) {
-                if(!connection.IsConnected) {
-                    if(ctx.Member.VoiceState == null) {
-                        await ctx.CreateResponseAsync("You need to be in a voice channel!", true);
+                if(connection.IsConnected) {
+                    if(IsBeingUsed(connection.Conn)) {
+                        await ctx.CreateResponseAsync("I'm already being used by someone else!", true);
                         return false;
                     }
                 } else {
-                    if(IsBeingUsed(connection.Conn)) {
-                        await ctx.CreateResponseAsync("I'm already being used by someone else!", true);
+                    if(ctx.Member.VoiceState == null) {
+                        await ctx.CreateResponseAsync("You need to be in a voice channel!", true);
                         return false;
                     }
                 }
