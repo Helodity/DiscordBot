@@ -41,7 +41,7 @@ namespace DiscordBotRewrite.Modules {
         #region Public
         public async Task Connect(DiscordChannel channel) {
             Conn = await Node.ConnectAsync(channel);
-            await Conn.SetVolumeAsync(50);
+            await Conn.SetVolumeAsync(100);
             Conn.PlaybackFinished += OnPlaybackFinish;
             Conn.DiscordWebSocketClosed += OnChannelDisconnect;
             IsConnected = true;

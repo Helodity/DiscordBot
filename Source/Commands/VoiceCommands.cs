@@ -101,8 +101,8 @@ namespace DiscordBotRewrite.Commands {
         [UserAbleToModify]
         public async Task Volume(InteractionContext ctx, [Option("volume", "how loud")] long volume) {
             VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-            Math.Clamp(volume, 1, 200);
-            await VGConn.Conn.SetVolumeAsync((int)volume / 2);
+            volume = Math.Clamp(volume, 1, 1000);
+            await VGConn.Conn.SetVolumeAsync((int)volume);
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Set the volume to {volume}%",
