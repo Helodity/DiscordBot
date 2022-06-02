@@ -13,14 +13,14 @@ using Microsoft.Extensions.Logging;
 using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite {
-    public class Bot {
+    public static class Bot {
         #region Debug Specifics
 #if DEBUG
-        public bool Debugging = true;
-        public ulong? TargetServer = 941558436561305630; //This is my private testing server, if you want to debug the bot you'll have to manually change this as any release won't use this code
+        static readonly bool Debugging = true;
+        static readonly ulong? TargetServer = 941558436561305630; //This is my private testing server, if you want to debug the bot you'll have to manually change this as any release won't use this code
 #else
-    public bool Debugging = false;
-    public ulong? TargetServer = null;
+        static readonly bool Debugging = false;
+        static readonly ulong? TargetServer = null;
 #endif
         #endregion
 
@@ -32,7 +32,7 @@ namespace DiscordBotRewrite {
         #endregion
 
         #region Public
-        public async Task Start() {
+        public static async Task Start() {
             if(!TryLoadConfig()) return;
             await InitClient();
             Modules = new ModuleContainer(Client);
@@ -43,7 +43,7 @@ namespace DiscordBotRewrite {
         #endregion
 
         #region Private
-        private bool TryLoadConfig() {
+        private static bool TryLoadConfig() {
             Config = LoadJson<Config>(Config.JsonLocation);
 
             if(string.IsNullOrWhiteSpace(Config.Token)) {
@@ -54,7 +54,7 @@ namespace DiscordBotRewrite {
             }
             return true;
         }
-        private Task InitClient() {
+        private static Task InitClient() {
             var config = new DiscordConfiguration {
                 Token = Config.Token,
                 TokenType = TokenType.Bot,
@@ -69,7 +69,7 @@ namespace DiscordBotRewrite {
             });
             return Task.CompletedTask;
         }
-        private Task InitCommands() {
+        private static Task InitCommands() {
             SlashExtension = Client.UseSlashCommands();
 
             SlashExtension.RegisterCommands<UnsortedCommands>(TargetServer);
@@ -81,7 +81,7 @@ namespace DiscordBotRewrite {
 
             return Task.CompletedTask;
         }
-        private async Task OnClientReady(DiscordClient client, ReadyEventArgs e) {
+        private static async Task OnClientReady(DiscordClient client, ReadyEventArgs e) {
             Assembly thisAssem = typeof(Bot).Assembly;
             AssemblyName thisAssemName = thisAssem.GetName();
 

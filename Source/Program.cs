@@ -6,7 +6,7 @@ namespace DiscordBotRewrite {
     class Program {
         static void Main(string[] args) {
             SetupExceptionHandler();
-            new Bot().Start().GetAwaiter().GetResult();
+            Bot.Start().GetAwaiter().GetResult();
         }
 
         static void SetupExceptionHandler() {

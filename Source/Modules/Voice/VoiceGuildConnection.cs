@@ -92,9 +92,9 @@ namespace DiscordBotRewrite.Modules {
 
             if(!IsTrackPlaying()) {
                 //Automatically disconnect after 5 minutes if no tracks are playing
-                IdleDisconnectEvent = new TimeBasedEvent(TimeSpan.FromMinutes(5), () => {
+                IdleDisconnectEvent = new TimeBasedEvent(TimeSpan.FromMinutes(5), async () => {
                     if(!IsTrackPlaying()) {
-                        Disconnect();
+                        await Disconnect();
                     }
                 });
             }
