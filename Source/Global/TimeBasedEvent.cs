@@ -7,24 +7,29 @@ namespace DiscordBotRewrite.Global {
         #region Properties
         TimeSpan Duration;
         Action OnTimer;
+        int CheckRate;
         bool Cancelled = false;
+        bool Running = false;
         #endregion
 
         #region Constructors
-        public TimeBasedEvent(TimeSpan duration, Action onEnd) {
+        public TimeBasedEvent(TimeSpan duration, Action onEnd, int checkFrequency = 100) {
             Duration = duration;
             OnTimer = onEnd;
+            CheckRate = checkFrequency;
         }
         #endregion
 
         #region Public
         public async void Start() {
+            if(Running)
+                return;
+
+            Running = true;
             DateTime runTime = DateTime.Now + Duration;
-
             while(DateTime.Compare(DateTime.Now, runTime) < 0 && !Cancelled) {
-                await Task.Delay(1);
+                await Task.Delay(CheckRate);
             }
-
             if(!Cancelled) {
                 OnTimer.Invoke();
             }
