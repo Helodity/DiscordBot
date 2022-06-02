@@ -9,14 +9,18 @@ using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite.Modules {
     public class QuoteModule {
-
+        #region Properties
         public Dictionary<ulong, GuildQuoteData> QuoteData;
+        #endregion
 
+        #region Constructors
         public QuoteModule(DiscordClient client) {
             QuoteData = LoadJson<Dictionary<ulong, GuildQuoteData>>(GuildQuoteData.JsonLocation);
             client.MessageReactionAdded += TryQuote;
         }
+        #endregion
 
+        #region Public
         public GuildQuoteData GetQuoteData(ulong id) {
             //Create new data if it doesn't already exist
             if(!QuoteData.TryGetValue(id, out GuildQuoteData userData)) {
@@ -29,7 +33,9 @@ namespace DiscordBotRewrite.Modules {
             QuoteData.AddOrUpdate(data.GuildId, data);
             SaveJson(QuoteData, GuildQuoteData.JsonLocation);
         }
+        #endregion
 
+        #region Events
         async Task TryQuote(DiscordClient client, MessageReactionAddEventArgs args) {
             GuildQuoteData data = GetQuoteData(args.Guild.Id);
 
@@ -78,5 +84,6 @@ namespace DiscordBotRewrite.Modules {
                 SaveQuoteData(data);
             }
         }
+        #endregion
     }
 }

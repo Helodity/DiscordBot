@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 
 namespace DiscordBotRewrite.Modules {
     public class GuildQuoteData : ModuleData {
+        #region Properties
         //Reference to the Json file's relative path
         public const string JsonLocation = "Json/Quotes.json";
 
@@ -25,7 +26,9 @@ namespace DiscordBotRewrite.Modules {
         //List of already quoted messages
         [JsonProperty("quotes")]
         public List<Quote> Quotes;
+        #endregion
 
+        #region Constructors
         public GuildQuoteData(ulong id) : base(id) {
             Enabled = true;
             QuoteChannelId = 0;
@@ -33,5 +36,6 @@ namespace DiscordBotRewrite.Modules {
             EmojiAmountToQuote = 1;
             Quotes = new List<Quote>();
         }
+        #endregion
     }
 }

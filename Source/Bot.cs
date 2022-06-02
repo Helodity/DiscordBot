@@ -1,4 +1,7 @@
-﻿using DiscordBotRewrite.Commands;
+﻿using System;
+using System.Reflection;
+using System.Threading.Tasks;
+using DiscordBotRewrite.Commands;
 using DiscordBotRewrite.Modules;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -7,14 +10,11 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Reflection;
-using System.Threading.Tasks;
 using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite {
     public class Bot {
-        #region Build Type Specifics
+        #region Debug Specifics
 #if DEBUG
         public bool Debugging = true;
         public ulong? TargetServer = 941558436561305630; //This is my private testing server, if you want to debug the bot you'll have to manually change this as any release won't use this code
@@ -24,11 +24,14 @@ namespace DiscordBotRewrite {
 #endif
         #endregion
 
+        #region Properties
         public static DiscordClient Client { get; private set; } //will need to change for sharding, deal with when that becomes important
         public static SlashCommandsExtension SlashExtension { get; private set; }
         public static Config Config { get; private set; }
         public static ModuleContainer Modules { get; private set; }
+        #endregion
 
+        #region Public
         public async Task Start() {
             if(!TryLoadConfig()) return;
             await InitClient();
@@ -37,6 +40,7 @@ namespace DiscordBotRewrite {
             await Client.ConnectAsync();
             await Task.Delay(-1);
         }
+        #endregion
 
         #region Private
         private bool TryLoadConfig() {

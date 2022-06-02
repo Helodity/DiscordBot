@@ -1,12 +1,15 @@
 ﻿namespace DiscordBotRewrite.Modules {
-    public class Vote {
+    public readonly struct Vote {
+        #region Properties
         public readonly ulong VoterId;
-        public string Choice;
+        public readonly string Choice;
+        #endregion
 
-
+        #region Constructor
         public Vote(ulong id, string choice) {
             VoterId = id;
             Choice = choice;
         }
+        #endregion
     }
 }

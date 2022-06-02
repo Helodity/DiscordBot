@@ -4,16 +4,20 @@ using DiscordBotRewrite.Extensions;
 
 namespace DiscordBotRewrite.Global {
     public class TimeBasedEvent {
-
+        #region Properties
         TimeSpan Duration;
         Action OnTimer;
         bool Cancelled = false;
+        #endregion
 
+        #region Constructors
         public TimeBasedEvent(TimeSpan duration, Action onEnd) {
             Duration = duration;
             OnTimer = onEnd;
         }
+        #endregion
 
+        #region Public
         public async void Start() {
             DateTime runTime = DateTime.Now + Duration;
 
@@ -29,6 +33,6 @@ namespace DiscordBotRewrite.Global {
         public void Cancel() {
             Cancelled = true;
         }
-
+        #endregion
     }
 }

@@ -2,16 +2,19 @@
 
 namespace DiscordBotRewrite.Modules {
     public class ModuleContainer {
-        public VoiceModule Voice;
+        #region Properties
+        public readonly VoiceModule Voice;
 
-        public QuoteModule Quote;
+        public readonly QuoteModule Quote;
 
-        public PixelModule Pixel;
+        public readonly PixelModule Pixel;
 
-        public QuestionModule Question;
+        public readonly QuestionModule Question;
 
-        public PollModule Poll;
+        public readonly PollModule Poll;
+        #endregion
 
+        #region Constructors
         public ModuleContainer(DiscordClient client) {
             Quote = new QuoteModule(client);
 
@@ -25,5 +28,6 @@ namespace DiscordBotRewrite.Modules {
                 Voice.EnableLavalink().Wait();
             }
         }
+        #endregion
     }
 }

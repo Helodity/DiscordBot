@@ -11,13 +11,17 @@ using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite.Modules {
     public class PollModule {
+        #region Properties
         public Dictionary<ulong, GuildPollData> PollData;
+        #endregion
 
+        #region Constructors
         public PollModule(DiscordClient client) {
             PollData = LoadJson<Dictionary<ulong, GuildPollData>>(GuildPollData.JsonLocation);
             client.ComponentInteractionCreated += OnInteraction;
             client.GuildDownloadCompleted += RemoveFinishedPolls;
         }
+        #endregion
 
         #region Public
         public GuildPollData GetPollData(ulong guildId) {

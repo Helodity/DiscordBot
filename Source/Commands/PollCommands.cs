@@ -13,6 +13,7 @@ namespace DiscordBotRewrite.Commands {
     [SlashCommandGroup("poll", "Polling!")]
     class PollCommands : ApplicationCommandModule {
 
+        #region Start
         [SlashCommand("start", "Start a new poll")]
         public async Task StartPoll(InteractionContext ctx,
             [Option("Question", "What's your question")] string question,
@@ -42,6 +43,7 @@ namespace DiscordBotRewrite.Commands {
                 }, true);
             };
         }
+        #endregion
 
         #region Set Channel
         [SlashCommand("channel", "Sets this channel to the server's poll channel")]

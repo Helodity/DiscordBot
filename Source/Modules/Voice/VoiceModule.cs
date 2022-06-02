@@ -14,15 +14,15 @@ using Microsoft.Extensions.Logging;
 
 namespace DiscordBotRewrite.Modules {
     public class VoiceModule {
-
+        #region Properties
         public DiscordClient Client;
         public LavalinkConfiguration Config;
         public LavalinkExtension LavalinkExtension;
 
         Dictionary<ulong, VoiceGuildConnection> GuildConnections = new Dictionary<ulong, VoiceGuildConnection>();
+        #endregion
 
-
-        #region Setup
+        #region Constructors
         public VoiceModule(DiscordClient client) {
             var endpoint = new ConnectionEndpoint {
                 Hostname = "127.0.0.1", // From your server configuration.
@@ -58,26 +58,17 @@ namespace DiscordBotRewrite.Modules {
         }
         #endregion
 
-        #region Connection Interface
+        #region Public
         public VoiceGuildConnection GetGuildConnection(InteractionContext ctx) {
             if(GuildConnections.ContainsKey(ctx.Guild.Id)) {
                 return GuildConnections[ctx.Guild.Id];
             }
             return CreateNewConnection(ctx.Client, ctx.Guild);
         }
-        VoiceGuildConnection CreateNewConnection(DiscordClient client, DiscordGuild guild) {
-            VoiceGuildConnection conn = new VoiceGuildConnection(client, guild);
-            GuildConnections.Add(guild.Id, conn);
-            return GuildConnections[guild.Id];
-        }
-
         public void OnVoiceGuildDisconnect(ulong guild_id) {
             GuildConnections.Remove(guild_id);
             Bot.Client.Logger.LogDebug(GuildConnections.Count().ToString());
         }
-
-        #endregion
-
         public async Task<List<LavalinkTrack>> GetTracksAsync(string search, LavalinkNodeConnection node) {
             LavalinkLoadResult loadResult;
 
@@ -112,5 +103,14 @@ namespace DiscordBotRewrite.Modules {
             }
             return new List<LavalinkTrack>();
         }
+        #endregion
+
+        #region Private
+        VoiceGuildConnection CreateNewConnection(DiscordClient client, DiscordGuild guild) {
+            VoiceGuildConnection conn = new VoiceGuildConnection(client, guild);
+            GuildConnections.Add(guild.Id, conn);
+            return GuildConnections[guild.Id];
+        }
+        #endregion
     }
 }

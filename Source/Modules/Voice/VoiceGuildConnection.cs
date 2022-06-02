@@ -13,6 +13,7 @@ using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite.Modules {
     public class VoiceGuildConnection {
+        #region Properites
         public LavalinkNodeConnection Node;
         public LavalinkGuildConnection Conn;
         public List<LavalinkTrack> TrackQueue;
@@ -25,6 +26,7 @@ namespace DiscordBotRewrite.Modules {
 
         readonly ulong Id;
         TimeBasedEvent IdleDisconnectEvent;
+        #endregion
 
         #region Constructors
         public VoiceGuildConnection(DiscordClient client, DiscordGuild guild) {

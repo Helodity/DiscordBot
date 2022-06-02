@@ -1,17 +1,20 @@
-﻿using DiscordBotRewrite.Extensions;
-using DSharpPlus.Entities;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.IO;
 using System.Text;
+using DiscordBotRewrite.Extensions;
+using DSharpPlus.Entities;
+using Newtonsoft.Json;
 
 namespace DiscordBotRewrite.Global {
     public static class Global {
+        #region Properties
         public static readonly DiscordColor DefaultColor = DiscordColor.Azure;
         public static readonly DiscordColor WarningColor = DiscordColor.Yellow;
         public static readonly DiscordColor ErrorColor = DiscordColor.Red;
         public static readonly DiscordColor SuccessColor = DiscordColor.Green;
+        #endregion
 
+        #region Public
         /// <summary>
         /// Returns an int with min inclusive and max inclusive
         /// </summary>
@@ -48,5 +51,6 @@ namespace DiscordBotRewrite.Global {
                 }
             }
         }
+        #endregion
     }
 }

@@ -8,6 +8,7 @@ using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite.Modules {
     public class PixelModule {
+        #region Properties
         #region Constants
         //Update both when adding a color
         readonly Dictionary<uint, SKColor> PixelDict = new Dictionary<uint, SKColor>()
@@ -42,9 +43,13 @@ namespace DiscordBotRewrite.Modules {
         #endregion
 
         Dictionary<ulong, PixelMap> PixelMaps;
+        #endregion
+
+        #region Constructors
         public PixelModule() {
             PixelMaps = LoadJson<Dictionary<ulong, PixelMap>>(PixelMap.JsonLocation);
         }
+        #endregion
 
         #region Public
         public bool TryPlacePixel(ulong guildId, ulong userId, int x, int y, PixelEnum color) {

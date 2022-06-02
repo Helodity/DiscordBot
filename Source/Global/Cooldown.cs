@@ -3,12 +3,18 @@ using System.Collections.Generic;
 
 namespace DiscordBotRewrite.Global {
     public readonly struct Cooldown {
+        #region Properties
         readonly DateTime EndTime;
+        public bool IsOver => DateTime.Compare(DateTime.Now, EndTime) >= 0;
+        #endregion
+
+        #region Constructors
         public Cooldown(DateTime endTime) {
             EndTime = endTime;
         }
-        public bool IsOver => DateTime.Compare(DateTime.Now, EndTime) >= 0;
+        #endregion
 
+        #region Public
         public static bool UserHasCooldown(ulong userId, ref Dictionary<ulong, Cooldown> cooldowns) {
             if(cooldowns.TryGetValue(userId, out Cooldown cooldown)) {
                 if(!cooldown.IsOver)
@@ -20,14 +26,17 @@ namespace DiscordBotRewrite.Global {
         public static TimeSpan TimeUntilExpiration(ulong userId, ref Dictionary<ulong, Cooldown> cooldowns) {
             if(cooldowns.TryGetValue(userId, out Cooldown cooldown)) {
                 if(!cooldown.IsOver)
-                    return cooldown.TimeUntilExpiration();
+                    return cooldown.EndTime - DateTime.Now;
                 cooldowns.Remove(userId);
             }
             return TimeSpan.Zero;
         }
+        #endregion
 
+        #region Private
         public TimeSpan TimeUntilExpiration() {
             return EndTime - DateTime.Now;
         }
+        #endregion
     }
 }

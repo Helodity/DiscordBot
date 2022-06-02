@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using static DiscordBotRewrite.Modules.PixelModule;
 namespace DiscordBotRewrite.Modules {
     public class PixelMap : ModuleData {
+        #region Properties
         public const string JsonLocation = "Json/PixelMaps.json";
 
         [JsonProperty("width")]
@@ -17,14 +18,18 @@ namespace DiscordBotRewrite.Modules {
         public PixelEnum[,] PixelState;
 
         public Dictionary<ulong, Cooldown> PlaceCooldowns = new Dictionary<ulong, Cooldown>();
+        #endregion
 
+        #region Constructor
         public PixelMap(ulong id, int width = 100, int height = 100) : base(id) {
             Width = width;
             Height = height;
             PixelState = new PixelEnum[Width, Height];
             PlaceCooldown = 0;
         }
+        #endregion
 
+        #region Public
         public void Resize(int width, int height) {
             PixelEnum[,] old = PixelState;
             int maxY = Math.Min(old.GetLength(1), height);
@@ -43,5 +48,6 @@ namespace DiscordBotRewrite.Modules {
         public int TimeUntilNextPlace(ulong userId) {
             return (int)Cooldown.TimeUntilExpiration(userId, ref PlaceCooldowns).TotalSeconds;
         }
+        #endregion
     }
 }

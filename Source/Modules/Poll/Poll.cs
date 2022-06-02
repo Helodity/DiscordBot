@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 
 namespace DiscordBotRewrite.Modules {
     public class Poll {
+        #region Properites
         //The guild this poll is posted in
         [JsonProperty("guild_id")]
         public readonly ulong GuildId;
@@ -30,7 +31,9 @@ namespace DiscordBotRewrite.Modules {
         //List of votes and a corresponding user id
         [JsonProperty("votes")]
         public Dictionary<ulong, Vote> Votes;
+        #endregion
 
+        #region Constructors
         [JsonConstructor]
         public Poll(ulong guildId, ulong messageId, string question, List<string> choices, DateTime endTime) {
             GuildId = guildId;
@@ -42,8 +45,6 @@ namespace DiscordBotRewrite.Modules {
 
             StartWatching();
         }
-
-
         public Poll(DiscordMessage message, string question, List<string> choices, DateTime endTime) {
             GuildId = message.Channel.Guild.Id;
             MessageId = message.Id;
@@ -54,21 +55,17 @@ namespace DiscordBotRewrite.Modules {
 
             StartWatching();
         }
+        #endregion
 
+        #region Private
         void StartWatching() {
             new TimeBasedEvent(EndTime - DateTime.Now, async () => {
                 while(Bot.Modules == null) {
                     await Task.Delay(100);
                 }
-                EndPoll();
+                Bot.Modules.Poll.OnPollEnd(this);
             }).Start();
         }
-
-
-        void EndPoll() {
-            Bot.Modules.Poll.OnPollEnd(this);
-        }
-
-
+        #endregion
     }
 }
