@@ -5,30 +5,19 @@ using DiscordBotRewrite.Extensions;
 namespace DiscordBotRewrite.Global {
     public class TimeBasedEvent {
 
-        DateTime RunTime;
+        TimeSpan Duration;
         Action OnTimer;
-        bool RunIfTimeIsAlreadyExpired;
-
         bool Cancelled = false;
-        public TimeBasedEvent(TimeSpan duration, Action onEnd, bool runIfAlreadyExpired = true) {
-            RunTime = DateTime.Now + duration;
-            OnTimer = onEnd;
-            RunIfTimeIsAlreadyExpired = runIfAlreadyExpired;
-        }
 
-        public TimeBasedEvent(DateTime endTime, Action onEnd, bool runIfAlreadyExpired = true) {
-            RunTime = endTime;
+        public TimeBasedEvent(TimeSpan duration, Action onEnd) {
+            Duration = duration;
             OnTimer = onEnd;
-            RunIfTimeIsAlreadyExpired = runIfAlreadyExpired;
         }
 
         public async void Start() {
-            if(!RunIfTimeIsAlreadyExpired) {
-                if(DateTime.Compare(DateTime.Now, RunTime) >= 0)
-                    return;
-            }
+            DateTime runTime = DateTime.Now + Duration;
 
-            while(DateTime.Compare(DateTime.Now, RunTime) < 0 && !Cancelled) {
+            while(DateTime.Compare(DateTime.Now, runTime) < 0 && !Cancelled) {
                 await Task.Delay(1);
             }
 

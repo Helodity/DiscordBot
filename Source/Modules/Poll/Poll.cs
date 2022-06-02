@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using DiscordBotRewrite.Global;
 using DSharpPlus.Entities;
 using Newtonsoft.Json;
@@ -39,7 +40,7 @@ namespace DiscordBotRewrite.Modules {
             Choices = choices;
             Votes = new Dictionary<ulong, Vote>();
 
-            new TimeBasedEvent(endTime, () => { EndPoll(); }, false).Start();
+            StartWatching();
         }
 
 
@@ -51,8 +52,18 @@ namespace DiscordBotRewrite.Modules {
             Choices = choices;
             Votes = new Dictionary<ulong, Vote>();
 
-            new TimeBasedEvent(endTime, () => { EndPoll(); }, false).Start();
+            StartWatching();
         }
+
+        void StartWatching() {
+            new TimeBasedEvent(EndTime - DateTime.Now, async () => {
+                while(Bot.Modules == null) {
+                    await Task.Delay(100);
+                }
+                EndPoll();
+            }).Start();
+        }
+
 
         void EndPoll() {
             Bot.Modules.Poll.OnPollEnd(this);
