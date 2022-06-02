@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DiscordBotRewrite.Extensions;
+using DiscordBotRewrite.Global;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
@@ -23,6 +24,7 @@ namespace DiscordBotRewrite.Modules {
         public bool IsShuffling;
 
         readonly ulong Id;
+        TimeBasedEvent IdleDisconnectEvent;
 
         #region Constructors
         public VoiceGuildConnection(DiscordClient client, DiscordGuild guild) {
@@ -50,6 +52,7 @@ namespace DiscordBotRewrite.Modules {
         public async Task Disconnect() {
             await Conn.DisconnectAsync();
             await OnChannelDisconnect(Conn, null);
+            IdleDisconnectEvent.Cancel();
         }
         public async Task RequestTrackAsync(LavalinkTrack track) {
             if(track == null) {
@@ -84,6 +87,16 @@ namespace DiscordBotRewrite.Modules {
             if(args.Reason == TrackEndReason.Finished) {
                 await ProgressQueue();
             }
+
+            if(!IsTrackPlaying()) {
+                //Automatically disconnect after 5 minutes if no tracks are playing
+                IdleDisconnectEvent = new TimeBasedEvent(TimeSpan.FromMinutes(5), () => {
+                    if(!IsTrackPlaying()) {
+                        Disconnect();
+                    }
+                });
+            }
+
         }
 
         private Task OnChannelDisconnect(LavalinkGuildConnection sender, WebSocketCloseEventArgs e) {

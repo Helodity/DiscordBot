@@ -1,6 +1,6 @@
-﻿using DiscordBotRewrite.Extensions;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using DiscordBotRewrite.Extensions;
 
 namespace DiscordBotRewrite.Global {
     public class TimeBasedEvent {
@@ -9,8 +9,9 @@ namespace DiscordBotRewrite.Global {
         Action OnTimer;
         bool RunIfTimeIsAlreadyExpired;
 
-        public TimeBasedEvent(int duration, TimeUnit unit, Action onEnd, bool runIfAlreadyExpired = true) {
-            RunTime = DateTime.Now.AddTime(duration, unit);
+        bool Cancelled = false;
+        public TimeBasedEvent(TimeSpan duration, Action onEnd, bool runIfAlreadyExpired = true) {
+            RunTime = DateTime.Now + duration;
             OnTimer = onEnd;
             RunIfTimeIsAlreadyExpired = runIfAlreadyExpired;
         }
@@ -27,11 +28,18 @@ namespace DiscordBotRewrite.Global {
                     return;
             }
 
-            while(DateTime.Compare(DateTime.Now, RunTime) < 0) {
+            while(DateTime.Compare(DateTime.Now, RunTime) < 0 && !Cancelled) {
                 await Task.Delay(1);
             }
 
-            OnTimer.Invoke();
+            if(!Cancelled) {
+                OnTimer.Invoke();
+            }
         }
+
+        public void Cancel() {
+            Cancelled = true;
+        }
+
     }
 }
