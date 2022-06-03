@@ -6,7 +6,7 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
-using static DiscordBotRewrite.Global.Global;
+using static DiscordBotRewrite.Global.Style;
 
 namespace DiscordBotRewrite.Commands {
     [SlashCommandGroup("quote", "auto quoting config")]

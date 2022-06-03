@@ -8,6 +8,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.SlashCommands;
 using static DiscordBotRewrite.Global.Global;
+using static DiscordBotRewrite.Global.Style;
 
 namespace DiscordBotRewrite.Modules {
     public class PollModule {
