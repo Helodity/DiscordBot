@@ -4,8 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using DiscordBotRewrite.Attributes;
 using DiscordBotRewrite.Extensions;
+using DiscordBotRewrite.Modules;
 using DSharpPlus;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using static DiscordBotRewrite.Global.Style;
 
@@ -16,31 +18,38 @@ namespace DiscordBotRewrite.Commands {
         #region Start
         [SlashCommand("start", "Start a new poll")]
         public async Task StartPoll(InteractionContext ctx,
-            [Option("Question", "What's your question")] string question,
-            [Option("Duration", "How long (in units) will this poll last?")] long unitAmt,
-            [Option("Units", "How long is a unit?")] TimeUnit unit,
-            [Option("Choice_1", "First Choice")] string choice1,
-            [Option("Choice_2", "Second Choice")] string choice2,
-            [Option("Choice_3", "Third Choice")] string choice3 = null,
-            [Option("Choice_4", "Fourth Choice")] string choice4 = null) {
+            [Option("Duration", "How many units will this poll last?")] long unitAmt,
+            [Option("Units", "How long is a unit?")] TimeUnit unit) {
 
-            List<string> choices = new List<string>() {
-                choice1,
-                choice2,
-                choice3,
-                choice4
-            };
+            var form = new DiscordInteractionResponseBuilder()
+              .WithTitle("Start a poll!")
+              .WithCustomId($"poll_start_modal")
+              .AddComponents(new TextInputComponent("Question", "question", "What do you want to ask?", max_length: 100))
+              .AddComponents(new TextInputComponent("Choices:", "choices", "Separate each choice with a comma", style: TextInputStyle.Paragraph));
+
+            await ctx.CreateResponseAsync(InteractionResponseType.Modal, form);
+
+            var interactivity = ctx.Client.GetInteractivity();
+            var input = await interactivity.WaitForModalAsync($"poll_start_modal", ctx.User);
+
+            if(input.TimedOut)
+                return;
+
+            List<string> choices = input.Result.Values["choices"].Split(",").ToList();
+
+            foreach(string choice in choices) {
+                choice.Trim();
+            }
+
             choices.RemoveAll(x => x == null);
-
             choices = choices.Distinct().ToList();
-
             DateTime endTime = DateTime.Now.AddTime((int)unitAmt, unit);
 
-            if(await Bot.Modules.Poll.StartPoll(ctx, question, choices, endTime)) {
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+            if(await Bot.Modules.Poll.StartPoll(ctx, input.Result.Values["question"], choices, endTime)) {
+                await input.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder {
                     Description = "Started the poll!",
                     Color = SuccessColor
-                }, true);
+                }).AsEphemeral(true));
             };
         }
         #endregion
