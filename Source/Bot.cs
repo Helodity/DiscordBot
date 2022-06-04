@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Threading.Tasks;
 using DiscordBotRewrite.Commands;
+using DiscordBotRewrite.Global;
 using DiscordBotRewrite.Modules;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -29,6 +30,7 @@ namespace DiscordBotRewrite {
         public static SlashCommandsExtension SlashExtension { get; private set; }
         public static Config Config { get; private set; }
         public static ModuleContainer Modules { get; private set; }
+        public static Style Style { get; private set; }
         #endregion
 
         #region Public
@@ -36,6 +38,7 @@ namespace DiscordBotRewrite {
             if(!TryLoadConfig()) return;
             await InitClient();
             Modules = new ModuleContainer(Client);
+            Style = new Style();
             await InitCommands();
             await Client.ConnectAsync();
             await Task.Delay(-1);

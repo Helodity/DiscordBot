@@ -12,7 +12,7 @@ namespace DiscordBotRewrite.Commands {
         public async Task Ping(InteractionContext ctx) {
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = "Pong!",
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             });
         }
         #endregion
@@ -22,7 +22,7 @@ namespace DiscordBotRewrite.Commands {
         public async Task How(InteractionContext ctx, [Option("what", "how what you are")] string what) {
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"You are {GenerateRandomNumber(0, 100)}% {what}.",
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             });
         }
         #endregion
@@ -68,7 +68,7 @@ namespace DiscordBotRewrite.Commands {
             }
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"{ctx.Member.DisplayName} questions The Ball. It {thinkStr}...",
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             });
 
             await Task.Delay(GenerateRandomNumber(1000, 3000));
@@ -94,7 +94,7 @@ namespace DiscordBotRewrite.Commands {
             }
             await ctx.EditResponseAsync(new DiscordEmbedBuilder {
                 Description = $"{ctx.Member.DisplayName} asks: \"{question}\" \n{output}.",
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             });
 
         }

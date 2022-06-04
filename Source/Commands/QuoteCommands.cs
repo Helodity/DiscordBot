@@ -27,7 +27,7 @@ namespace DiscordBotRewrite.Commands {
             Bot.Modules.Quote.SaveQuoteData(data);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Set this server's quote channel to {ctx.Channel.Mention}!",
-                Color = SuccessColor
+                Color = Bot.Style.SuccessColor
             });
         }
         #endregion
@@ -39,7 +39,7 @@ namespace DiscordBotRewrite.Commands {
             var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = "React to this message with the emoji to use!",
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             });
 
             //Get the user's emoji they want
@@ -50,7 +50,7 @@ namespace DiscordBotRewrite.Commands {
             if(reaction.TimedOut) {
                 await ctx.EditResponseAsync(new DiscordEmbedBuilder {
                     Description = $"No response: quote emoji remains as {DiscordEmoji.FromGuildEmote(ctx.Client, data.QuoteEmojiId)}",
-                    Color = WarningColor
+                    Color = Bot.Style.WarningColor
                 });
                 return;
             }
@@ -58,14 +58,14 @@ namespace DiscordBotRewrite.Commands {
             if(!DiscordEmoji.TryFromGuildEmote(ctx.Client, reaction.Result.Emoji.Id, out _)) {
                 await ctx.EditResponseAsync(new DiscordEmbedBuilder {
                     Description = $"This emoji is from a different server!",
-                    Color = ErrorColor
+                    Color = Bot.Style.ErrorColor
                 });
                 return;
             }
 
             await ctx.EditResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Set the server's quote emoji to {reaction.Result.Emoji}",
-                Color = SuccessColor
+                Color = Bot.Style.SuccessColor
             });
 
             data.QuoteEmojiId = reaction.Result.Emoji.Id;
@@ -82,7 +82,7 @@ namespace DiscordBotRewrite.Commands {
             Bot.Modules.Quote.SaveQuoteData(data);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Set emoji amount to {amount}!",
-                Color = SuccessColor
+                Color = Bot.Style.SuccessColor
             });
         }
         #endregion
@@ -96,7 +96,7 @@ namespace DiscordBotRewrite.Commands {
             Bot.Modules.Quote.SaveQuoteData(data);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"{(data.Enabled ? "Enabled" : "Disabled")} auto quoting!",
-                Color = SuccessColor
+                Color = Bot.Style.SuccessColor
             });
         }
         #endregion

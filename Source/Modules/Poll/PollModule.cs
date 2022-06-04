@@ -45,14 +45,14 @@ namespace DiscordBotRewrite.Modules {
             if(!pollData.HasChannelSet()) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = "No poll channel has been set!",
-                    Color = ErrorColor,
+                    Color = Bot.Style.ErrorColor,
                 }, true);
                 return false;
             }
             if(choices.Count < 2) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = "Invalid Choices, make sure there are no duplicates!",
-                    Color = ErrorColor
+                    Color = Bot.Style.ErrorColor
                 }, true);
                 return false;
             }
@@ -68,7 +68,7 @@ namespace DiscordBotRewrite.Modules {
             var messageBuilder = new DiscordMessageBuilder()
                 .AddEmbed(new DiscordEmbedBuilder {
                     Description = $"Poll ends {endTime.ToTimestamp()}! \n {question.ToBold()}",
-                    Color = DefaultColor
+                    Color = Bot.Style.DefaultColor
                 })
                 .AddComponents(selectionComponent);
             var channel = ctx.Guild.GetChannel((ulong)pollData.PollChannelId);
@@ -104,7 +104,7 @@ namespace DiscordBotRewrite.Modules {
                 var message = await channel.GetMessageAsync(poll.MessageId);
                 var builder = new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder {
                     Description = $"Poll has ended {poll.EndTime.ToTimestamp()}!\n {poll.Question.ToBold()} \n{voteString}",
-                    Color = DefaultColor
+                    Color = Bot.Style.DefaultColor
                 });
 
                 await message.ModifyAsync(builder);

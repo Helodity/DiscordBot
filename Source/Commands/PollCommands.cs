@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using DiscordBotRewrite.Attributes;
 using DiscordBotRewrite.Extensions;
-using DiscordBotRewrite.Modules;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
@@ -25,7 +24,7 @@ namespace DiscordBotRewrite.Commands {
               .WithTitle("Start a poll!")
               .WithCustomId($"poll_start_modal")
               .AddComponents(new TextInputComponent("Question", "question", "What do you want to ask?", max_length: 100))
-              .AddComponents(new TextInputComponent("Choices:", "choices", "Separate each choice with a comma", style: TextInputStyle.Paragraph));
+              .AddComponents(new TextInputComponent("Choices", "choices", "Separate each choice with a comma.", style: TextInputStyle.Paragraph));
 
             await ctx.CreateResponseAsync(InteractionResponseType.Modal, form);
 
@@ -36,20 +35,19 @@ namespace DiscordBotRewrite.Commands {
                 return;
 
             List<string> choices = input.Result.Values["choices"].Split(",").ToList();
-
             foreach(string choice in choices) {
                 choice.Trim();
             }
-
             choices.RemoveAll(x => x == null);
             choices = choices.Distinct().ToList();
+
             DateTime endTime = DateTime.Now.AddTime((int)unitAmt, unit);
 
             if(await Bot.Modules.Poll.StartPoll(ctx, input.Result.Values["question"], choices, endTime)) {
                 await input.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder {
                     Description = "Started the poll!",
-                    Color = SuccessColor
-                }).AsEphemeral(true));
+                    Color = Bot.Style.SuccessColor
+                }).AsEphemeral());
             };
         }
         #endregion
@@ -68,7 +66,7 @@ namespace DiscordBotRewrite.Commands {
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Set this server's quote channel to {ctx.Channel.Mention}!",
-                Color = SuccessColor
+                Color = Bot.Style.SuccessColor
             });
         }
         #endregion

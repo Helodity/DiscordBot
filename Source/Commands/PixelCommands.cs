@@ -9,7 +9,6 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
-using static DiscordBotRewrite.Global.Style;
 
 namespace DiscordBotRewrite.Commands {
     [SlashCommandGroup("pixel", "r/place but inside a discord bot")]
@@ -91,7 +90,7 @@ namespace DiscordBotRewrite.Commands {
             DiscordMessage msg;
             var embed = new DiscordEmbedBuilder()
                 .WithTitle("Pixel")
-                .WithColor(DefaultColor)
+                .WithColor(Bot.Style.DefaultColor)
                 .WithImageUrl($"attachment://{Path.GetFileName(imagePath)}");
 
             var interactivity = ctx.Client.GetInteractivity();

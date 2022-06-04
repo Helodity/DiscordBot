@@ -21,7 +21,7 @@ namespace DiscordBotRewrite.Commands {
             Question usedQuestion = module.PickQuestion(module.TruthQuestions.ToList(), rating);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = usedQuestion.Text,
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             });
         }
         #endregion
@@ -47,12 +47,12 @@ namespace DiscordBotRewrite.Commands {
             var msg = await member.SendMessageAsync(new DiscordEmbedBuilder() {
                 Title = "Paranoia",
                 Description = $"**{ctx.Member.DisplayName} sent you a question!**\n{usedQuestion.Text}\nSend a message with your answer.",
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             });
             module.ParanoiaInProgress.Add(user.Id);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Sent a question to {member.DisplayName}! Awaiting a response.",
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             });
 
             var interactivity = ctx.Client.GetInteractivity();
@@ -68,16 +68,16 @@ namespace DiscordBotRewrite.Commands {
 
                 await ctx.EditResponseAsync(new DiscordEmbedBuilder {
                     Description = description,
-                    Color = DefaultColor
+                    Color = Bot.Style.DefaultColor
                 });
             } else {
                 await msg.ModifyAsync(new DiscordEmbedBuilder() {
                     Description = "Time has expired.",
-                    Color = ErrorColor
+                    Color = Bot.Style.ErrorColor
                 }.Build());
                 await ctx.EditResponseAsync(new DiscordEmbedBuilder {
                     Description = $"{member.DisplayName} never answered...",
-                    Color = DefaultColor
+                    Color = Bot.Style.DefaultColor
                 });
             }
             module.ParanoiaInProgress.Remove(user.Id);

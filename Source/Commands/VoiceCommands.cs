@@ -22,7 +22,7 @@ namespace DiscordBotRewrite.Commands {
             await VGConn.Connect(ctx.Member.VoiceState.Channel);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Joined {ctx.Member.VoiceState.Channel.Name}!",
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             });
         }
         #endregion
@@ -35,7 +35,7 @@ namespace DiscordBotRewrite.Commands {
             await VGconn.Disconnect();
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Left {ctx.Member.VoiceState.Channel.Name}!",
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             });
         }
         #endregion
@@ -55,7 +55,7 @@ namespace DiscordBotRewrite.Commands {
             if(tracks.Count == 0) {
                 await ctx.EditResponseAsync(new DiscordEmbedBuilder {
                     Description = "No results found!",
-                    Color = ErrorColor
+                    Color = Bot.Style.ErrorColor
                 });
                 return;
             }
@@ -76,7 +76,7 @@ namespace DiscordBotRewrite.Commands {
 
             await ctx.EditResponseAsync(new DiscordEmbedBuilder {
                 Description = output,
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             });
         }
         #endregion
@@ -90,7 +90,7 @@ namespace DiscordBotRewrite.Commands {
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = "Skipped!",
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             });
         }
         #endregion
@@ -105,7 +105,7 @@ namespace DiscordBotRewrite.Commands {
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Set the volume to {volume}%",
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             });
         }
         #endregion
@@ -119,7 +119,7 @@ namespace DiscordBotRewrite.Commands {
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Looping {(VGConn.IsLooping ? "enabled" : "disabled")}!",
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             });
         }
         #endregion
@@ -133,7 +133,7 @@ namespace DiscordBotRewrite.Commands {
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Shuffling {(VGConn.IsShuffling ? "enabled" : "disabled")}!",
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             });
         }
         #endregion
@@ -155,7 +155,7 @@ namespace DiscordBotRewrite.Commands {
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = description,
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             });
         }
         #endregion
@@ -170,7 +170,7 @@ namespace DiscordBotRewrite.Commands {
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Cleared {songCount} songs from queue!",
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             });
         }
         #endregion
@@ -185,7 +185,7 @@ namespace DiscordBotRewrite.Commands {
             if(index > songCount || index < 1) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"Index out of bounds!",
-                    Color = ErrorColor
+                    Color = Bot.Style.ErrorColor
                 }, true);
                 return;
             }
@@ -193,7 +193,7 @@ namespace DiscordBotRewrite.Commands {
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Removed {VGConn.TrackQueue[(int)index].Title} from the queue!",
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             });
         }
         #endregion
@@ -208,7 +208,7 @@ namespace DiscordBotRewrite.Commands {
 
             var embed = new DiscordEmbedBuilder {
                 Title = "Queue",
-                Color = DefaultColor
+                Color = Bot.Style.DefaultColor
             };
 
             string description = string.Empty;
