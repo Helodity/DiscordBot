@@ -7,7 +7,6 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using static DiscordBotRewrite.Global.Global;
-using static DiscordBotRewrite.Global.Style;
 
 namespace DiscordBotRewrite.Commands {
     [SlashCommandGroup("ask", "Its like truth or dare")]

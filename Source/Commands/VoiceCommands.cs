@@ -8,7 +8,6 @@ using DiscordBotRewrite.Modules;
 using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
 using DSharpPlus.SlashCommands;
-using static DiscordBotRewrite.Global.Style;
 
 namespace DiscordBotRewrite.Commands {
     [SlashCommandGroup("voice", "voice")]

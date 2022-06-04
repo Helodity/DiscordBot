@@ -8,7 +8,6 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
-using static DiscordBotRewrite.Global.Style;
 
 namespace DiscordBotRewrite.Commands {
     [SlashCommandGroup("poll", "Polling!")]

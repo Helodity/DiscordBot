@@ -51,35 +51,29 @@ namespace DiscordBotRewrite.Modules {
             //Grab each reaction and count up the amount that are the server's quote emoji
             var potentialReactions = await proper_message.GetReactionsAsync(await args.Guild.GetEmojiAsync(data.QuoteEmojiId));
 
-            //Ignore the author's reaction because really you're gonna upvote your own post
-            var countedReactions = potentialReactions.Where(x => x.Id != proper_message.Author.Id);
+            //Clean up the reactions to remove unwanted users (bots and the author)
+            var countedReactions = potentialReactions.Where(x => x.Id != proper_message.Author.Id && !x.IsBot);
             int quoteReactions = countedReactions.Count();
-
-            DiscordAttachment attachment = null;
-            if(proper_message.Attachments.Count > 0)
-                attachment = proper_message.Attachments.FirstOrDefault(x => x.IsImage());
 
             //Did we get enough emojis to create a quote?
             if(quoteReactions >= data.EmojiAmountToQuote) {
-                DiscordUser author = proper_message.Author; //This isn't needed but makes the embed creation look cleaner
-                                                            //Quote it!
-                var embed = new DiscordEmbedBuilder()
-                    .WithColor(DiscordColor.LightGray)
-                    .WithDescription(proper_message.Content)
-                    .WithAuthor($"{author.Username}#{author.Discriminator}", iconUrl: string.IsNullOrEmpty(author.AvatarHash) ? author.DefaultAvatarUrl : author.AvatarUrl);
-
-                if(attachment != null) {
-                    embed.WithImageUrl(attachment.Url);
-                }
+                DiscordUser author = proper_message.Author; //This isn't needed but makes the embed creation look cleaner 
                 DiscordChannel channel = await client.GetChannelAsync(data.QuoteChannelId);
+                DiscordAttachment attachment = attachment = proper_message.Attachments.FirstOrDefault(x => x.IsImage());
+
+                var quoteEmbed = new DiscordEmbedBuilder()
+                    .WithColor(Bot.Style.DefaultColor)
+                    .WithDescription(proper_message.Content)
+                    .WithAuthor($"{author.Username}#{author.Discriminator}", iconUrl: string.IsNullOrEmpty(author.AvatarHash) ? author.DefaultAvatarUrl : author.AvatarUrl)
+                    .WithImageUrl(attachment != null ? attachment.Url : "");
+
                 var msgBuilder = new DiscordMessageBuilder()
-                    .WithEmbed(embed)
+                    .WithEmbed(quoteEmbed)
                     .AddComponents(new DiscordLinkButtonComponent(proper_message.JumpLink.ToString(), "Context"));
 
                 ulong quoteId = (await client.SendMessageAsync(channel, msgBuilder)).Id;
 
                 //Save the quote to avoid repeating the same quote
-
                 data.Quotes.Add(new Quote(quoteId, proper_message.Id));
                 SaveQuoteData(data);
             }
