@@ -165,7 +165,7 @@ namespace DiscordBotRewrite.Commands {
         [UserAbleToModify]
         public async Task Clear(InteractionContext ctx) {
             VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-            int songCount = VGConn.TrackQueue.Count();
+            int songCount = VGConn.TrackQueue.Count;
             VGConn.TrackQueue = new List<LavalinkTrack>();
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -181,7 +181,7 @@ namespace DiscordBotRewrite.Commands {
         public async Task Clear(InteractionContext ctx, [Option("index", "index")] long index) {
             VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
             index--; //Convert from 1 being the first song to 0
-            int songCount = VGConn.TrackQueue.Count();
+            int songCount = VGConn.TrackQueue.Count;
             if(index > songCount || index < 1) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"Index out of bounds!",
@@ -204,7 +204,7 @@ namespace DiscordBotRewrite.Commands {
             VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
             int pageCount = (int)Math.Ceiling(VGConn.TrackQueue.Count / (decimal)10);
             int activePage = Math.Min(Math.Max(1, (int)page), pageCount);
-            int endNumber = Math.Min(activePage * 10, VGConn.TrackQueue.Count());
+            int endNumber = Math.Min(activePage * 10, VGConn.TrackQueue.Count);
 
             var embed = new DiscordEmbedBuilder {
                 Title = "Queue",

@@ -67,7 +67,7 @@ namespace DiscordBotRewrite.Modules {
         }
         public void OnVoiceGuildDisconnect(ulong guild_id) {
             GuildConnections.Remove(guild_id);
-            Bot.Client.Logger.LogDebug(GuildConnections.Count().ToString());
+            Bot.Client.Logger.LogDebug(GuildConnections.Count.ToString());
         }
         public async Task<List<LavalinkTrack>> GetTracksAsync(string search, LavalinkNodeConnection node) {
             LavalinkLoadResult loadResult;
@@ -77,7 +77,7 @@ namespace DiscordBotRewrite.Modules {
                 loadResult = await node.Rest.GetTracksAsync(uri);
                 if(loadResult.LoadResultType != LavalinkLoadResultType.LoadFailed
                     && loadResult.LoadResultType != LavalinkLoadResultType.NoMatches
-                    && loadResult.Tracks.Count() > 0) {
+                    && loadResult.Tracks.Any()) {
                     return loadResult.Tracks.ToList(); //Here we could send a playlist, wheras a single song url can only return one song, so here we can take every result
                 }
             }
@@ -85,7 +85,7 @@ namespace DiscordBotRewrite.Modules {
             loadResult = await node.Rest.GetTracksAsync(search);
             if(loadResult.LoadResultType != LavalinkLoadResultType.LoadFailed
                 && loadResult.LoadResultType != LavalinkLoadResultType.NoMatches &&
-                loadResult.Tracks.Count() > 0) {
+                loadResult.Tracks.Any()) {
                 List<LavalinkTrack> track = new List<LavalinkTrack> {
                 loadResult.Tracks.First() //We cant take all the results since this would add 20ish songs, when only one makes sense to add
             };
@@ -95,7 +95,7 @@ namespace DiscordBotRewrite.Modules {
             loadResult = await node.Rest.GetTracksAsync(search, LavalinkSearchType.SoundCloud);
             if(loadResult.LoadResultType != LavalinkLoadResultType.LoadFailed
                 && loadResult.LoadResultType != LavalinkLoadResultType.NoMatches
-                && loadResult.Tracks.Count() > 0) {
+                && loadResult.Tracks.Any()) {
                 List<LavalinkTrack> track = new List<LavalinkTrack> {
                 loadResult.Tracks.First()
             };

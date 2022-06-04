@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 namespace DiscordBotRewrite.Global {
     public class TimeBasedEvent {
         #region Properties
-        TimeSpan Duration;
-        Action OnTimer;
-        int CheckRate;
+        readonly TimeSpan Duration;
+        readonly Action OnTimer;
+        readonly int CheckRate;
         bool Cancelled = false;
         bool Running = false;
         #endregion

@@ -81,7 +81,7 @@ namespace DiscordBotRewrite.Modules {
         #region Events
         async Task OnPlaybackFinish(LavalinkGuildConnection conn, TrackFinishEventArgs args) {
             Bot.Client.Logger.LogDebug($"Lavalink PlaybackFinished triggered. Reason: {args.Reason}");
-            if(Conn.AmountOfMembersInChannel() == 0) {
+            if(!Conn.MembersInChannel().Any()) {
                 await Disconnect();
             }
 

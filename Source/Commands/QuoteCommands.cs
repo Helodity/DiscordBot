@@ -55,7 +55,7 @@ namespace DiscordBotRewrite.Commands {
                 return;
             }
 
-            if(!DiscordEmoji.TryFromGuildEmote(ctx.Client, reaction.Result.Emoji.Id, out DiscordEmoji emoji)) {
+            if(!DiscordEmoji.TryFromGuildEmote(ctx.Client, reaction.Result.Emoji.Id, out _)) {
                 await ctx.EditResponseAsync(new DiscordEmbedBuilder {
                     Description = $"This emoji is from a different server!",
                     Color = ErrorColor
