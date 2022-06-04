@@ -19,6 +19,14 @@ namespace DiscordBotRewrite.Commands {
             [Option("Duration", "How many units will this poll last?")] long unitAmt,
             [Option("Units", "How long is a unit?")] TimeUnit unit) {
 
+            if(!Bot.Modules.Poll.HasPollChannelSet(ctx)) {
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = "No poll channel has been set!",
+                    Color = Bot.Style.ErrorColor,
+                }, true);
+                return;
+            }
+
             var form = new DiscordInteractionResponseBuilder()
               .WithTitle("Start a poll!")
               .WithCustomId($"poll_start_modal")

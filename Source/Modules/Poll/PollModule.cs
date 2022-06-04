@@ -6,6 +6,7 @@ using DiscordBotRewrite.Extensions;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using DSharpPlus.Exceptions;
 using DSharpPlus.SlashCommands;
 using static DiscordBotRewrite.Global.Global;
 
@@ -24,24 +25,23 @@ namespace DiscordBotRewrite.Modules {
         #endregion
 
         #region Public
-        public GuildPollData GetPollData(ulong guildId) {
-            if(!PollData.TryGetValue(guildId, out GuildPollData pollData)) {
-                pollData = new GuildPollData(guildId);
-                PollData.Add(guildId, pollData);
-            }
-            return pollData;
-        }
         public void SetPollChannel(InteractionContext ctx) {
             var data = Bot.Modules.Poll.GetPollData(ctx.Guild.Id);
             data.PollChannelId = ctx.Channel.Id;
             Bot.Modules.Poll.SavePollData(data);
         }
+
+        public bool HasPollChannelSet(InteractionContext ctx) {
+            GuildPollData pollData = GetPollData(ctx.Guild.Id);
+            return pollData.HasPollChannelSet();
+        }
+
         // Returns whether the poll was sucessfully created
         public async Task<bool> StartPoll(InteractionContext ctx, string question, List<string> choices, DateTime endTime) {
             GuildPollData pollData = GetPollData(ctx.Guild.Id);
 
             //Make sure we can make the poll without problems
-            if(!pollData.HasChannelSet()) {
+            if(!pollData.HasPollChannelSet()) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = "No poll channel has been set!",
                     Color = Bot.Style.ErrorColor,
@@ -50,13 +50,13 @@ namespace DiscordBotRewrite.Modules {
             }
             if(choices.Count < 2) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = "Invalid Choices, make sure there are no duplicates!",
+                    Description = "Invalid choices, make sure there are at least two unique choices!",
                     Color = Bot.Style.ErrorColor
                 }, true);
                 return false;
             }
             //Send a dummy message to update
-            var channel = ctx.Guild.GetChannel((ulong)pollData.PollChannelId);
+            var channel = ctx.Guild.GetChannel(pollData.PollChannelId);
             var message = await channel.SendMessageAsync(new DiscordEmbedBuilder {
                 Description = "Preparing poll...",
                 Color = Bot.Style.DefaultColor
@@ -74,8 +74,6 @@ namespace DiscordBotRewrite.Modules {
             var pData = GetPollData(poll.GuildId);
             pData.ActivePolls.Remove(poll);
             SavePollData(pData);
-
-            pData.HasChannelSet();
 
             List<string> votes = poll.Choices;
 
@@ -101,9 +99,12 @@ namespace DiscordBotRewrite.Modules {
                 return;
             }
         }
+
+
+
         #endregion
 
-        #region Private
+        #region Events
         Task RemoveFinishedPolls(DiscordClient sender, GuildDownloadCompletedEventArgs e) {
             //Compile polls to be completed
             List<Poll> toComplete = new List<Poll>();
@@ -116,10 +117,6 @@ namespace DiscordBotRewrite.Modules {
                 OnPollEnd(p);
             }
             return Task.CompletedTask;
-        }
-        void SavePollData(GuildPollData data) {
-            PollData.AddOrUpdate(data.GuildId, data);
-            SaveJson(PollData, GuildPollData.JsonLocation);
         }
         async Task OnInteraction(DiscordClient sender, ComponentInteractionCreateEventArgs e) {
             //Make sure we aren't checking dms
@@ -150,7 +147,20 @@ namespace DiscordBotRewrite.Modules {
 
             await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
         }
+        #endregion
 
+        #region Private
+        GuildPollData GetPollData(ulong guildId) {
+            if(!PollData.TryGetValue(guildId, out GuildPollData pollData)) {
+                pollData = new GuildPollData(guildId);
+                PollData.Add(guildId, pollData);
+            }
+            return pollData;
+        }
+        void SavePollData(GuildPollData data) {
+            PollData.AddOrUpdate(data.GuildId, data);
+            SaveJson(PollData, GuildPollData.JsonLocation);
+        }
         DiscordMessageBuilder GetActivePollMessageBuilder(Poll poll) {
             //Create the selection component based on given choices
             var choiceSelections = new List<DiscordSelectComponentOption>();
@@ -167,8 +177,6 @@ namespace DiscordBotRewrite.Modules {
                 })
                 .AddComponents(selectionComponent);
         }
-
-
         #endregion
     }
 }

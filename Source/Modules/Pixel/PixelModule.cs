@@ -42,7 +42,7 @@ namespace DiscordBotRewrite.Modules {
         };
         #endregion
 
-        Dictionary<ulong, PixelMap> PixelMaps;
+        readonly Dictionary<ulong, PixelMap> PixelMaps;
         #endregion
 
         #region Constructors
@@ -135,9 +135,10 @@ namespace DiscordBotRewrite.Modules {
             SKSurface surface = SKSurface.Create(imageInfo);
             SKCanvas canvas = surface.Canvas;
 
-            SKPaint paint = new SKPaint();
-            paint.Style = SKPaintStyle.Fill;
-            paint.IsAntialias = false;
+            SKPaint paint = new SKPaint {
+                Style = SKPaintStyle.Fill,
+                IsAntialias = false
+            };
             for(int x = 0; x < xDist; x++) {
                 for(int y = 0; y < yDist; y++) {
                     int absX = x + anchor.X;
@@ -166,22 +167,24 @@ namespace DiscordBotRewrite.Modules {
             return surface;
         }
         void AddOutline(SKCanvas canvas, int zoom, int thickness, SKColor color) {
-            SKPaint paint = new SKPaint();
-            paint.Color = color;
-            paint.Style = SKPaintStyle.Stroke;
-            paint.StrokeWidth = thickness;
-            paint.IsAntialias = false;
+            SKPaint paint = new SKPaint {
+                Color = color,
+                Style = SKPaintStyle.Stroke,
+                StrokeWidth = thickness,
+                IsAntialias = false
+            };
 
             int pixelSize = 500 / zoom;
 
             canvas.DrawRect(pixelSize * (zoom / 2), pixelSize * (zoom / 2), pixelSize, pixelSize, paint);
         }
         void DrawCenterPixel(SKCanvas canvas, int zoom, SKColor color) {
-            SKPaint paint = new SKPaint();
-            paint.Color = color;
-            paint.Style = SKPaintStyle.Stroke;
-            paint.IsAntialias = false;
-            paint.StrokeWidth = 1;
+            SKPaint paint = new SKPaint {
+                Color = color,
+                Style = SKPaintStyle.Stroke,
+                IsAntialias = false,
+                StrokeWidth = 1
+            };
 
             int pixelSize = 500 / zoom;
 

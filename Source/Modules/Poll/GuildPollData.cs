@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using DSharpPlus.Entities;
+using DSharpPlus.Exceptions;
 using Newtonsoft.Json;
 
 namespace DiscordBotRewrite.Modules {
@@ -9,7 +12,7 @@ namespace DiscordBotRewrite.Modules {
 
         //Which channel to send polls?
         [JsonProperty("poll_channel")]
-        public ulong? PollChannelId;
+        public ulong PollChannelId;
 
         //List of currently running polls
         [JsonProperty("polls")]
@@ -18,14 +21,22 @@ namespace DiscordBotRewrite.Modules {
 
         #region Constructor
         public GuildPollData(ulong id) : base(id) {
-            PollChannelId = null;
+            PollChannelId = 0;
             ActivePolls = new List<Poll>();
         }
         #endregion
 
         #region Public
-        public bool HasChannelSet() {
-            return PollChannelId != null;
+        public bool HasPollChannelSet() {
+            return GetPollChannelAsync() != null;
+        }
+
+        async Task<DiscordChannel> GetPollChannelAsync() {
+            try {
+                return await Bot.Client.GetChannelAsync(PollChannelId);
+            } catch(NotFoundException) {
+                return null;
+            }
         }
         #endregion
     }
