@@ -24,7 +24,7 @@
     <PackageReference Include="SkiaSharp" Version="2.88.0" />
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="'$(Configuration)' == 'Debug' ">
+  <Target Name="PreBuildDebug" BeforeTargets="PreBuildEvent" Condition="'$(Configuration)' == 'Debug' ">
     <Version VersionFile="Properties\version.txt" RevisionType="BuildIncrement">
       <Output TaskParameter="Major" PropertyName="Major" />
       <Output TaskParameter="Minor" PropertyName="Minor" />
@@ -34,7 +34,7 @@
     <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\VersionInfo.cs" AssemblyVersion="$(Major).$(Minor).$(Build).$(Revision)" AssemblyFileVersion="$(Major).$(Minor).$(Build).$(Revision)" />
   </Target>
   
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="'$(Configuration)' == 'Release' ">
+  <Target Name="PreBuildRelease" BeforeTargets="PreBuildEvent" Condition="'$(Configuration)' == 'Release' ">
     <Version VersionFile="Properties\version.txt">
       <Output TaskParameter="Major" PropertyName="Major" />
       <Output TaskParameter="Minor" PropertyName="Minor" />
