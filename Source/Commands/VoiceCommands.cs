@@ -177,7 +177,7 @@ namespace DiscordBotRewrite.Commands {
         #region Remove
         [SlashCommand("remove", "Remove the song at the specified index")]
         [UserAbleToModify]
-        public async Task Clear(InteractionContext ctx, [Option("index", "index")] long index) {
+        public async Task Remove(InteractionContext ctx, [Option("index", "index")] long index) {
             VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
             index--; //Convert from 1 being the first song to 0
             int songCount = VGConn.TrackQueue.Count;

@@ -46,51 +46,26 @@ namespace DiscordBotRewrite.Commands {
         #region Eight Ball
         [SlashCommand("8ball", "Ask a question and The Ball shall answer")]
         public async Task EightBall(InteractionContext ctx, [Option("question", "The question for The Ball to answer")] string question) {
-            string thinkStr;
-            switch(GenerateRandomNumber(1, 5)) {
-                case 1:
-                    thinkStr = "ponders";
-                    break;
-                case 2:
-                    thinkStr = "imagines";
-                    break;
-                case 3:
-                    thinkStr = "thinks";
-                    break;
-                case 4:
-                    thinkStr = "judges";
-                    break;
-                default:
-                    thinkStr = "reckons";
-                    break;
-
-            }
+            string thinkStr = GenerateRandomNumber(1, 5) switch {
+                1 => "ponders",
+                2 => "imagines",
+                3 => "thinks",
+                4 => "judges",
+                _ => "reckons",
+            };
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"{ctx.Member.DisplayName} questions The Ball. It {thinkStr}...",
                 Color = Bot.Style.DefaultColor
             });
 
             await Task.Delay(GenerateRandomNumber(1000, 3000));
-
-            string output;
-            switch(GenerateRandomNumber(1, 5)) {
-                case 1:
-                    output = "Likely";
-                    break;
-                case 2:
-                    output = "Unlikely";
-                    break;
-                case 3:
-                    output = "Chances say yes";
-                    break;
-                case 4:
-                    output = "Probably not";
-                    break;
-                default:
-                    output = "Ask again";
-                    break;
-
-            }
+            string output = GenerateRandomNumber(1, 5) switch {
+                1 => "Likely",
+                2 => "Unlikely",
+                3 => "Chances say yes",
+                4 => "Probably not",
+                _ => "Ask again",
+            };
             await ctx.EditResponseAsync(new DiscordEmbedBuilder {
                 Description = $"{ctx.Member.DisplayName} asks: \"{question}\" \n{output}.",
                 Color = Bot.Style.DefaultColor

@@ -68,7 +68,7 @@ namespace DiscordBotRewrite {
             Client = new DiscordClient(config);
             Client.Ready += OnClientReady;
             Client.UseInteractivity(new InteractivityConfiguration() {
-                Timeout = TimeSpan.FromSeconds(30)
+                Timeout = TimeSpan.FromMinutes(2)
             });
             return Task.CompletedTask;
         }

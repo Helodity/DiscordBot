@@ -43,7 +43,7 @@ namespace DiscordBotRewrite.Commands {
 
             //Get the user's emoji they want
             var interactivity = ctx.Client.GetInteractivity();
-            var reaction = await interactivity.WaitForReactionAsync(await ctx.GetOriginalResponseAsync(), ctx.User, TimeSpan.FromMinutes(1));
+            var reaction = await interactivity.WaitForReactionAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
 
             //Ensure they sent an emoji
             if(reaction.TimedOut) {

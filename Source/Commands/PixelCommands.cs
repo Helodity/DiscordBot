@@ -100,7 +100,7 @@ namespace DiscordBotRewrite.Commands {
                 using(var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read)) {
                     msg = await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddComponents(row1).AddComponents(row2).AddComponents(row3).AddComponents(row4).AddComponents(row5).AddEmbed(embed).WithFile(Path.GetFileName(imagePath), fs));
                 }
-                var input = await interactivity.WaitForButtonAsync(msg, ctx.User, timeoutOverride: TimeSpan.FromMinutes(1));
+                var input = await interactivity.WaitForButtonAsync(msg, ctx.User);
 
                 if(input.TimedOut)
                     break;
@@ -113,7 +113,7 @@ namespace DiscordBotRewrite.Commands {
                     embed.WithDescription("");
                     msg = await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddComponents(colorSelectComponent).AddEmbed(embed));
 
-                    var cInput = await interactivity.WaitForSelectAsync(msg, ctx.User, "color", timeoutOverride: TimeSpan.FromMinutes(1));
+                    var cInput = await interactivity.WaitForSelectAsync(msg, ctx.User, "color");
 
                     if(cInput.TimedOut)
                         break;

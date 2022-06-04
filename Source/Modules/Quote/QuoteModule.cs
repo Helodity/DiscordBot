@@ -64,6 +64,7 @@ namespace DiscordBotRewrite.Modules {
                 var quoteEmbed = new DiscordEmbedBuilder()
                     .WithColor(Bot.Style.DefaultColor)
                     .WithDescription(proper_message.Content)
+                    .WithTimestamp(proper_message.Timestamp)
                     .WithAuthor($"{author.Username}#{author.Discriminator}", iconUrl: string.IsNullOrEmpty(author.AvatarHash) ? author.DefaultAvatarUrl : author.AvatarUrl)
                     .WithImageUrl(attachment != null ? attachment.Url : "");
 

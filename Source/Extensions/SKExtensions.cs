@@ -1,18 +1,16 @@
-﻿using SkiaSharp;
-using System;
+﻿using System;
 using System.IO;
+using SkiaSharp;
 
 namespace DiscordBotRewrite.Extensions {
     public static class SKExtensions {
         public static void SaveToPng(this SKImage image, string path) {
-            using(SKData data = image.Encode(SKEncodedImageFormat.Png, 100)) {
-                if(!File.Exists(path))
-                    FileExtension.CreateFileWithPath(path);
+            using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
+            if(!File.Exists(path))
+                FileExtension.CreateFileWithPath(path);
 
-                using(var stream = File.OpenWrite(path)) {
-                    data.SaveTo(stream);
-                }
-            }
+            using var stream = File.OpenWrite(path);
+            data.SaveTo(stream);
         }
         public static void DrawHatchedRect(this SKCanvas canvas, float x, float y, float w, float h, SKPaint paint, int hatchDistance) {
             SKPath path = new SKPath();

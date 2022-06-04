@@ -34,10 +34,9 @@ namespace DiscordBotRewrite.Commands {
                 return;
 
             List<string> choices = input.Result.Values["choices"].Split(",").ToList();
-            foreach(string choice in choices) {
-                choice.Trim();
-            }
-            choices.RemoveAll(x => x == null);
+            choices.ForEach(choice => { choice = choice.Trim(); });
+
+            choices.RemoveAll(x => string.IsNullOrWhiteSpace(x));
             choices = choices.Distinct().ToList();
 
             DateTime endTime = DateTime.Now.AddTime((int)unitAmt, unit);

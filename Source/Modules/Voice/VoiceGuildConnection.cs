@@ -25,7 +25,7 @@ namespace DiscordBotRewrite.Modules {
         public bool IsShuffling;
 
         readonly ulong GuildId;
-        TimeBasedEvent IdleDisconnectEvent;
+        readonly TimeBasedEvent IdleDisconnectEvent;
         #endregion
 
         #region Constructors

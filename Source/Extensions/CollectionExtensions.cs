@@ -7,7 +7,7 @@ namespace DiscordBotRewrite.Extensions {
             this Dictionary<TKey, TValue> dict,
             TKey key,
             TValue value) {
-            if(dict.TryGetValue(key, out TValue v)) {
+            if(dict.TryGetValue(key, out _)) {
                 dict.Remove(key);
             }
             dict.Add(key, value);
@@ -17,9 +17,7 @@ namespace DiscordBotRewrite.Extensions {
             while(n > 1) {
                 n--;
                 int k = GenerateRandomNumber(0, n);
-                T value = list[k];
-                list[k] = list[n];
-                list[n] = value;
+                (list[n], list[k]) = (list[k], list[n]);
             }
         }
     }
