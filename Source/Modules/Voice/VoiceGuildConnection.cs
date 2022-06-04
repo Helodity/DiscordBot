@@ -33,11 +33,13 @@ namespace DiscordBotRewrite.Modules {
             Node = client.GetLavalink().ConnectedNodes.Values.First();
             Conn = Node.GetGuildConnection(guild);
             TrackQueue = new List<LavalinkTrack>();
-            IsConnected = false;
-            IsPaused = false;
-            IsLooping = false;
-            IsShuffling = false;
+            IsConnected = IsPaused = IsLooping = IsShuffling = false;
             GuildId = guild.Id;
+            IdleDisconnectEvent = new TimeBasedEvent(TimeSpan.FromMinutes(5), async () => {
+                if(!IsTrackPlaying()) {
+                    await Disconnect();
+                }
+            });
         }
         #endregion
 
@@ -66,9 +68,10 @@ namespace DiscordBotRewrite.Modules {
             } else {
                 await PlayTrack(track);
             }
+            IdleDisconnectEvent.Cancel();
         }
         public async Task ProgressQueue() {
-            if(IsLooping && CurrentTrack != null) {
+            if(IsLooping) {
                 QueueTrack(CurrentTrack);
             }
             await PlayNextTrackInQueue();
@@ -90,12 +93,7 @@ namespace DiscordBotRewrite.Modules {
             }
 
             if(!IsTrackPlaying()) {
-                //Automatically disconnect after 5 minutes if no tracks are playing
-                IdleDisconnectEvent = new TimeBasedEvent(TimeSpan.FromMinutes(5), async () => {
-                    if(!IsTrackPlaying()) {
-                        await Disconnect();
-                    }
-                });
+                IdleDisconnectEvent.Start();
             }
         }
 

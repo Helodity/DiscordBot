@@ -31,11 +31,14 @@ namespace DiscordBotRewrite.Global {
             }
             if(!Cancelled) {
                 OnTimer.Invoke();
+                //Reset variables to allow the event to restart
+                Running = Cancelled = false;
             }
         }
 
         public void Cancel() {
-            Cancelled = true;
+            if(Running) //Prevents us from cancelling a non existant event
+                Cancelled = true;
         }
         #endregion
     }
