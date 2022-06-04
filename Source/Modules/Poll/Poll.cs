@@ -12,6 +12,10 @@ namespace DiscordBotRewrite.Modules {
         [JsonProperty("guild_id")]
         public readonly ulong GuildId;
 
+        //The channel this poll is posted in
+        [JsonProperty("channel_id")]
+        public readonly ulong ChannelId;
+
         //The message ID of this poll
         [JsonProperty("message_id")]
         public readonly ulong MessageId;
@@ -35,8 +39,9 @@ namespace DiscordBotRewrite.Modules {
 
         #region Constructors
         [JsonConstructor]
-        public Poll(ulong guildId, ulong messageId, string question, List<string> choices, DateTime endTime) {
+        public Poll(ulong guildId, ulong channelId, ulong messageId, string question, List<string> choices, DateTime endTime) {
             GuildId = guildId;
+            ChannelId = channelId;
             MessageId = messageId;
             Question = question;
             EndTime = endTime;
@@ -47,6 +52,7 @@ namespace DiscordBotRewrite.Modules {
         }
         public Poll(DiscordMessage message, string question, List<string> choices, DateTime endTime) {
             GuildId = message.Channel.Guild.Id;
+            ChannelId = message.Channel.Id;
             MessageId = message.Id;
             Question = question;
             EndTime = endTime;
@@ -54,6 +60,12 @@ namespace DiscordBotRewrite.Modules {
             Votes = new Dictionary<ulong, Vote>();
 
             StartWatching();
+        }
+        #endregion
+
+        #region Public
+        public async Task<DiscordMessage> GetMessageAsync() {
+            return await (await Bot.Client.GetChannelAsync(ChannelId)).GetMessageAsync(MessageId);
         }
         #endregion
 

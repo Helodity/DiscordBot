@@ -8,7 +8,6 @@ using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.SlashCommands;
 using static DiscordBotRewrite.Global.Global;
-using static DiscordBotRewrite.Global.Style;
 
 namespace DiscordBotRewrite.Modules {
     public class PollModule {
@@ -56,25 +55,17 @@ namespace DiscordBotRewrite.Modules {
                 }, true);
                 return false;
             }
-            //Create the selection component based on given choices
-            var choiceSelections = new List<DiscordSelectComponentOption>();
-            for(int i = 0; i < choices.Count; i++) {
-                choiceSelections.Add(new DiscordSelectComponentOption(choices[i], choices[i]));
-            }
-            choiceSelections.Add(new DiscordSelectComponentOption("Clear", "Clear"));
-            var selectionComponent = new DiscordSelectComponent("choice", "Vote here!", choiceSelections);
-
-            //Build the message and send it
-            var messageBuilder = new DiscordMessageBuilder()
-                .AddEmbed(new DiscordEmbedBuilder {
-                    Description = $"Poll ends {endTime.ToTimestamp()}! \n {question.ToBold()}",
-                    Color = Bot.Style.DefaultColor
-                })
-                .AddComponents(selectionComponent);
+            //Send a dummy message to update
             var channel = ctx.Guild.GetChannel((ulong)pollData.PollChannelId);
-            var message = await channel.SendMessageAsync(messageBuilder);
+            var message = await channel.SendMessageAsync(new DiscordEmbedBuilder {
+                Description = "Preparing poll...",
+                Color = Bot.Style.DefaultColor
+            });
 
             Poll poll = new Poll(message, question, choices, endTime);
+            var messageBuilder = GetActivePollMessageBuilder(poll);
+            await message.ModifyAsync(messageBuilder);
+
             pollData.ActivePolls.Add(poll);
             SavePollData(pollData);
             return true;
@@ -97,11 +88,8 @@ namespace DiscordBotRewrite.Modules {
                 voteString += $"**{choice}:** {votes.Where(x => x == choice).Count() - 1} \n";
             }
 
-            var guild = await Bot.Client.GetGuildAsync(poll.GuildId);
-            var channel = guild.GetChannel((ulong)pData.PollChannelId);
-
             try {
-                var message = await channel.GetMessageAsync(poll.MessageId);
+                var message = await poll.GetMessageAsync();
                 var builder = new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder {
                     Description = $"Poll has ended {poll.EndTime.ToTimestamp()}!\n {poll.Question.ToBold()} \n{voteString}",
                     Color = Bot.Style.DefaultColor
@@ -109,7 +97,7 @@ namespace DiscordBotRewrite.Modules {
 
                 await message.ModifyAsync(builder);
             } catch {
-                //We couldn't get the message, so just don't edit the message
+                //We couldn't get the message, so just don't bother editing it
                 return;
             }
         }
@@ -142,27 +130,45 @@ namespace DiscordBotRewrite.Modules {
             GuildPollData pollData = GetPollData(e.Guild.Id);
             var potentialPolls = pollData.ActivePolls.Where(x => x.MessageId == e.Message.Id);
 
-            if(!potentialPolls.Any()) {
+            if(!potentialPolls.Any())
                 return;
-            }
 
             //There can only be one message in any guild with an ID, so we can just choose the first poll in the list.
             Poll poll = potentialPolls.First();
 
             if(e.Values.First() == "Clear") {
-                //Remove Vote
                 poll.Votes.Remove(e.User.Id);
             } else {
-                //Add Vote
                 Vote vote = new Vote(e.User.Id, e.Values.First());
                 poll.Votes.AddOrUpdate(e.User.Id, vote);
             }
+            var message = await poll.GetMessageAsync();
+            await message.ModifyAsync(GetActivePollMessageBuilder(poll));
 
             //Save poll status and respond to the interaction
             SavePollData(pollData);
 
             await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
         }
+
+        DiscordMessageBuilder GetActivePollMessageBuilder(Poll poll) {
+            //Create the selection component based on given choices
+            var choiceSelections = new List<DiscordSelectComponentOption>();
+            for(int i = 0; i < poll.Choices.Count; i++) {
+                choiceSelections.Add(new DiscordSelectComponentOption(poll.Choices[i], poll.Choices[i]));
+            }
+            choiceSelections.Add(new DiscordSelectComponentOption("Clear", "Clear"));
+            var selectionComponent = new DiscordSelectComponent("choice", "Vote here!", choiceSelections);
+
+            return new DiscordMessageBuilder()
+                .AddEmbed(new DiscordEmbedBuilder {
+                    Description = $"Poll ends {poll.EndTime.ToTimestamp()}! \n {poll.Question.ToBold()}\n {poll.Votes.Count} members have voted.",
+                    Color = Bot.Style.DefaultColor
+                })
+                .AddComponents(selectionComponent);
+        }
+
+
         #endregion
     }
 }
