@@ -86,8 +86,7 @@ namespace DiscordBotRewrite.Commands {
         [UserAbleToModify]
         public async Task Skip(InteractionContext ctx) {
             VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-            VGConn.CurrentTrack = null; //some shitty workaround to avoid looping the current song~!
-            await VGConn.ProgressQueue();
+            await VGConn.SkipTrack();
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = "Skipped!",
@@ -228,5 +227,6 @@ namespace DiscordBotRewrite.Commands {
             await ctx.CreateResponseAsync(embed);
         }
         #endregion
+
     }
 }

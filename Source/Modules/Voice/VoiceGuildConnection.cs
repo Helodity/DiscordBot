@@ -17,14 +17,14 @@ namespace DiscordBotRewrite.Modules {
         public LavalinkNodeConnection Node;
         public LavalinkGuildConnection Conn;
         public List<LavalinkTrack> TrackQueue;
-        public LavalinkTrack CurrentTrack;
+        public LavalinkTrack CurrentTrack => Conn.CurrentState.CurrentTrack;
 
         public bool IsConnected { get; private set; }
         public bool IsPaused;
         public bool IsLooping;
         public bool IsShuffling;
 
-        readonly ulong Id;
+        readonly ulong GuildId;
         TimeBasedEvent IdleDisconnectEvent;
         #endregion
 
@@ -33,12 +33,11 @@ namespace DiscordBotRewrite.Modules {
             Node = client.GetLavalink().ConnectedNodes.Values.First();
             Conn = Node.GetGuildConnection(guild);
             TrackQueue = new List<LavalinkTrack>();
-            CurrentTrack = null;
             IsConnected = false;
             IsPaused = false;
             IsLooping = false;
             IsShuffling = false;
-            Id = guild.Id;
+            GuildId = guild.Id;
         }
         #endregion
 
@@ -72,10 +71,10 @@ namespace DiscordBotRewrite.Modules {
             if(IsLooping && CurrentTrack != null) {
                 QueueTrack(CurrentTrack);
             }
-            if(TrackQueue.Count > 0) {
-                await PlayTrack(GetNextSongInQueue());
-            } else
-                await StopPlaying();
+            await PlayNextTrackInQueue();
+        }
+        public async Task SkipTrack() {
+            await PlayNextTrackInQueue();
         }
         #endregion
 
@@ -98,21 +97,26 @@ namespace DiscordBotRewrite.Modules {
                     }
                 });
             }
-
         }
 
         private Task OnChannelDisconnect(LavalinkGuildConnection sender, WebSocketCloseEventArgs e) {
             IsConnected = false;
-            Bot.Modules.Voice.OnVoiceGuildDisconnect(Id);
-            Bot.Client.Logger.LogDebug($"Web socket closed at {Id}");
+            Bot.Modules.Voice.OnVoiceGuildDisconnect(GuildId);
+            Bot.Client.Logger.LogDebug($"Web socket closed at {GuildId}");
             return Task.CompletedTask;
         }
-
         #endregion
 
         #region Private
         void QueueTrack(LavalinkTrack track) {
             TrackQueue.Add(track);
+        }
+        async Task PlayNextTrackInQueue() {
+            if(TrackQueue.Count > 0) {
+                await PlayTrack(GetNextSongInQueue());
+            } else {
+                await StopPlaying();
+            }
         }
         async Task PlayTrack(LavalinkTrack track) {
             if(!IsConnected) {
@@ -120,12 +124,9 @@ namespace DiscordBotRewrite.Modules {
                 return;
             }
 
-            CurrentTrack = track;
             await Conn.PlayAsync(track);
         }
-
         async Task StopPlaying() {
-            CurrentTrack = null;
             await Conn.StopAsync();
         }
         bool IsTrackPlaying() {
