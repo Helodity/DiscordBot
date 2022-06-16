@@ -158,6 +158,13 @@ namespace DiscordBotRewrite.Modules {
                 return 0;
             }
 
+            //If we're not looping, the song gets removed at the end anyway, so no point is using the bag system
+            if(!IsLooping) {
+                LastPlayedTracks.Clear();
+                return GenerateRandomNumber(0, TrackQueue.Count - 1);
+            }
+
+
             //Implement a "bag" system. All songs will be played before being readded to the possible songs that can be chosen.
             List<LavalinkTrack> potentialTracks = TrackQueue.Where(t => !LastPlayedTracks.Contains(t)).ToList();
 
@@ -167,7 +174,7 @@ namespace DiscordBotRewrite.Modules {
             }
 
             //Just pick one at random and send it back!
-            return GenerateRandomNumber(0, potentialTracks.Count);
+            return GenerateRandomNumber(0, potentialTracks.Count - 1);
         }
 
         #endregion
