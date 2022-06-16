@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using DiscordBotRewrite.Attributes;
 using DiscordBotRewrite.Extensions;
 using DiscordBotRewrite.Modules;
+using DSharpPlus;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.Lavalink;
 using DSharpPlus.SlashCommands;
 
@@ -50,7 +53,7 @@ namespace DiscordBotRewrite.Commands {
                 await VGconn.Connect(ctx.Member.VoiceState.Channel);
 
             await ctx.DeferAsync();
-            var tracks = await module.GetTracksAsync(search, VGconn.Node);
+            var tracks = await module.PerformStandardSearchAsync(search, VGconn.Node);
             if(tracks.Count == 0) {
                 await ctx.EditResponseAsync(new DiscordEmbedBuilder {
                     Description = "No results found!",
@@ -59,7 +62,7 @@ namespace DiscordBotRewrite.Commands {
                 return;
             }
 
-            bool canPlayFirstSong = VGconn.CurrentTrack == null;
+            bool canPlayFirstSong = VGconn.PlayingTrack == null;
             if(VGconn.IsShuffling)
                 tracks.Randomize();
 
@@ -227,5 +230,69 @@ namespace DiscordBotRewrite.Commands {
         }
         #endregion
 
+        #region Save Queue
+        [SlashCommand("save_queue", "Show the queue")]
+        public async Task SaveQueue(InteractionContext ctx) {
+            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+
+            string toWrite = VGConn.PlayingTrack.Uri.ToString();
+
+            foreach(LavalinkTrack track in VGConn.TrackQueue) {
+                toWrite += $"\n{track.Uri}";
+            }
+            string path = $"Queues/{ctx.User.Id}.txt";
+            if(!File.Exists(path))
+                FileExtension.CreateFileWithPath(path);
+
+            File.WriteAllText(path, toWrite);
+
+            using var stream = File.OpenRead(path);
+            var msgBuilder = new DiscordInteractionResponseBuilder().AddFile(path, stream);
+
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, msgBuilder);
+        }
+        #endregion
+
+        #region Load Queue
+        [SlashCommand("load_queue", "Show the queue")]
+        [UserAbleToPlay]
+        public async Task LoadQueue(InteractionContext ctx, [Option("reset", "Do we remove the other songs from the queue?")] bool reset = false) {
+            var form = new DiscordInteractionResponseBuilder()
+              .WithTitle("Load queue")
+              .WithCustomId("quote_load_modal")
+              .AddComponents(new TextInputComponent("Queue", "queue", "Paste the contents of your queue file here!", style: TextInputStyle.Paragraph));
+
+            await ctx.CreateResponseAsync(InteractionResponseType.Modal, form);
+
+            var interactivity = ctx.Client.GetInteractivity();
+            var input = await interactivity.WaitForModalAsync("quote_load_modal", ctx.User);
+
+            if(input.TimedOut)
+                return;
+
+            List<string> uriStrings = input.Result.Values["queue"].Split("\n").ToList();
+            uriStrings.ForEach(choice => { choice = choice.Trim(); });
+            uriStrings.RemoveAll(x => string.IsNullOrWhiteSpace(x));
+
+            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+            if(reset) {
+                VGConn.TrackQueue = new List<LavalinkTrack>();
+            }
+
+            if(!VGConn.IsConnected || VGConn.Conn.Channel == ctx.Member.VoiceState.Channel)
+                await VGConn.Connect(ctx.Member.VoiceState.Channel);
+
+            foreach(var str in uriStrings) {
+                List<LavalinkTrack> tracks = await Bot.Modules.Voice.TrackSearchAsync(VGConn.Node, str, LavalinkSearchType.Plain);
+                if(tracks.Any())
+                    await VGConn.RequestTrackAsync(tracks.First());
+            }
+            await input.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder {
+                Description = "Sucessfully loaded the queue!",
+                Color = Bot.Style.SuccessColor
+            }).AsEphemeral());
+
+        }
+        #endregion
     }
 }

@@ -17,8 +17,8 @@ namespace DiscordBotRewrite.Modules {
         public LavalinkNodeConnection Node;
         public LavalinkGuildConnection Conn;
         public List<LavalinkTrack> TrackQueue;
-        public LavalinkTrack CurrentTrack => Conn.CurrentState.CurrentTrack;
-
+        public LavalinkTrack PlayingTrack => Conn.CurrentState.CurrentTrack;
+        public LavalinkTrack LastPlayedTrack { get; private set; }
         public bool IsConnected { get; private set; }
         public bool IsPaused;
         public bool IsLooping;
@@ -72,7 +72,7 @@ namespace DiscordBotRewrite.Modules {
         }
         public async Task ProgressQueue() {
             if(IsLooping) {
-                QueueTrack(CurrentTrack);
+                QueueTrack(LastPlayedTrack);
             }
             await PlayNextTrackInQueue();
         }
@@ -86,6 +86,7 @@ namespace DiscordBotRewrite.Modules {
             Bot.Client.Logger.LogDebug($"Lavalink PlaybackFinished triggered. Reason: {args.Reason}");
             if(!Conn.MembersInChannel().Any()) {
                 await Disconnect();
+                return;
             }
 
             if(args.Reason == TrackEndReason.Finished) {
@@ -107,6 +108,10 @@ namespace DiscordBotRewrite.Modules {
 
         #region Private
         void QueueTrack(LavalinkTrack track) {
+            if(track == null) {
+                Bot.Client.Logger.LogCritical("Tried to queue null track!");
+                return;
+            }
             TrackQueue.Add(track);
         }
         async Task PlayNextTrackInQueue() {
@@ -117,18 +122,19 @@ namespace DiscordBotRewrite.Modules {
             }
         }
         async Task PlayTrack(LavalinkTrack track) {
-            if(!IsConnected) {
+            if(track == null) {
                 Bot.Client.Logger.LogCritical("Tried to play null track!");
                 return;
             }
 
             await Conn.PlayAsync(track);
+            LastPlayedTrack = track;
         }
         async Task StopPlaying() {
             await Conn.StopAsync();
         }
         bool IsTrackPlaying() {
-            return CurrentTrack != null;
+            return PlayingTrack != null;
         }
         LavalinkTrack GetNextSongInQueue() {
             //The most recent song queued is index [Count - 1], so if there's enough songs, we reduce the max by one more to prevent repeating!

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
@@ -69,38 +70,32 @@ namespace DiscordBotRewrite.Modules {
             GuildConnections.Remove(guild_id);
             Bot.Client.Logger.LogDebug(GuildConnections.Count.ToString());
         }
-        public async Task<List<LavalinkTrack>> GetTracksAsync(string search, LavalinkNodeConnection node) {
-            LavalinkLoadResult loadResult;
+        public async Task<List<LavalinkTrack>> PerformStandardSearchAsync(string search, LavalinkNodeConnection node) {
 
-            Uri uri = new Uri(search, UriKind.RelativeOrAbsolute);
-            if(uri != null) {
-                loadResult = await node.Rest.GetTracksAsync(uri);
-                if(loadResult.LoadResultType != LavalinkLoadResultType.LoadFailed
-                    && loadResult.LoadResultType != LavalinkLoadResultType.NoMatches
-                    && loadResult.Tracks.Any()) {
-                    return loadResult.Tracks.ToList(); //Here we could send a playlist, wheras a single song url can only return one song, so here we can take every result
+            var tracks = new List<LavalinkTrack>();
+            tracks = await TrackSearchAsync(node, search, LavalinkSearchType.Plain, true);
+            if(tracks.Any())
+                return tracks;
+
+            tracks = await TrackSearchAsync(node, search, LavalinkSearchType.Plain, false);
+            if(tracks.Any())
+                return tracks;
+
+            return new List<LavalinkTrack>();
+        }
+
+        public async Task<List<LavalinkTrack>> TrackSearchAsync(LavalinkNodeConnection node, string search, LavalinkSearchType type, bool returnAll = false) {
+            LavalinkLoadResult loadResult = await node.Rest.GetTracksAsync(search, type);
+            if(loadResult.LoadResultType != LavalinkLoadResultType.LoadFailed
+                        && loadResult.LoadResultType != LavalinkLoadResultType.NoMatches
+                        && loadResult.Tracks.Any()) {
+                if(returnAll) {
+                    return loadResult.Tracks.ToList();
+                } else {
+                    return new List<LavalinkTrack> { loadResult.Tracks.First() };
                 }
             }
-            //Youtube search
-            loadResult = await node.Rest.GetTracksAsync(search);
-            if(loadResult.LoadResultType != LavalinkLoadResultType.LoadFailed
-                && loadResult.LoadResultType != LavalinkLoadResultType.NoMatches &&
-                loadResult.Tracks.Any()) {
-                List<LavalinkTrack> track = new List<LavalinkTrack> {
-                loadResult.Tracks.First() //We cant take all the results since this would add 20ish songs, when only one makes sense to add
-            };
-                return track;
-            }
-            //Soundcloud
-            loadResult = await node.Rest.GetTracksAsync(search, LavalinkSearchType.SoundCloud);
-            if(loadResult.LoadResultType != LavalinkLoadResultType.LoadFailed
-                && loadResult.LoadResultType != LavalinkLoadResultType.NoMatches
-                && loadResult.Tracks.Any()) {
-                List<LavalinkTrack> track = new List<LavalinkTrack> {
-                loadResult.Tracks.First()
-            };
-                return track;
-            }
+
             return new List<LavalinkTrack>();
         }
         #endregion
