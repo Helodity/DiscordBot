@@ -63,12 +63,7 @@ namespace DiscordBotRewrite.Commands {
             }
 
             bool canPlayFirstSong = VGconn.PlayingTrack == null;
-            if(VGconn.IsShuffling)
-                tracks.Randomize();
-
-            foreach(var track in tracks) {
-                await VGconn.RequestTrackAsync(track);
-            }
+            await VGconn.RequestTracksAsync(tracks);
 
             string output = canPlayFirstSong ? $"Now playing `{tracks[0].Title}`" : $"Enqueued `{tracks[0].Title}`";
             if(tracks.Count > 1) {
@@ -284,11 +279,13 @@ namespace DiscordBotRewrite.Commands {
             if(!VGConn.IsConnected || VGConn.Conn.Channel == ctx.Member.VoiceState.Channel)
                 await VGConn.Connect(ctx.Member.VoiceState.Channel);
 
+            List<LavalinkTrack> tracks = new List<LavalinkTrack>();
             foreach(var str in uriStrings) {
-                List<LavalinkTrack> tracks = await Bot.Modules.Voice.TrackSearchAsync(VGConn.Node, str, LavalinkSearchType.Plain);
-                if(tracks.Any())
-                    await VGConn.RequestTrackAsync(tracks.First());
+                List<LavalinkTrack> searchResult = await Bot.Modules.Voice.TrackSearchAsync(VGConn.Node, str, LavalinkSearchType.Plain);
+                tracks.AddRange(searchResult);
             }
+            await VGConn.RequestTracksAsync(tracks);
+
             await input.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder {
                 Description = "Sucessfully loaded the queue!",
                 Color = Bot.Style.SuccessColor

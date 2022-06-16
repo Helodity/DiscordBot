@@ -51,29 +51,37 @@ namespace DiscordBotRewrite.Modules {
             Conn.DiscordWebSocketClosed += OnChannelDisconnect;
             IsConnected = true;
         }
-
         public async Task Disconnect() {
             await Conn.DisconnectAsync();
             await OnChannelDisconnect(Conn, null);
             IdleDisconnectEvent.Cancel();
         }
-        public async Task RequestTrackAsync(LavalinkTrack track) {
-            if(track == null) {
-                Bot.Client.Logger.LogError("PlaySong had a null track!");
+        public async Task RequestTracksAsync(List<LavalinkTrack> tracks) {
+            if(tracks == null) {
+                Bot.Client.Logger.LogError("RequestTracksAsync had a null list!");
                 return;
             }
 
-            if(IsTrackPlaying()) {
-                QueueTrack(track);
-            } else {
-                await PlayTrack(track);
+            if(!tracks.Any())
+                return;
+
+            if(IsShuffling)
+                tracks.Randomize();
+
+            foreach(LavalinkTrack track in tracks) {
+                if(track == null)
+                    continue;
+
+                if(IsTrackPlaying())
+                    QueueTrack(track);
+                else
+                    await PlayTrack(track);
             }
             IdleDisconnectEvent.Cancel();
         }
         public async Task ProgressQueue() {
-            if(IsLooping) {
+            if(IsLooping)
                 QueueTrack(LastPlayedTrack);
-            }
             await PlayNextTrackInQueue();
         }
         public async Task SkipTrack() {
