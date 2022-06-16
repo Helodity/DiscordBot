@@ -184,19 +184,19 @@ namespace DiscordBotRewrite.Commands {
             VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
             index--; //Convert from 1 being the first song to 0
             int songCount = VGConn.TrackQueue.Count;
-            if(index > songCount || index < 1) {
+            if(index > songCount || index < 0) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"Index out of bounds!",
                     Color = Bot.Style.ErrorColor
                 }, true);
                 return;
             }
-            VGConn.TrackQueue.RemoveAt((int)index);
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Removed {VGConn.TrackQueue[(int)index].Title} from the queue!",
                 Color = Bot.Style.DefaultColor
             });
+            VGConn.TrackQueue.RemoveAt((int)index);
         }
         #endregion
 
@@ -235,10 +235,9 @@ namespace DiscordBotRewrite.Commands {
         public async Task SaveQueue(InteractionContext ctx) {
             VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
 
-            string toWrite = VGConn.PlayingTrack.Uri.ToString();
-
+            string toWrite = VGConn.PlayingTrack.Identifier;
             foreach(LavalinkTrack track in VGConn.TrackQueue) {
-                toWrite += $"\n{track.Uri}";
+                toWrite += $";{track.Identifier}";
             }
             string path = $"Queues/{ctx.User.Id}.txt";
             if(!File.Exists(path))
@@ -270,8 +269,11 @@ namespace DiscordBotRewrite.Commands {
             if(input.TimedOut)
                 return;
 
-            List<string> uriStrings = input.Result.Values["queue"].Split("\n").ToList();
-            uriStrings.ForEach(choice => { choice = choice.Trim(); });
+            List<string> uriStrings = input.Result.Values["queue"].Split(";").ToList();
+            uriStrings.ForEach(str => {
+                str = str.Trim();
+                str = "https://www.youtube.com/watch?v=" + str;
+            });
             uriStrings.RemoveAll(x => string.IsNullOrWhiteSpace(x));
 
             VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);

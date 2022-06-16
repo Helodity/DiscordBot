@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
@@ -77,7 +75,7 @@ namespace DiscordBotRewrite.Modules {
             if(tracks.Any())
                 return tracks;
 
-            tracks = await TrackSearchAsync(node, search, LavalinkSearchType.Plain, false);
+            tracks = await TrackSearchAsync(node, search, LavalinkSearchType.Youtube);
             if(tracks.Any())
                 return tracks;
 
