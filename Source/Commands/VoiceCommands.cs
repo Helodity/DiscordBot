@@ -62,7 +62,7 @@ namespace DiscordBotRewrite.Commands {
                 return;
             }
 
-            bool canPlayFirstSong = VGconn.PlayingTrack == null;
+            bool canPlayFirstSong = VGconn.IsPlayingTrack();
             await VGconn.RequestTracksAsync(tracks);
 
             string output = canPlayFirstSong ? $"Now playing `{tracks[0].Title}`" : $"Enqueued `{tracks[0].Title}`";
@@ -230,7 +230,7 @@ namespace DiscordBotRewrite.Commands {
         public async Task SaveQueue(InteractionContext ctx) {
             VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
 
-            string toWrite = VGConn.PlayingTrack.Identifier;
+            string toWrite = VGConn.CurrentTrack.Identifier;
             foreach(LavalinkTrack track in VGConn.TrackQueue) {
                 toWrite += $";{track.Identifier}";
             }

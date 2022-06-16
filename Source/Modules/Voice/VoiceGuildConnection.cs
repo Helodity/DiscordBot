@@ -17,8 +17,8 @@ namespace DiscordBotRewrite.Modules {
         public LavalinkNodeConnection Node;
         public LavalinkGuildConnection Conn;
         public List<LavalinkTrack> TrackQueue;
-        public LavalinkTrack PlayingTrack => Conn.CurrentState.CurrentTrack;
-        public LavalinkTrack LastPlayedTrack { get; private set; }
+        public LavalinkTrack CurrentTrack => Conn.CurrentState.CurrentTrack;
+        public List<LavalinkTrack> LastPlayedTracks { get; private set; }
         public bool IsConnected { get; private set; }
         public bool IsPaused;
         public bool IsLooping;
@@ -33,12 +33,12 @@ namespace DiscordBotRewrite.Modules {
             Node = client.GetLavalink().ConnectedNodes.Values.First();
             Conn = Node.GetGuildConnection(guild);
             TrackQueue = new List<LavalinkTrack>();
+            LastPlayedTracks = new List<LavalinkTrack>();
             IsConnected = IsPaused = IsLooping = IsShuffling = false;
             GuildId = guild.Id;
             IdleDisconnectEvent = new TimeBasedEvent(TimeSpan.FromMinutes(5), async () => {
-                if(!IsTrackPlaying()) {
+                if(!IsPlayingTrack())
                     await Disconnect();
-                }
             });
         }
         #endregion
@@ -72,7 +72,7 @@ namespace DiscordBotRewrite.Modules {
                 if(track == null)
                     continue;
 
-                if(IsTrackPlaying())
+                if(IsPlayingTrack())
                     QueueTrack(track);
                 else
                     await PlayTrack(track);
@@ -81,11 +81,14 @@ namespace DiscordBotRewrite.Modules {
         }
         public async Task ProgressQueue() {
             if(IsLooping)
-                QueueTrack(LastPlayedTrack);
+                QueueTrack(LastPlayedTracks.First());
             await PlayNextTrackInQueue();
         }
         public async Task SkipTrack() {
             await PlayNextTrackInQueue();
+        }
+        public bool IsPlayingTrack() {
+            return CurrentTrack != null;
         }
         #endregion
 
@@ -101,7 +104,7 @@ namespace DiscordBotRewrite.Modules {
                 await ProgressQueue();
             }
 
-            if(!IsTrackPlaying()) {
+            if(!IsPlayingTrack()) {
                 IdleDisconnectEvent.Start();
             }
         }
@@ -136,22 +139,37 @@ namespace DiscordBotRewrite.Modules {
             }
 
             await Conn.PlayAsync(track);
-            LastPlayedTrack = track;
+            LastPlayedTracks.Insert(0, track);
         }
         async Task StopPlaying() {
             await Conn.StopAsync();
         }
-        bool IsTrackPlaying() {
-            return PlayingTrack != null;
-        }
         LavalinkTrack GetNextSongInQueue() {
-            //The most recent song queued is index [Count - 1], so if there's enough songs, we reduce the max by one more to prevent repeating!
-            int songIndex = IsShuffling ? GenerateRandomNumber(0, TrackQueue.Count - Math.Min(2, TrackQueue.Count)) : 0;
+            int songIndex = GetNextSongIndex();
 
             LavalinkTrack track = TrackQueue[songIndex];
             TrackQueue.RemoveAt(songIndex);
             return track;
         }
+
+        int GetNextSongIndex() {
+            if(!IsShuffling) {
+                LastPlayedTracks.Clear();
+                return 0;
+            }
+
+            //Implement a "bag" system. All songs will be played before being readded to the possible songs that can be chosen.
+            List<LavalinkTrack> potentialTracks = TrackQueue.Where(t => !LastPlayedTracks.Contains(t)).ToList();
+
+            if(!potentialTracks.Any()) {
+                potentialTracks = TrackQueue.GetRange(1, potentialTracks.Count - 1); //Avoid repeating the same song on a "bag" reset
+                LastPlayedTracks.Clear();
+            }
+
+            //Just pick one at random and send it back!
+            return GenerateRandomNumber(0, potentialTracks.Count);
+        }
+
         #endregion
     }
 }
