@@ -230,7 +230,11 @@ namespace DiscordBotRewrite.Commands {
         public async Task SaveQueue(InteractionContext ctx) {
             VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
 
-            string toWrite = VGConn.CurrentTrack.Identifier;
+            string toWrite = string.Empty;
+
+            if(VGConn.IsPlayingTrack())
+                toWrite += VGConn.Conn.CurrentState.CurrentTrack.Identifier;
+
             foreach(LavalinkTrack track in VGConn.TrackQueue) {
                 toWrite += $";{track.Identifier}";
             }
