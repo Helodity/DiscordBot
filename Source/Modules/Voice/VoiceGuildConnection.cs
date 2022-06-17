@@ -33,14 +33,12 @@ namespace DiscordBotRewrite.Modules {
         public VoiceGuildConnection(DiscordClient client, DiscordGuild guild) {
             Node = client.GetLavalink().ConnectedNodes.Values.First();
             Conn = Node.GetGuildConnection(guild);
-            TrackQueue = new List<LavalinkTrack>();
-            UsedShuffleTracks = new List<LavalinkTrack>();
-            IsConnected = IsPaused = IsLooping = IsShuffling = false;
             GuildId = guild.Id;
             IdleDisconnectEvent = new TimeBasedEvent(TimeSpan.FromMinutes(5), async () => {
                 if(!IsPlayingTrack())
                     await Disconnect();
             });
+            SetDefaultState();
         }
         #endregion
 
@@ -55,7 +53,6 @@ namespace DiscordBotRewrite.Modules {
         public async Task Disconnect() {
             await Conn.DisconnectAsync();
             await OnChannelDisconnect(Conn, null);
-            IdleDisconnectEvent.Cancel();
         }
         public async Task RequestTracksAsync(List<LavalinkTrack> tracks) {
             if(tracks == null) {
@@ -111,9 +108,9 @@ namespace DiscordBotRewrite.Modules {
         }
 
         private Task OnChannelDisconnect(LavalinkGuildConnection sender, WebSocketCloseEventArgs e) {
-            IsConnected = false;
-            Bot.Modules.Voice.OnVoiceGuildDisconnect(GuildId);
             Bot.Client.Logger.LogDebug($"Web socket closed at {GuildId}");
+            SetDefaultState();
+            IdleDisconnectEvent.Cancel();
             return Task.CompletedTask;
         }
         #endregion
@@ -153,7 +150,6 @@ namespace DiscordBotRewrite.Modules {
             TrackQueue.RemoveAt(songIndex);
             return track;
         }
-
         int GetNextSongIndex() {
             if(!IsShuffling) {
                 UsedShuffleTracks.Clear();
@@ -177,6 +173,12 @@ namespace DiscordBotRewrite.Modules {
 
             //Just pick one at random and send it back!
             return GenerateRandomNumber(0, potentialTracks.Count - 1);
+        }
+
+        void SetDefaultState() {
+            TrackQueue = new List<LavalinkTrack>();
+            UsedShuffleTracks = new List<LavalinkTrack>();
+            IsConnected = IsPaused = IsLooping = IsShuffling = false;
         }
 
         #endregion

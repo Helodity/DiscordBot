@@ -226,56 +226,62 @@ namespace DiscordBotRewrite.Commands {
         #endregion
 
         #region Save Queue
-        [SlashCommand("save_queue", "Show the queue")]
-        public async Task SaveQueue(InteractionContext ctx) {
+        [SlashCommand("create_savestate", "Create a text file that represents the current state of the player")]
+        public async Task CreateSavestate(InteractionContext ctx) {
             VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
 
             string toWrite = string.Empty;
 
+            //Create the parameters (shuffle and looping) section of the savestate
+            if(VGConn.IsLooping) toWrite += "L";
+            if(VGConn.IsShuffling) toWrite += "S";
+
+            //Add a divider between sections
+            toWrite += "|";
+
+            //Create the queue section of the savestate
             if(VGConn.IsPlayingTrack())
                 toWrite += VGConn.Conn.CurrentState.CurrentTrack.Identifier;
-
             foreach(LavalinkTrack track in VGConn.TrackQueue) {
                 toWrite += $";{track.Identifier}";
             }
+
+            //Save the file to memory
             string path = $"Queues/{ctx.User.Id}.txt";
             if(!File.Exists(path))
                 FileExtension.CreateFileWithPath(path);
-
             File.WriteAllText(path, toWrite);
 
+            //Send the file in the channel
             using var stream = File.OpenRead(path);
             var msgBuilder = new DiscordInteractionResponseBuilder().AddFile(path, stream);
-
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, msgBuilder);
         }
         #endregion
 
         #region Load Queue
-        [SlashCommand("load_queue", "Show the queue")]
+        [SlashCommand("load_savestate", "Load a previously made player state")]
         [UserAbleToPlay]
-        public async Task LoadQueue(InteractionContext ctx, [Option("reset", "Do we remove the other songs from the queue?")] bool reset = false) {
-            var form = new DiscordInteractionResponseBuilder()
-              .WithTitle("Load queue")
-              .WithCustomId("quote_load_modal")
-              .AddComponents(new TextInputComponent("Queue", "queue", "Paste the contents of your queue file here!", style: TextInputStyle.Paragraph));
+        public async Task LoadSaveState(InteractionContext ctx,
+            [Option("Save", "Paste the contents of your savestate here!")] string inputSavestate,
+            [Option("clear", "Do we remove preexisting songs from the queue?")] bool reset = true) {
 
-            await ctx.CreateResponseAsync(InteractionResponseType.Modal, form);
+            List<string> sections = inputSavestate.Split("|").ToList();
 
-            var interactivity = ctx.Client.GetInteractivity();
-            var input = await interactivity.WaitForModalAsync("quote_load_modal", ctx.User);
+            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
 
-            if(input.TimedOut)
-                return;
+            //Load the parameters section
+            VGConn.IsLooping = sections[0].Contains("L");
+            VGConn.IsShuffling = sections[0].Contains("S");
 
-            List<string> uriStrings = input.Result.Values["queue"].Split(";").ToList();
+            //Load the queue section
+            List<string> uriStrings = sections[1].Split(";").ToList();
             uriStrings.ForEach(str => {
                 str = str.Trim();
                 str = "https://www.youtube.com/watch?v=" + str;
             });
             uriStrings.RemoveAll(x => string.IsNullOrWhiteSpace(x));
 
-            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
             if(reset) {
                 VGConn.TrackQueue = new List<LavalinkTrack>();
             }
@@ -290,10 +296,10 @@ namespace DiscordBotRewrite.Commands {
             }
             await VGConn.RequestTracksAsync(tracks);
 
-            await input.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder {
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = "Sucessfully loaded the queue!",
                 Color = Bot.Style.SuccessColor
-            }).AsEphemeral());
+            });
 
         }
         #endregion
