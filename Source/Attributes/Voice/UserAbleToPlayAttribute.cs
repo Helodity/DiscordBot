@@ -5,8 +5,8 @@ using Microsoft.Extensions.Logging;
 
 namespace DiscordBotRewrite.Attributes {
     public class UserAbleToPlayAttribute : VoiceAttribute {
-        public override async Task<bool> ExecuteChecksAsync(InteractionContext ctx) {
-            VoiceGuildConnection connection = Bot.Modules.Voice.GetGuildConnection(ctx);
+        public override async Task<bool> ExecuteChecksAsync(BaseContext ctx) {
+            VoiceGuildConnection connection = Bot.Modules.Voice.GetGuildConnection((InteractionContext)ctx);
 
             if(connection.Node == null) {
                 ctx.Client.Logger.LogError("Lavalink error in UserAbleToPlayAttribute: Node does not exist");
@@ -14,7 +14,7 @@ namespace DiscordBotRewrite.Attributes {
                 return false;
             }
 
-            if(!MemberInSameVoiceAsBot(connection.Conn, ctx)) {
+            if(!MemberInSameVoiceAsBot(connection.Conn, (InteractionContext)ctx)) {
                 if(connection.IsConnected) {
                     if(IsBeingUsed(connection.Conn)) {
                         await ctx.CreateResponseAsync("I'm already being used by someone else!", true);

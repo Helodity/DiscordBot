@@ -5,8 +5,8 @@ using Microsoft.Extensions.Logging;
 
 namespace DiscordBotRewrite.Attributes {
     public class UserAbleToSummonAttribute : VoiceAttribute {
-        public override async Task<bool> ExecuteChecksAsync(InteractionContext ctx) {
-            VoiceGuildConnection connection = Bot.Modules.Voice.GetGuildConnection(ctx);
+        public override async Task<bool> ExecuteChecksAsync(BaseContext ctx) {
+            VoiceGuildConnection connection = Bot.Modules.Voice.GetGuildConnection((InteractionContext)ctx);
 
             if(connection.Node == null) {
                 ctx.Client.Logger.LogError("Lavalink error in UserAbleToSummonAttribute: Node does not exist");

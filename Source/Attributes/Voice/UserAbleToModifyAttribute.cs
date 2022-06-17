@@ -8,8 +8,8 @@ using Microsoft.Extensions.Logging;
 
 namespace DiscordBotRewrite.Attributes {
     public class UserAbleToModifyAttribute : VoiceAttribute {
-        public override async Task<bool> ExecuteChecksAsync(InteractionContext ctx) {
-            VoiceGuildConnection connection = Bot.Modules.Voice.GetGuildConnection(ctx);
+        public override async Task<bool> ExecuteChecksAsync(BaseContext ctx) {
+            VoiceGuildConnection connection = Bot.Modules.Voice.GetGuildConnection((InteractionContext)ctx);
 
             if(connection.Node == null) {
                 ctx.Client.Logger.LogError("Lavalink error in UserAbleToModifyAttribute: Node does not exist");
@@ -17,7 +17,7 @@ namespace DiscordBotRewrite.Attributes {
                 return false;
             }
 
-            if(!MemberInSameVoiceAsBot(connection.Conn, ctx)) {
+            if(!MemberInSameVoiceAsBot(connection.Conn, (InteractionContext)ctx)) {
                 await ctx.CreateResponseAsync("You need to be in the same channel as me!", true);
                 return false;
             }

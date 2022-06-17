@@ -225,83 +225,87 @@ namespace DiscordBotRewrite.Commands {
         }
         #endregion
 
-        #region Save Queue
-        [SlashCommand("create_savestate", "Create a text file that represents the current state of the player")]
-        public async Task CreateSavestate(InteractionContext ctx) {
-            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+        [SlashCommandGroup("savestate", "Savestate related commands")]
+        public class SaveStateCommands : ApplicationCommandModule {
+            #region Create Savestate
+            [SlashCommand("create", "Create a text file that represents the current state of the player")]
+            public async Task CreateSavestate(InteractionContext ctx) {
+                VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
 
-            string toWrite = string.Empty;
+                string toWrite = string.Empty;
 
-            //Create the parameters (shuffle and looping) section of the savestate
-            if(VGConn.IsLooping) toWrite += "L";
-            if(VGConn.IsShuffling) toWrite += "S";
+                //Create the parameters (shuffle and looping) section of the savestate
+                if(VGConn.IsLooping) toWrite += "L";
+                if(VGConn.IsShuffling) toWrite += "S";
 
-            //Add a divider between sections
-            toWrite += "|";
+                //Add a divider between sections
+                toWrite += "|";
 
-            //Create the queue section of the savestate
-            if(VGConn.IsPlayingTrack())
-                toWrite += VGConn.Conn.CurrentState.CurrentTrack.Identifier;
-            foreach(LavalinkTrack track in VGConn.TrackQueue) {
-                toWrite += $";{track.Identifier}";
+                //Create the queue section of the savestate
+                if(VGConn.IsPlayingTrack())
+                    toWrite += VGConn.Conn.CurrentState.CurrentTrack.Identifier;
+                foreach(LavalinkTrack track in VGConn.TrackQueue) {
+                    toWrite += $";{track.Identifier}";
+                }
+
+                //Save the file to memory
+                string path = $"Queues/{ctx.User.Id}.txt";
+                if(!File.Exists(path))
+                    FileExtension.CreateFileWithPath(path);
+                File.WriteAllText(path, toWrite);
+
+                //Send the file in the channel
+                using var stream = File.OpenRead(path);
+                var msgBuilder = new DiscordInteractionResponseBuilder().AddFile(path, stream);
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, msgBuilder);
             }
+            #endregion
 
-            //Save the file to memory
-            string path = $"Queues/{ctx.User.Id}.txt";
-            if(!File.Exists(path))
-                FileExtension.CreateFileWithPath(path);
-            File.WriteAllText(path, toWrite);
+            #region Load Savestate
+            [SlashCommand("load", "Load a previously made player state")]
+            [UserAbleToPlay]
+            public async Task LoadSaveState(InteractionContext ctx,
+                [Option("Save", "Paste the contents of your savestate here!")] string inputSavestate,
+                [Option("clear", "Do we remove preexisting songs from the queue?")] bool reset = true) {
 
-            //Send the file in the channel
-            using var stream = File.OpenRead(path);
-            var msgBuilder = new DiscordInteractionResponseBuilder().AddFile(path, stream);
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, msgBuilder);
+                List<string> sections = inputSavestate.Split("|").ToList();
+
+                VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+
+                //Load the parameters section
+                VGConn.IsLooping = sections[0].Contains("L");
+                VGConn.IsShuffling = sections[0].Contains("S");
+
+                //Load the queue section
+                List<string> uriStrings = sections[1].Split(";").ToList();
+                uriStrings.ForEach(str => {
+                    str = str.Trim();
+                    str = "https://www.youtube.com/watch?v=" + str;
+                });
+                uriStrings.RemoveAll(x => string.IsNullOrWhiteSpace(x));
+
+                if(reset) {
+                    VGConn.TrackQueue = new List<LavalinkTrack>();
+                }
+
+                if(!VGConn.IsConnected || VGConn.Conn.Channel == ctx.Member.VoiceState.Channel)
+                    await VGConn.Connect(ctx.Member.VoiceState.Channel);
+
+                List<LavalinkTrack> tracks = new List<LavalinkTrack>();
+                foreach(var str in uriStrings) {
+                    List<LavalinkTrack> searchResult = await Bot.Modules.Voice.TrackSearchAsync(VGConn.Node, str, LavalinkSearchType.Plain);
+                    tracks.AddRange(searchResult);
+                }
+                await VGConn.RequestTracksAsync(tracks);
+
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = "Sucessfully loaded the queue!",
+                    Color = Bot.Style.SuccessColor
+                });
+
+            }
+            #endregion
+
         }
-        #endregion
-
-        #region Load Queue
-        [SlashCommand("load_savestate", "Load a previously made player state")]
-        [UserAbleToPlay]
-        public async Task LoadSaveState(InteractionContext ctx,
-            [Option("Save", "Paste the contents of your savestate here!")] string inputSavestate,
-            [Option("clear", "Do we remove preexisting songs from the queue?")] bool reset = true) {
-
-            List<string> sections = inputSavestate.Split("|").ToList();
-
-            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-
-            //Load the parameters section
-            VGConn.IsLooping = sections[0].Contains("L");
-            VGConn.IsShuffling = sections[0].Contains("S");
-
-            //Load the queue section
-            List<string> uriStrings = sections[1].Split(";").ToList();
-            uriStrings.ForEach(str => {
-                str = str.Trim();
-                str = "https://www.youtube.com/watch?v=" + str;
-            });
-            uriStrings.RemoveAll(x => string.IsNullOrWhiteSpace(x));
-
-            if(reset) {
-                VGConn.TrackQueue = new List<LavalinkTrack>();
-            }
-
-            if(!VGConn.IsConnected || VGConn.Conn.Channel == ctx.Member.VoiceState.Channel)
-                await VGConn.Connect(ctx.Member.VoiceState.Channel);
-
-            List<LavalinkTrack> tracks = new List<LavalinkTrack>();
-            foreach(var str in uriStrings) {
-                List<LavalinkTrack> searchResult = await Bot.Modules.Voice.TrackSearchAsync(VGConn.Node, str, LavalinkSearchType.Plain);
-                tracks.AddRange(searchResult);
-            }
-            await VGConn.RequestTracksAsync(tracks);
-
-            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                Description = "Sucessfully loaded the queue!",
-                Color = Bot.Style.SuccessColor
-            });
-
-        }
-        #endregion
     }
 }
