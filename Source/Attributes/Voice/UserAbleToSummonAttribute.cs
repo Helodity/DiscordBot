@@ -19,9 +19,11 @@ namespace DiscordBotRewrite.Attributes {
                 return false;
             }
 
-            if(IsBeingUsed(connection.Conn)) {
-                await ctx.CreateResponseAsync("I'm already being used by someone else!", true);
-                return false;
+            if(connection.IsConnected) {
+                if(IsBeingUsed(connection.Conn)) {
+                    await ctx.CreateResponseAsync("I'm already being used by someone else!", true);
+                    return false;
+                }
             }
 
             return true;

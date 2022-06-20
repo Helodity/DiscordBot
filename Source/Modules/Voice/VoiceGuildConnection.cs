@@ -106,7 +106,6 @@ namespace DiscordBotRewrite.Modules {
                 IdleDisconnectEvent.Start();
             }
         }
-
         private Task OnChannelDisconnect(LavalinkGuildConnection sender, WebSocketCloseEventArgs e) {
             Bot.Client.Logger.LogDebug($"Web socket closed at {GuildId}");
             SetDefaultState();
@@ -124,10 +123,8 @@ namespace DiscordBotRewrite.Modules {
             TrackQueue.Add(track);
         }
         async Task PlayNextTrackInQueue() {
-            if(TrackQueue.Count > 0) {
+            if(TrackQueue.Any()) {
                 await PlayTrack(GetNextSongInQueue());
-            } else {
-                await StopPlaying();
             }
         }
         async Task PlayTrack(LavalinkTrack track) {
@@ -139,9 +136,6 @@ namespace DiscordBotRewrite.Modules {
             await Conn.PlayAsync(track);
             LastPlayedTrack = track;
             UsedShuffleTracks.Add(track);
-        }
-        async Task StopPlaying() {
-            await Conn.StopAsync();
         }
         LavalinkTrack GetNextSongInQueue() {
             int songIndex = GetNextSongIndex();
@@ -174,13 +168,11 @@ namespace DiscordBotRewrite.Modules {
             //Just pick one at random and send it back!
             return GenerateRandomNumber(0, potentialTracks.Count - 1);
         }
-
         void SetDefaultState() {
             TrackQueue = new List<LavalinkTrack>();
             UsedShuffleTracks = new List<LavalinkTrack>();
             IsConnected = IsPaused = IsLooping = IsShuffling = false;
         }
-
         #endregion
     }
 }

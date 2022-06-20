@@ -62,7 +62,7 @@ namespace DiscordBotRewrite.Commands {
                 return;
             }
 
-            bool canPlayFirstSong = VGconn.IsPlayingTrack();
+            bool canPlayFirstSong = !VGconn.IsPlayingTrack();
             await VGconn.RequestTracksAsync(tracks);
 
             string output = canPlayFirstSong ? $"Now playing `{tracks[0].Title}`" : $"Enqueued `{tracks[0].Title}`";
