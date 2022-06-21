@@ -105,7 +105,7 @@ namespace DiscordBotRewrite.Modules {
         #endregion
 
         #region Events
-        Task RemoveFinishedPolls(DiscordClient sender, GuildDownloadCompletedEventArgs e) {
+        Task RemoveFinishedPolls(DiscordClient sender, GuildDownloadCompletedEventArgs args) {
             //Compile polls to be completed
             List<Poll> toComplete = new List<Poll>();
             foreach(var item in PollData) {

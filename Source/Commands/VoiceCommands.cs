@@ -177,9 +177,10 @@ namespace DiscordBotRewrite.Commands {
         [UserAbleToModify]
         public async Task Remove(InteractionContext ctx, [Option("index", "index")] long index) {
             VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-            index--; //Convert from 1 being the first song to 0
             int songCount = VGConn.TrackQueue.Count;
-            if(index > songCount || index < 0) {
+
+            index--; //Convert from 1 being the first song to 0
+            if(index >= songCount || index < 0) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"Index out of bounds!",
                     Color = Bot.Style.ErrorColor

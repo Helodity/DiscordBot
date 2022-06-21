@@ -92,6 +92,7 @@ namespace DiscordBotRewrite.Modules {
 
         #region Events
         async Task OnPlaybackFinish(LavalinkGuildConnection conn, TrackFinishEventArgs args) {
+            args.Handled = true;
             Bot.Client.Logger.LogDebug($"Lavalink PlaybackFinished triggered. Reason: {args.Reason}");
             if(!Conn.MembersInChannel().Any()) {
                 await Disconnect();
@@ -106,7 +107,8 @@ namespace DiscordBotRewrite.Modules {
                 IdleDisconnectEvent.Start();
             }
         }
-        private Task OnChannelDisconnect(LavalinkGuildConnection sender, WebSocketCloseEventArgs e) {
+        private Task OnChannelDisconnect(LavalinkGuildConnection sender, WebSocketCloseEventArgs args) {
+            args.Handled = true;
             Bot.Client.Logger.LogDebug($"Web socket closed at {GuildId}");
             SetDefaultState();
             IdleDisconnectEvent.Cancel();
@@ -145,6 +147,7 @@ namespace DiscordBotRewrite.Modules {
             return track;
         }
         int GetNextSongIndex() {
+            //We're not shuffling, so we don't need the bag system
             if(!IsShuffling) {
                 UsedShuffleTracks.Clear();
                 return 0;
