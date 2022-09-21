@@ -80,6 +80,7 @@ namespace DiscordBotRewrite {
             SlashExtension.RegisterCommands<QuestionCommands>(TargetServer);
             SlashExtension.RegisterCommands<QuoteCommands>(TargetServer);
             SlashExtension.RegisterCommands<PollCommands>(TargetServer);
+            SlashExtension.RegisterCommands<EconomyCommands>(TargetServer);
             if(Config.UseVoice) SlashExtension.RegisterCommands<VoiceCommands>(TargetServer);
 
             return Task.CompletedTask;

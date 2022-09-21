@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace DiscordBotRewrite.Global {
     public readonly struct Cooldown {
         #region Properties
-        readonly DateTime EndTime;
+        public readonly DateTime EndTime;
         public bool IsOver => DateTime.Compare(DateTime.Now, EndTime) >= 0;
         #endregion
 

@@ -4,14 +4,14 @@ using Newtonsoft.Json;
 namespace DiscordBotRewrite.Modules {
     public abstract class ModuleData {
         #region Properties
-        //What guild this data is for
-        [JsonProperty("guild_id")]
-        public readonly ulong GuildId;
+        //What guild/user this data is for
+        [JsonProperty("id")]
+        public readonly ulong Id;
         #endregion
 
         #region Constructors
         public ModuleData(ulong id) {
-            GuildId = id;
+            Id = id;
         }
         #endregion
     }

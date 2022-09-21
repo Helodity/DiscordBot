@@ -158,7 +158,7 @@ namespace DiscordBotRewrite.Modules {
             return pollData;
         }
         void SavePollData(GuildPollData data) {
-            PollData.AddOrUpdate(data.GuildId, data);
+            PollData.AddOrUpdate(data.Id, data);
             SaveJson(PollData, GuildPollData.JsonLocation);
         }
         DiscordMessageBuilder GetActivePollMessageBuilder(Poll poll) {

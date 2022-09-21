@@ -3,6 +3,8 @@
 namespace DiscordBotRewrite.Modules {
     public class ModuleContainer {
         #region Properties
+        public readonly EconomyModule Economy;
+
         public readonly VoiceModule Voice;
 
         public readonly QuoteModule Quote;
@@ -16,6 +18,8 @@ namespace DiscordBotRewrite.Modules {
 
         #region Constructors
         public ModuleContainer(DiscordClient client) {
+            Economy = new EconomyModule();
+
             Quote = new QuoteModule(client);
 
             Question = new QuestionModule();

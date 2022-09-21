@@ -30,7 +30,7 @@ namespace DiscordBotRewrite.Modules {
             return userData;
         }
         public void SaveQuoteData(GuildQuoteData data) {
-            QuoteData.AddOrUpdate(data.GuildId, data);
+            QuoteData.AddOrUpdate(data.Id, data);
             SaveJson(QuoteData, GuildQuoteData.JsonLocation);
         }
         #endregion

@@ -124,7 +124,7 @@ namespace DiscordBotRewrite.Modules {
 
         #region Private
         void SavePixelMap(PixelMap data) {
-            PixelMaps.AddOrUpdate(data.GuildId, data);
+            PixelMaps.AddOrUpdate(data.Id, data);
             SaveJson(PixelMaps, PixelMap.JsonLocation);
         }
         SKSurface CreateSurface(PixelMap map, SKPointI anchor, SKPointI end, int pixelSize) {
