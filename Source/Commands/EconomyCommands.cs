@@ -130,7 +130,14 @@ namespace DiscordBotRewrite.Commands {
         #region Total
         [SlashCommand("total", "Money?")]
         public async Task Total(InteractionContext ctx) {
-            long amount = Bot.Modules.Economy.GetTotalBalance();
+            var accounts = Bot.Modules.Economy.GetUserAccounts();
+
+            long amount = 0;
+            foreach(UserAccount a in accounts) {
+                amount += a.Balance;
+                amount += a.Bank;
+            }
+
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"There is ${amount} in circulation",
                 Color = Bot.Style.DefaultColor
@@ -168,7 +175,7 @@ namespace DiscordBotRewrite.Commands {
             }
 
             Bot.Modules.Economy.AddRobCooldown(ctx.User.Id);
-            int rng = GenerateRandomNumber(-10, 10);
+            int rng = GenerateRandomNumber(-1, 10);
             if(rng < 0) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"You couldn't find an opening, try again later!",
@@ -177,7 +184,7 @@ namespace DiscordBotRewrite.Commands {
                 return;
             }
 
-            long amount = (long)(target.Balance * 0.02 * rng);
+            long amount = (long)(target.Balance * 0.01 * rng);
             amount = Bot.Modules.Economy.Transfer(user.Id, ctx.User.Id, amount);
 
 
@@ -192,6 +199,16 @@ namespace DiscordBotRewrite.Commands {
         [SlashCommand("highlow", "Money?")]
         public async Task HighLow(InteractionContext ctx, [Option("bet", "how much to lose")] long bet) {
             UserAccount account = Bot.Modules.Economy.GetAccount(ctx.User.Id);
+
+            if(bet < 0) {
+                account.Balance -= 1;
+                Bot.Modules.Economy.SaveAccounts();
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = $"Alright bitchass stop trying to game the system. I'm taking a dollar from you cuz of that.",
+                    Color = Bot.Style.ErrorColor
+                });
+                return;
+            }
 
             if(account.Balance < bet) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -209,8 +226,8 @@ namespace DiscordBotRewrite.Commands {
             };
 
             DiscordButtonComponent[] continueQuitButtons = {
-                new DiscordButtonComponent(ButtonStyle.Success, "continue", null, false, new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":white_check_mark:"))),
-                new DiscordButtonComponent(ButtonStyle.Danger, "quit", null, false, new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":heavy_multiplication_x:"))),
+                new DiscordButtonComponent(ButtonStyle.Success, "continue", "Keep Playing"),
+                new DiscordButtonComponent(ButtonStyle.Danger, "quit", "Cash Out"),
             };
 
             await ctx.DeferAsync();
@@ -223,12 +240,12 @@ namespace DiscordBotRewrite.Commands {
             bool gameEnded = false;
             bool hasLost = false;
             int gamesWon = 0;
-            int anchorNumber = GenerateRandomNumber(1, 100), actualNumber = anchorNumber;
+            Deck deck = Deck.GetStandardDeck();
+            Card anchorCard = deck.Draw();
             while(!gameEnded) {
-                while(actualNumber == anchorNumber)
-                    actualNumber = GenerateRandomNumber(1, 100);
+                Card nextCard = deck.Draw();
                 embed.WithColor(Bot.Style.DefaultColor);
-                embed.WithDescription($"{ctx.User.Mention}, I'm thinking of a number between 1 and 100. Is it higher or lower than {anchorNumber}?");
+                embed.WithDescription($"{ctx.User.Mention}, Will the next card I draw be higher or lower than a {anchorCard}?");
 
 
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(highLowButtons));
@@ -244,45 +261,124 @@ namespace DiscordBotRewrite.Commands {
                 await input.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage);
 
                 if(input.Result.Id == "lower") {
-                    hasLost = anchorNumber < actualNumber;
+                    hasLost = anchorCard.value < nextCard.value;
                 }
                 if(input.Result.Id == "higher") {
-                    hasLost = anchorNumber > actualNumber;
+                    hasLost = anchorCard.value > nextCard.value;
                 }
 
                 if(hasLost) {
                     embed.WithColor(Bot.Style.ErrorColor);
-                    embed.WithDescription($"Sorry, the number was {actualNumber}. You lost your ${bet}.");
+                    embed.WithDescription($"Sorry, I drew {nextCard}. You lost your ${bet} bet.");
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
                     break;
                 }
 
                 gamesWon++;
-                long currentWinnings = (long)MathF.Pow(2, gamesWon) * bet + bet;
+                long currentWinnings = (long)(bet * Bot.Modules.Economy.GetWinningsMultiplier(gamesWon, 0.4));
+                long nextWinnings = (long)(bet * Bot.Modules.Economy.GetWinningsMultiplier(gamesWon + 1, 0.4));
+                int cardsLeft = deck.Size();
+
                 embed.WithColor(Bot.Style.SuccessColor);
-                embed.WithDescription($"Congrats, {ctx.User.Mention}, the number was {actualNumber}! You've won {gamesWon} rounds.\n " +
-                    $"You currently have ${currentWinnings}. You can risk it for more or stop here. Would you like to continue?");
+                if(cardsLeft == 0) {
+                    embed.WithDescription($"Congrats, {ctx.User.Mention}, I drew {nextCard}! There are no cards left!.\n " +
+                    $"You win {currentWinnings}!");
+                    account.Balance += currentWinnings;
+                    Bot.Modules.Economy.SaveAccounts();
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
+                    return;
+                }
+                embed.WithDescription($"Congrats, {ctx.User.Mention}, I drew {nextCard}! There are {deck.Size()}/52 cards left!.\n " +
+                    $"You can cash out with your ${bet} bet and ${currentWinnings - bet} in winnings, or risk it all for ${nextWinnings - currentWinnings} more.");
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(continueQuitButtons));
 
                 var continueResult = await interactivity.WaitForButtonAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
 
-                if(continueResult.TimedOut) {
-                    embed.WithDescription($"You cashed out with {currentWinnings}.");
-                    account.Balance += currentWinnings;
-                    Bot.Modules.Economy.SaveAccounts();
-                    gameEnded = true;
-                }
-                await continueResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage);
-                if(continueResult.Result.Id == "quit") {
+                if(!continueResult.TimedOut)
+                    await continueResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage);
+
+                if(continueResult.TimedOut || continueResult.Result.Id == "quit") {
                     embed.WithDescription($"You cashed out with ${currentWinnings}.");
                     account.Balance += currentWinnings;
                     Bot.Modules.Economy.SaveAccounts();
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
                     gameEnded = true;
                 }
-                anchorNumber = actualNumber;
+                anchorCard = nextCard;
+            }
+        }
+        #endregion
+
+        #region Blackjack
+        [SlashCommand("blackjack", "Play blackjack against the bot")]
+        public async Task BlackJack(InteractionContext ctx, [Option("bet", "how much to lose")] long bet) {
+            UserAccount account = Bot.Modules.Economy.GetAccount(ctx.User.Id);
+
+            if(bet < 0) {
+                account.Balance -= 1;
+                Bot.Modules.Economy.SaveAccounts();
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = $"Alright bitchass stop trying to game the system. I'm taking a dollar from you cuz of that.",
+                    Color = Bot.Style.ErrorColor
+                });
+                return;
             }
 
+            if(account.Balance < bet) {
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = $"This isn't the stock market, you can only bet what's in your pocket.",
+                    Color = Bot.Style.ErrorColor
+                });
+                return;
+            }
+            //Just make sure they can't get robbed mid game.
+            account.Balance -= bet;
+
+
+
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                //Description = $"{c}",
+                Color = Bot.Style.DefaultColor
+            });
+        }
+        #endregion
+
+        #region baltop
+        [SlashCommand("baltop", "Money?")]
+        public async Task Baltop(InteractionContext ctx) {
+            var accounts = Bot.Modules.Economy.GetUserAccounts();
+
+            accounts.Sort((x,x2) => (x2.Bank + x2.Balance).CompareTo(x.Bank + x.Balance));
+
+            string output = "";
+            int toCount = Math.Min(accounts.Count, 5);
+            for(int i = 0; i < toCount; i++) {
+                output += $"**#{i + 1}**: {(await ctx.Client.GetUserAsync(accounts[i].Id)).Username} - ${accounts[i].Balance + accounts[i].Bank}\n";
+            }
+
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Title = "Top Balances",
+                Description = output,
+                Color = Bot.Style.DefaultColor
+            });
+        }
+        #endregion
+
+        #region multipliers
+        [SlashCommand("multipliers", "Money?")]
+        public async Task ListWinningMultipliers(InteractionContext ctx, [Option("count", "how much to lose")] long count,
+            [Option("scale", "how much to lose")] double scale) {
+            string output = "";
+
+            for(int i = 1; i < count + 1; i++) {
+                output += $"**{i} win**: x{Bot.Modules.Economy.GetWinningsMultiplier(i, scale)}\n";
+            }
+
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Title = "Top Balances",
+                Description = output,
+                Color = Bot.Style.DefaultColor
+            });
         }
         #endregion
     }

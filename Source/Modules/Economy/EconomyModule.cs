@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using DiscordBotRewrite.Extensions;
 using DiscordBotRewrite.Global;
 using DSharpPlus.SlashCommands;
@@ -17,6 +18,9 @@ namespace DiscordBotRewrite.Modules {
         }
         #endregion
 
+        public List<UserAccount> GetUserAccounts() {
+            return UserAccounts.Values.ToList();
+        }
 
         public UserAccount GetAccount(ulong id) {
             if(!UserAccounts.TryGetValue(id, out UserAccount account)) {
@@ -25,6 +29,7 @@ namespace DiscordBotRewrite.Modules {
             }
             return account;
         }
+
         public long Transfer(ulong id1, ulong id2, long value) {
             if(value <= 0)
                 return 0;
@@ -64,6 +69,10 @@ namespace DiscordBotRewrite.Modules {
                 return false;
             }
             return true;
+        }
+
+        public double GetWinningsMultiplier(int gamesWon, double scale = 1.0) {
+            return Math.Pow(2, gamesWon * scale);
         }
 
         public void SaveAccounts() {
