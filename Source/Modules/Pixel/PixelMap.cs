@@ -1,27 +1,32 @@
 ﻿using System;
-using System.Collections.Generic;
-using DiscordBotRewrite.Global;
-using Newtonsoft.Json;
+using SQLite;
 using static DiscordBotRewrite.Modules.PixelModule;
+
 namespace DiscordBotRewrite.Modules {
-    public class PixelMap : ModuleData {
+    [Table("pixel_maps")]
+    public class PixelMap {
         #region Properties
-        public const string JsonLocation = "Json/PixelMaps.json";
+        [PrimaryKey, Unique, Column("id")]
+        public long Id { get; set; }
+        [Column("width")]
+        public int Width { get; set; }
 
-        [JsonProperty("width")]
-        public int Width;
-        [JsonProperty("height")]
-        public int Height;
-        [JsonProperty("cooldown_sec")]
-        public uint PlaceCooldown;
-        [JsonProperty("pixel_data")]
-        public byte[] PixelState;
+        [Column("height")]
+        public int Height { get; set; }
 
-        public Dictionary<ulong, Cooldown> PlaceCooldowns = new Dictionary<ulong, Cooldown>();
+        [Column("cooldown_time")]
+        public uint PlaceCooldown { get; set; }
+
+        [Column("pixel_data")]
+        public byte[] PixelState { get; set; }
+
+        //public Dictionary<ulong, Cooldown> PlaceCooldowns = new Dictionary<ulong, Cooldown>();
         #endregion
 
         #region Constructor
-        public PixelMap(ulong id, int width = 100, int height = 100) : base(id) {
+        public PixelMap() {}
+        public PixelMap(long id, int width = 100, int height = 100) {
+            Id = id;
             Width = width;
             Height = height;
             PixelState = new byte[Width * Height];
@@ -54,7 +59,7 @@ namespace DiscordBotRewrite.Modules {
         }
 
         public int TimeUntilNextPlace(ulong userId) {
-            return (int)Cooldown.TimeUntilExpiration(userId, ref PlaceCooldowns).TotalSeconds;
+            return 0; // (int)Cooldown.TimeUntilExpiration(userId, ref PlaceCooldowns).TotalSeconds;
         }
         #endregion
     }

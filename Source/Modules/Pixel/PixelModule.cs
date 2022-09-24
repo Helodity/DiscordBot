@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using DiscordBotRewrite.Extensions;
-using DiscordBotRewrite.Global;
 using DSharpPlus.SlashCommands;
 using SkiaSharp;
-using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite.Modules {
     public class PixelModule {
@@ -41,30 +39,28 @@ namespace DiscordBotRewrite.Modules {
             Cyan
         };
         #endregion
-
-        readonly Dictionary<ulong, PixelMap> PixelMaps;
         #endregion
 
         #region Constructors
         public PixelModule() {
-            PixelMaps = LoadJson<Dictionary<ulong, PixelMap>>(PixelMap.JsonLocation);
+            Bot.Database.CreateTable<PixelMap>();
         }
         #endregion
 
         #region Public
         public bool TryPlacePixel(ulong guildId, ulong userId, int x, int y, PixelEnum color) {
-            var map = GetPixelMap(guildId);
+            var map = GetPixelMap((long)guildId);
 
-            if(Cooldown.UserHasCooldown(userId, ref map.PlaceCooldowns)) {
-                return false;
-            }
-            map.PlaceCooldowns.Add(userId, new Cooldown(DateTime.Now.AddSeconds(map.PlaceCooldown)));
+            //if(Cooldown.UserHasCooldown(userId, ref map.PlaceCooldowns)) {
+            //    return false;
+            //}
+            //map.PlaceCooldowns.Add(userId, new Cooldown(DateTime.Now.AddSeconds(map.PlaceCooldown)));
             map.SetPixel(x, y, color);
-            SavePixelMap(map);
+            Bot.Database.Update(map);
             return true;
         }
         public void CreateImage(InteractionContext ctx) {
-            PixelMap map = GetPixelMap(ctx.Guild.Id);
+            PixelMap map = GetPixelMap((long)ctx.Guild.Id);
 
             int pixelSize = Math.Max(1, 500 / Math.Max(map.Width, map.Height));
             SKPointI anchor = new SKPointI(0, 0);
@@ -74,7 +70,7 @@ namespace DiscordBotRewrite.Modules {
             surface.Snapshot().SaveToPng($"PixelImages/img{ctx.User.Id}.png");
         }
         public void CreateImage(InteractionContext ctx, int x, int y, int zoom) {
-            PixelMap map = GetPixelMap(ctx.Guild.Id);
+            PixelMap map = GetPixelMap((long)ctx.Guild.Id);
 
             int halfDistance = zoom / 2;
             SKPointI anchor = new SKPointI(x - halfDistance, y - halfDistance);
@@ -84,7 +80,7 @@ namespace DiscordBotRewrite.Modules {
             surface.Snapshot().SaveToPng($"PixelImages/img{ctx.User.Id}.png");
         }
         public void CreateImageWithUI(InteractionContext ctx, int x, int y, int zoom, PixelEnum selectedPixel) {
-            PixelMap map = GetPixelMap(ctx.Guild.Id);
+            PixelMap map = GetPixelMap((long)ctx.Guild.Id);
             int halfDistance = zoom / 2;
             SKPointI anchor = new SKPointI(x - halfDistance, y - halfDistance);
             SKPointI end = new SKPointI(x + halfDistance, y + halfDistance);
@@ -97,36 +93,31 @@ namespace DiscordBotRewrite.Modules {
 
             surface.Snapshot().SaveToPng($"PixelImages/img{ctx.User.Id}.png");
         }
-        public PixelMap GetPixelMap(ulong id) {
-            if(!PixelMaps.TryGetValue(id, out PixelMap pixelMap)) {
-                pixelMap = new PixelMap(id);
-                PixelMaps.Add(id, pixelMap);
+        public PixelMap GetPixelMap(long id) {
+            PixelMap map = Bot.Database.Find<PixelMap>(id);
+            if(map == null) {
+                map = new PixelMap(id);
+                Bot.Database.InsertOrReplace(map);
             }
-
-            if(pixelMap.Width * pixelMap.Height != pixelMap.PixelState.Length) {
-                pixelMap.Resize(pixelMap.Width, pixelMap.Height);
-                SavePixelMap(pixelMap);
+            if(map.Width * map.Height != map.PixelState.Length) {
+                map.Resize(map.Width, map.Height);
+                Bot.Database.Update(map);
             }
-
-            return pixelMap;
+            return map;
         }
-        public void ResizeMap(ulong guildId, int width, int height) {
+        public void ResizeMap(long guildId, int width, int height) {
             var map = GetPixelMap(guildId);
             map.Resize(width, height);
-            SavePixelMap(map);
+            Bot.Database.Update(map);
         }
-        public void SetCooldown(ulong guildId, uint duration) {
+        public void SetCooldown(long guildId, uint duration) {
             var map = GetPixelMap(guildId);
             map.PlaceCooldown = duration;
-            SavePixelMap(map);
+            Bot.Database.Update(map);
         }
         #endregion
 
         #region Private
-        void SavePixelMap(PixelMap data) {
-            PixelMaps.AddOrUpdate(data.Id, data);
-            SaveJson(PixelMaps, PixelMap.JsonLocation);
-        }
         SKSurface CreateSurface(PixelMap map, SKPointI anchor, SKPointI end, int pixelSize) {
             int xDist = end.X + 1 - anchor.X;
             int yDist = end.Y + 1 - anchor.Y;
