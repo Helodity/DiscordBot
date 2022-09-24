@@ -4,10 +4,10 @@ using SQLite;
 namespace DiscordBotRewrite.Modules {
     [Table("economy_accounts")]
     public class UserAccount {
-        [PrimaryKey]
-        [Unique]
-        [Column("id")]
+        [PrimaryKey, AutoIncrement, Column("id")]
         public long Id { get; set; }
+        [Unique, Column("user_id")]
+        public long UserId { get; set; }
         [Column("balance")]
         public long Balance { get; set; }
         [Column("bank")]
@@ -30,7 +30,7 @@ namespace DiscordBotRewrite.Modules {
             Streak = 0;
         }
         public UserAccount(long id) {
-            Id = id;
+            UserId = id;
             Balance = 0;
             Bank = 0;
             BankMax = 1000;

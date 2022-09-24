@@ -1,11 +1,10 @@
 ﻿using System;
 using SQLite;
-using static DiscordBotRewrite.Modules.PixelModule;
 
 namespace DiscordBotRewrite.Modules {
     [Table("place_cooldown")]
     public class PlaceCooldown {
-        [PrimaryKey, AutoIncrement, Unique, Column("id")]
+        [PrimaryKey, AutoIncrement, Column("id")]
         public long Id { get; set; }
         [Column("user_id")]
         public long UserID { get; set; }

@@ -13,10 +13,10 @@ namespace DiscordBotRewrite.Modules {
             return Bot.Database.Table<UserAccount>().ToList();
         }
 
-        public UserAccount GetAccount(long id) {
-            UserAccount account = Bot.Database.Find<UserAccount>(id);
+        public UserAccount GetAccount(long userId) {
+            UserAccount account = Bot.Database.Table<UserAccount>().FirstOrDefault(x => x.UserId == userId);
             if(account == null) {
-                account = new UserAccount(id);
+                account = new UserAccount(userId);
                 Bot.Database.InsertOrReplace(account);
             }
             return account;
