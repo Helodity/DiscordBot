@@ -37,6 +37,9 @@ namespace DiscordBotRewrite.Modules {
 
         #region Events
         async Task TryQuote(DiscordClient client, MessageReactionAddEventArgs args) {
+            //Abort if we're in dms
+            if(args.Guild == null) return;
+
             GuildQuoteData data = GetQuoteData(args.Guild.Id);
 
             //This isn't enabled in the server, ignore the reaction

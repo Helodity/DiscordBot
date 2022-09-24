@@ -6,8 +6,10 @@ namespace DiscordBotRewrite.Modules {
     [Table("pixel_maps")]
     public class PixelMap {
         #region Properties
-        [PrimaryKey, Unique, Column("id")]
-        public long Id { get; set; }
+        [PrimaryKey, AutoIncrement, Column("id")]
+        public int Id { get; set; }
+        [Indexed, Column("guild_id")]
+        public long GuildId { get; set; }
         [Column("width")]
         public int Width { get; set; }
 
@@ -19,14 +21,12 @@ namespace DiscordBotRewrite.Modules {
 
         [Column("pixel_data")]
         public byte[] PixelState { get; set; }
-
-        //public Dictionary<ulong, Cooldown> PlaceCooldowns = new Dictionary<ulong, Cooldown>();
         #endregion
 
         #region Constructor
         public PixelMap() {}
         public PixelMap(long id, int width = 100, int height = 100) {
-            Id = id;
+            GuildId = id;
             Width = width;
             Height = height;
             PixelState = new byte[Width * Height];
@@ -58,8 +58,9 @@ namespace DiscordBotRewrite.Modules {
             return (PixelEnum)PixelState[x + y * Width];
         }
 
-        public int TimeUntilNextPlace(ulong userId) {
-            return 0; // (int)Cooldown.TimeUntilExpiration(userId, ref PlaceCooldowns).TotalSeconds;
+        public DateTime NextPlaceTime(long userId) {
+            PlaceCooldown c = Bot.Modules.Pixel.GetPlaceCooldown(GuildId, userId);
+            return c.EndTime;
         }
         #endregion
     }

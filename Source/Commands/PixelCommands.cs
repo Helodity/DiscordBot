@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using DiscordBotRewrite.Attributes;
+using DiscordBotRewrite.Extensions;
 using DiscordBotRewrite.Modules;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -95,7 +96,6 @@ namespace DiscordBotRewrite.Commands {
 
             var interactivity = ctx.Client.GetInteractivity();
             while(true) {
-                embed.WithDescription($"{ctx.Guild.Name}'s canvas. ({curX},{curY}) is selected. {zoom} zoom. {jumpAmount} tiles per move.");
                 Bot.Modules.Pixel.CreateImageWithUI(ctx, curX, curY, zoom, curColor);
                 using(var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read)) {
                     msg = await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddComponents(row1).AddComponents(row2).AddComponents(row3).AddComponents(row4).AddComponents(row5).AddEmbed(embed).WithFile(Path.GetFileName(imagePath), fs));
@@ -124,10 +124,6 @@ namespace DiscordBotRewrite.Commands {
                 }
                 if(input.Result.Id == "exit") {
                     break;
-                }
-                if(input.Result.Id == "place") {
-                    if(!Bot.Modules.Pixel.TryPlacePixel(ctx.Guild.Id, ctx.User.Id, curX, curY, curColor))
-                        await ctx.Member.SendMessageAsync($"Can't place a pixel, wait {map.TimeUntilNextPlace(ctx.User.Id)} seconds!");
                 }
                 if(input.Result.Id == "moveUp") {
                     for(int i = 0; i < jumpAmount; i++) {
@@ -167,6 +163,14 @@ namespace DiscordBotRewrite.Commands {
                 if(input.Result.Id == "jumpAdd") {
                     jumpAmount++;
                 }
+                embed.WithDescription($"{ctx.Guild.Name}'s canvas. ({curX},{curY}) is selected. {zoom} zoom. {jumpAmount} tiles per move.");
+                embed.WithColor(Bot.Style.DefaultColor);
+                if(input.Result.Id == "place") {
+                    if(!Bot.Modules.Pixel.TryPlacePixel((long)ctx.Guild.Id, (long)ctx.User.Id, curX, curY, curColor)) {
+                        embed.WithColor(Bot.Style.ErrorColor);
+                        embed.WithDescription($"You can place another pixel {map.NextPlaceTime((long)ctx.User.Id).ToTimestamp()}!");
+                    }
+                }
 
                 await msg.DeleteAsync();
                 await Task.Delay(500);
@@ -174,7 +178,7 @@ namespace DiscordBotRewrite.Commands {
 
             using(var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read)) {
                 await msg.DeleteAsync();
-                embed.WithDescription($"{ctx.Guild.Name}'s canvas.");
+                embed.WithDescription($"{ctx.Guild.Name}'s canvas.").WithColor(Bot.Style.DefaultColor);
                 await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed).WithFile(Path.GetFileName(imagePath), fs));
             }
             File.Delete(imagePath);

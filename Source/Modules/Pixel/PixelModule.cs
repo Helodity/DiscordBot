@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using DiscordBotRewrite.Extensions;
+using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using SkiaSharp;
 
 namespace DiscordBotRewrite.Modules {
     public class PixelModule {
-        #region Properties
         #region Constants
         //Update both when adding a color
         readonly Dictionary<uint, SKColor> PixelDict = new Dictionary<uint, SKColor>()
@@ -39,24 +39,33 @@ namespace DiscordBotRewrite.Modules {
             Cyan
         };
         #endregion
-        #endregion
 
         #region Constructors
         public PixelModule() {
             Bot.Database.CreateTable<PixelMap>();
+            Bot.Database.CreateTable<PlaceCooldown>();
         }
         #endregion
 
         #region Public
-        public bool TryPlacePixel(ulong guildId, ulong userId, int x, int y, PixelEnum color) {
-            var map = GetPixelMap((long)guildId);
+        public bool TryPlacePixel(long guildId, long userId, int x, int y, PixelEnum color) {
+            var map = GetPixelMap(guildId);
 
-            //if(Cooldown.UserHasCooldown(userId, ref map.PlaceCooldowns)) {
-            //    return false;
-            //}
-            //map.PlaceCooldowns.Add(userId, new Cooldown(DateTime.Now.AddSeconds(map.PlaceCooldown)));
+            PlaceCooldown cooldown = GetPlaceCooldown(guildId, userId);
+            if(cooldown != null && DateTime.Compare(DateTime.Now, cooldown.EndTime) < 0) {
+                return false;
+            }
+            if(cooldown == null) {
+                cooldown = new PlaceCooldown(guildId, userId);
+                Bot.Database.InsertOrReplace(cooldown);
+            }
+
+            cooldown.EndTime = DateTime.Now.AddSeconds(map.PlaceCooldown);
+            Bot.Database.Update(cooldown);
+
             map.SetPixel(x, y, color);
             Bot.Database.Update(map);
+
             return true;
         }
         public void CreateImage(InteractionContext ctx) {
@@ -94,7 +103,7 @@ namespace DiscordBotRewrite.Modules {
             surface.Snapshot().SaveToPng($"PixelImages/img{ctx.User.Id}.png");
         }
         public PixelMap GetPixelMap(long id) {
-            PixelMap map = Bot.Database.Find<PixelMap>(id);
+            PixelMap map = Bot.Database.Table<PixelMap>().FirstOrDefault(x => x.GuildId == id);
             if(map == null) {
                 map = new PixelMap(id);
                 Bot.Database.InsertOrReplace(map);
@@ -104,6 +113,9 @@ namespace DiscordBotRewrite.Modules {
                 Bot.Database.Update(map);
             }
             return map;
+        }
+        public PlaceCooldown GetPlaceCooldown(long guildId, long userId) {
+            return Bot.Database.Table<PlaceCooldown>().FirstOrDefault(x => x.GuildID == guildId && x.UserID == userId);
         }
         public void ResizeMap(long guildId, int width, int height) {
             var map = GetPixelMap(guildId);
