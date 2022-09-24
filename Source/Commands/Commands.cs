@@ -1,7 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using DiscordBotRewrite.Extensions;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
+using SQLite;
 using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite.Commands {
@@ -73,5 +75,28 @@ namespace DiscordBotRewrite.Commands {
 
         }
         #endregion
+
+
+        [SlashCommand("addDB", "Find out how __ you are")]
+        public async Task databaseAdd(InteractionContext ctx, [Option("str", "how what you are")] string str, [Option("i", "how what you are")] long i) {
+            DebugDBInfo temp = new DebugDBInfo((long)ctx.User.Id, str, (int)i);
+            var db = new SQLiteConnection("DebugDB.db3");
+            db.InsertOrReplace(temp);
+            db.Close();
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Description = $"done!",
+                Color = Bot.Style.DefaultColor
+            });
+        }
+        [SlashCommand("readDB", "Find out how __ you are")]
+        public async Task databaseRead(InteractionContext ctx) {
+            var db = new SQLiteConnection("DebugDB.db3");
+            var result = db.Table<DebugDBInfo>().ToList().Where(x => x.Id == (long)ctx.User.Id).First();
+            db.Close();
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Description = $"{result.Id}, {result.DebugInt}, {result.DebugStr}, {result.DebugTime}",
+                Color = Bot.Style.DefaultColor
+            });
+        }
     }
 }

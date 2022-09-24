@@ -25,7 +25,7 @@ namespace DiscordBotRewrite.Commands {
                 return;
             }
 
-            UserAccount account = Bot.Modules.Economy.GetAccount(user.Id);
+            UserAccount account = Bot.Modules.Economy.GetAccount((long)user.Id);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Title = $"{user.Username}'s Account",
                 Description = $"Balance: ${account.Balance}\nBank: ${account.Bank}/${account.BankMax}",
@@ -37,13 +37,13 @@ namespace DiscordBotRewrite.Commands {
         #region Withdraw
         [SlashCommand("withdraw", "Pocket!!!!")]
         public async Task Withdraw(InteractionContext ctx, [Option("amount", "how much inflation")] long amount) {
-            UserAccount account = Bot.Modules.Economy.GetAccount(ctx.User.Id);
+            UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
             if(amount > account.Bank)
                 amount = account.Bank;
 
             account.Bank -= amount;
             account.Balance += amount;
-            Bot.Modules.Economy.SaveAccounts();
+            Bot.Database.Update(account);
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Withdrew ${amount}!",
@@ -55,7 +55,7 @@ namespace DiscordBotRewrite.Commands {
         #region Deposit
         [SlashCommand("deposit", "Bank!!!!")]
         public async Task Deposit(InteractionContext ctx, [Option("amount", "how much inflation")] long amount) {
-            UserAccount account = Bot.Modules.Economy.GetAccount(ctx.User.Id);
+            UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
             if(account.Bank + amount > account.BankMax)
                 amount = account.BankMax - account.Bank;
             if(amount > account.Balance)
@@ -63,7 +63,7 @@ namespace DiscordBotRewrite.Commands {
 
             account.Balance -= amount;
             account.Bank += amount;
-            Bot.Modules.Economy.SaveAccounts();
+            Bot.Database.Update(account);
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Deposited ${amount}!",
@@ -75,7 +75,7 @@ namespace DiscordBotRewrite.Commands {
         #region Give
         [SlashCommand("give", "Not your money!!")]
         public async Task Give(InteractionContext ctx, [Option("amount", "how much inflation")] long amount, [Option("user", "who gets your money?")] DiscordUser user) {
-            amount = Bot.Modules.Economy.Transfer(ctx.User.Id, user.Id, (int)amount);
+            amount = Bot.Modules.Economy.Transfer((long)ctx.User.Id, (long)user.Id, (int)amount);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Transferred ${amount} to {user.Username}!",
                 Color = Bot.Style.SuccessColor
@@ -86,7 +86,7 @@ namespace DiscordBotRewrite.Commands {
         #region Daily
         [SlashCommand("daily", "Print a reasonable amount of money.")]
         public async Task Daily(InteractionContext ctx) {
-            UserAccount account = Bot.Modules.Economy.GetAccount(ctx.User.Id);
+            UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
             if(DateTime.Compare(DateTime.Now,account.DailyCooldown) < 0) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"You can't claim your daily reward yet!\nYou can claim more money {account.DailyCooldown.ToTimestamp()}!",
@@ -106,7 +106,7 @@ namespace DiscordBotRewrite.Commands {
 
             account.DailyCooldown = DateTime.Now.AddHours(20);
             account.Balance += amount;
-            Bot.Modules.Economy.SaveAccounts();
+            Bot.Database.Update(account);
 
             string streakText = string.Empty;
             if(account.Streak > 0) {
@@ -148,7 +148,7 @@ namespace DiscordBotRewrite.Commands {
         #region Rob
         [SlashCommand("rob", "My Money!")]
         public async Task Rob(InteractionContext ctx, [Option("user", "Who are you stealing from?")] DiscordUser user) {
-            UserAccount target = Bot.Modules.Economy.GetAccount(user.Id);
+            UserAccount target = Bot.Modules.Economy.GetAccount((long)user.Id);
 
             if(ctx.User == user) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -185,7 +185,7 @@ namespace DiscordBotRewrite.Commands {
             }
 
             long amount = (long)(target.Balance * 0.01 * rng);
-            amount = Bot.Modules.Economy.Transfer(user.Id, ctx.User.Id, amount);
+            amount = Bot.Modules.Economy.Transfer((long)user.Id, (long)ctx.User.Id, amount);
 
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -198,11 +198,11 @@ namespace DiscordBotRewrite.Commands {
         #region Highlow
         [SlashCommand("highlow", "Money?")]
         public async Task HighLow(InteractionContext ctx, [Option("bet", "how much to lose")] long bet) {
-            UserAccount account = Bot.Modules.Economy.GetAccount(ctx.User.Id);
+            UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
 
             if(bet < 0) {
                 account.Balance -= 1;
-                Bot.Modules.Economy.SaveAccounts();
+                Bot.Database.Update(account);
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"Alright bitchass stop trying to game the system. I'm taking a dollar from you cuz of that.",
                     Color = Bot.Style.ErrorColor
@@ -284,7 +284,7 @@ namespace DiscordBotRewrite.Commands {
                     embed.WithDescription($"Congrats, {ctx.User.Mention}, I drew {nextCard}! There are no cards left!.\n " +
                     $"You win {currentWinnings}!");
                     account.Balance += currentWinnings;
-                    Bot.Modules.Economy.SaveAccounts();
+                    Bot.Database.Update(account);
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
                     return;
                 }
@@ -300,7 +300,7 @@ namespace DiscordBotRewrite.Commands {
                 if(continueResult.TimedOut || continueResult.Result.Id == "quit") {
                     embed.WithDescription($"You cashed out with ${currentWinnings}.");
                     account.Balance += currentWinnings;
-                    Bot.Modules.Economy.SaveAccounts();
+                    Bot.Database.Update(account);
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
                     gameEnded = true;
                 }
@@ -312,11 +312,11 @@ namespace DiscordBotRewrite.Commands {
         #region Blackjack
         [SlashCommand("blackjack", "Play blackjack against the bot")]
         public async Task BlackJack(InteractionContext ctx, [Option("bet", "how much to lose")] long bet) {
-            UserAccount account = Bot.Modules.Economy.GetAccount(ctx.User.Id);
+            UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
 
             if(bet < 0) {
                 account.Balance -= 1;
-                Bot.Modules.Economy.SaveAccounts();
+                Bot.Database.Update(account);
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"Alright bitchass stop trying to game the system. I'm taking a dollar from you cuz of that.",
                     Color = Bot.Style.ErrorColor
@@ -353,7 +353,7 @@ namespace DiscordBotRewrite.Commands {
             string output = "";
             int toCount = Math.Min(accounts.Count, 5);
             for(int i = 0; i < toCount; i++) {
-                output += $"**#{i + 1}**: {(await ctx.Client.GetUserAsync(accounts[i].Id)).Username} - ${accounts[i].Balance + accounts[i].Bank}\n";
+                output += $"**#{i + 1}**: {(await ctx.Client.GetUserAsync((ulong)accounts[i].Id)).Username} - ${accounts[i].Balance + accounts[i].Bank}\n";
             }
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {

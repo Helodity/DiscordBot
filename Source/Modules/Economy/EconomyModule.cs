@@ -9,28 +9,28 @@ using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite.Modules {
     public class EconomyModule {
-        readonly Dictionary<ulong, UserAccount> UserAccounts;
         readonly Dictionary<ulong, Cooldown> RobCooldowns;
         #region Constructors
         public EconomyModule() {
-            UserAccounts = LoadJson<Dictionary<ulong, UserAccount>>(UserAccount.JsonLocation);
+            Bot.Database.CreateTable<UserAccount>();
             RobCooldowns = new();
         }
         #endregion
 
         public List<UserAccount> GetUserAccounts() {
-            return UserAccounts.Values.ToList();
+            return Bot.Database.Table<UserAccount>().ToList();
         }
 
-        public UserAccount GetAccount(ulong id) {
-            if(!UserAccounts.TryGetValue(id, out UserAccount account)) {
+        public UserAccount GetAccount(long id) {
+            UserAccount account = Bot.Database.Find<UserAccount>(id);
+            if(account == null) {
                 account = new UserAccount(id);
-                UserAccounts.Add(id, account);
+                Bot.Database.InsertOrReplace(account);
             }
             return account;
         }
 
-        public long Transfer(ulong id1, ulong id2, long value) {
+        public long Transfer(long id1, long id2, long value) {
             if(value <= 0)
                 return 0;
             UserAccount account1 = GetAccount(id1);
@@ -43,16 +43,18 @@ namespace DiscordBotRewrite.Modules {
             account1.Balance -= value;
             account2.Balance += value;
             if(value != 0) {
-                SaveJson(UserAccounts, UserAccount.JsonLocation);
+                Bot.Database.Update(account1);
+                Bot.Database.Update(account2);
             }
             return value;
         }
 
         public long GetTotalBalance() {
             long total = 0;
-            foreach(KeyValuePair<ulong, UserAccount> kvp in UserAccounts) {
-                total += kvp.Value.Balance;
-                total += kvp.Value.Bank;
+            List<UserAccount> accounts = GetUserAccounts();
+            foreach(UserAccount account in accounts) {
+                total += account.Balance;
+                total += account.Bank;
             }
             return total;
         }
@@ -73,10 +75,6 @@ namespace DiscordBotRewrite.Modules {
 
         public double GetWinningsMultiplier(int gamesWon, double scale = 1.0) {
             return Math.Pow(2, gamesWon * scale);
-        }
-
-        public void SaveAccounts() {
-            SaveJson(UserAccounts, UserAccount.JsonLocation);
         }
     }
 }
