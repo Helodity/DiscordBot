@@ -148,6 +148,7 @@ namespace DiscordBotRewrite.Commands {
         #region Rob
         [SlashCommand("rob", "My Money!")]
         public async Task Rob(InteractionContext ctx, [Option("user", "Who are you stealing from?")] DiscordUser user) {
+            UserAccount self = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
             UserAccount target = Bot.Modules.Economy.GetAccount((long)user.Id);
 
             if(ctx.User == user) {
@@ -165,33 +166,31 @@ namespace DiscordBotRewrite.Commands {
                 });
                 return;
             }
-
-            if(Bot.Modules.Economy.HasRobCooldown(ctx.User.Id, out var cooldown)) {
+            if(DateTime.Compare(DateTime.Now, self.RobCooldown) < 0) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = $"You're still under suspicion from your last attempt, try again {cooldown.EndTime.ToTimestamp()}.",
+                    Description = $"You're still under suspicion from your last attempt, try again {self.RobCooldown.ToTimestamp()}.",
                     Color = Bot.Style.ErrorColor
                 });
                 return;
             }
-
-            Bot.Modules.Economy.AddRobCooldown(ctx.User.Id);
-            int rng = GenerateRandomNumber(-1, 10);
-            if(rng < 0) {
+            self.RobCooldown = DateTime.Now.AddSeconds(30);
+            int rng = GenerateRandomNumber(0, 10);
+            if(rng == 0) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"You couldn't find an opening, try again later!",
                     Color = Bot.Style.WarningColor
                 });
-                return;
+            } else {
+                long amount = (long)(target.Balance * 0.01 * rng);
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = $"You got ${amount} from {user.Username}!",
+                    Color = Bot.Style.SuccessColor
+                });
+                self.Balance += amount;
+                target.Balance -= amount;
+                Bot.Database.Update(target);
             }
-
-            long amount = (long)(target.Balance * 0.01 * rng);
-            amount = Bot.Modules.Economy.Transfer((long)user.Id, (long)ctx.User.Id, amount);
-
-
-            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                Description = $"You got ${amount} from {user.Username}!",
-                Color = Bot.Style.SuccessColor
-            });
+            Bot.Database.Update(self);
         }
         #endregion
 

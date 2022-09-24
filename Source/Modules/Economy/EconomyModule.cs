@@ -1,19 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using DiscordBotRewrite.Extensions;
-using DiscordBotRewrite.Global;
-using DSharpPlus.SlashCommands;
-using SkiaSharp;
-using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite.Modules {
     public class EconomyModule {
-        readonly Dictionary<ulong, Cooldown> RobCooldowns;
         #region Constructors
         public EconomyModule() {
             Bot.Database.CreateTable<UserAccount>();
-            RobCooldowns = new();
         }
         #endregion
 
@@ -57,20 +49,6 @@ namespace DiscordBotRewrite.Modules {
                 total += account.Bank;
             }
             return total;
-        }
-        public void AddRobCooldown(ulong id) {
-            RobCooldowns.AddOrUpdate(id, new Cooldown(DateTime.Now.AddSeconds(30)));
-        }
-
-        public bool HasRobCooldown(ulong id, out Cooldown robCooldown) {
-            if(!RobCooldowns.TryGetValue(id, out robCooldown)) { 
-                return false;
-            }
-            if(robCooldown.IsOver) {
-                RobCooldowns.Remove(id);
-                return false;
-            }
-            return true;
         }
 
         public double GetWinningsMultiplier(int gamesWon, double scale = 1.0) {

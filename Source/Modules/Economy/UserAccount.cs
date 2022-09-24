@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using DiscordBotRewrite.Global;
-using Newtonsoft.Json;
 using SQLite;
-
 
 namespace DiscordBotRewrite.Modules {
     [Table("economy_accounts")]
@@ -20,6 +16,8 @@ namespace DiscordBotRewrite.Modules {
         public long BankMax { get; set; }
         [Column("daily_cooldown")]
         public DateTime DailyCooldown { get; set; }
+        [Column("rob_cooldown")]
+        public DateTime RobCooldown { get; set; }
         [Column("daily_streak")]
         public int Streak { get; set; }
 
