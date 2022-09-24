@@ -1,41 +1,41 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
+using SQLite;
 
 namespace DiscordBotRewrite.Modules {
-    public class GuildQuoteData : ModuleData {
-        #region Properties
-        //Reference to the Json file's relative path
-        public const string JsonLocation = "Json/Quotes.json";
+    [Table("guild_quote_data")]
+    public class GuildQuoteData {
+        [PrimaryKey, AutoIncrement, Column("id")]
+        public long Id { get; set; }
+
+        [Column("guild_id")]
+        public long GuildId { get; set; }
 
         //Does this server have quoting enabled?
-        [JsonProperty("enabled")]
-        public bool Enabled;
+        [Column("enabled")]
+        public bool Enabled { get; set; }
 
         //Which channel to send quotes?
-        [JsonProperty("quote_channel")]
-        public ulong QuoteChannelId;
+        [Column("quote_channel")]
+        public long ChannelId { get; set; }
 
         //What emoji do we look for when quoting
-        [JsonProperty("quote_emoji")]
-        public ulong QuoteEmojiId;
+        [Column("emoji_id")]
+        public long EmojiId { get; set; }
+        [Column("emoji_name")]
+        public string EmojiName { get; set; }
 
         //How many of these emojis need to be added to quote a message
-        [JsonProperty("emoji_amount_to_quote")]
-        public ushort EmojiAmountToQuote;
-
-        //List of already quoted messages
-        [JsonProperty("quotes")]
-        public List<Quote> Quotes;
-        #endregion
-
-        #region Constructors
-        public GuildQuoteData(ulong id) : base(id) {
+        [Column("emoji_amount")]
+        public short EmojiAmount { get; set; }
+        public GuildQuoteData() {}
+        public GuildQuoteData(long id) {
+            GuildId = id;
             Enabled = true;
-            QuoteChannelId = 0;
-            QuoteEmojiId = 0;
-            EmojiAmountToQuote = 1;
-            Quotes = new List<Quote>();
+            ChannelId = 0;
+            EmojiId = 0;
+            EmojiName = "";
+            EmojiAmount = 1;
         }
-        #endregion
     }
 }

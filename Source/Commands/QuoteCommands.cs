@@ -21,9 +21,9 @@ namespace DiscordBotRewrite.Commands {
                 return;
             }
 
-            var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
-            data.QuoteChannelId = ctx.Channel.Id;
-            Bot.Modules.Quote.SaveQuoteData(data);
+            var data = Bot.Modules.Quote.GetQuoteData((long)ctx.Guild.Id);
+            data.ChannelId = (long)ctx.Channel.Id;
+            Bot.Database.Update(data);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Set this server's quote channel to {ctx.Channel.Mention}!",
                 Color = Bot.Style.SuccessColor
@@ -35,7 +35,7 @@ namespace DiscordBotRewrite.Commands {
         [SlashCommand("emoji", "Set this server's quote emoji")]
         [RequirePermissions(Permissions.Administrator)]
         public async Task SetQuoteEmoji(InteractionContext ctx) {
-            var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
+            var data = Bot.Modules.Quote.GetQuoteData((long)ctx.Guild.Id);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = "React to this message with the emoji to use!",
                 Color = Bot.Style.DefaultColor
@@ -48,27 +48,33 @@ namespace DiscordBotRewrite.Commands {
             //Ensure they sent an emoji
             if(reaction.TimedOut) {
                 await ctx.EditResponseAsync(new DiscordEmbedBuilder {
-                    Description = $"No response: quote emoji remains as {DiscordEmoji.FromGuildEmote(ctx.Client, data.QuoteEmojiId)}",
+                    Description = $"No response: quote emoji remains as {Bot.Modules.Quote.GetEmoji(ctx.Client, data)}",
                     Color = Bot.Style.WarningColor
                 });
                 return;
             }
 
-            if(!DiscordEmoji.TryFromGuildEmote(ctx.Client, reaction.Result.Emoji.Id, out _)) {
+            DiscordEmoji emoji;
+            if(reaction.Result.Emoji.Id == 0)
+                emoji = DiscordEmoji.FromUnicode(ctx.Client, reaction.Result.Emoji.Name);
+            else
+                emoji = Bot.Modules.Quote.GetEmojiFromGuild(ctx.Guild, reaction.Result.Emoji.Id);
+
+            if(emoji == null) {
                 await ctx.EditResponseAsync(new DiscordEmbedBuilder {
                     Description = $"This emoji is from a different server!",
                     Color = Bot.Style.ErrorColor
                 });
                 return;
             }
-
             await ctx.EditResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Set the server's quote emoji to {reaction.Result.Emoji}",
                 Color = Bot.Style.SuccessColor
             });
 
-            data.QuoteEmojiId = reaction.Result.Emoji.Id;
-            Bot.Modules.Quote.SaveQuoteData(data);
+            data.EmojiName = reaction.Result.Emoji.Name;
+            data.EmojiId = (long)reaction.Result.Emoji.Id;
+            Bot.Database.Update(data);
         }
         #endregion
 
@@ -76,9 +82,9 @@ namespace DiscordBotRewrite.Commands {
         [SlashCommand("emoji_amount", "Set how many reactions are needed to quote a message")]
         [RequirePermissions(Permissions.Administrator)]
         public async Task SetQuoteEmojiAmount(InteractionContext ctx, [Option("amount", "how many")] long amount) {
-            var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
-            data.EmojiAmountToQuote = (ushort)amount;
-            Bot.Modules.Quote.SaveQuoteData(data);
+            var data = Bot.Modules.Quote.GetQuoteData((long)ctx.Guild.Id);
+            data.EmojiAmount = (short)amount;
+            Bot.Database.Update(data);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Set emoji amount to {amount}!",
                 Color = Bot.Style.SuccessColor
@@ -90,9 +96,9 @@ namespace DiscordBotRewrite.Commands {
         [SlashCommand("toggle", "Enable or disable the quote system")]
         [RequirePermissions(Permissions.Administrator)]
         public async Task Toggle(InteractionContext ctx) {
-            var data = Bot.Modules.Quote.GetQuoteData(ctx.Guild.Id);
+            var data = Bot.Modules.Quote.GetQuoteData((long)ctx.Guild.Id);
             data.Enabled = !data.Enabled;
-            Bot.Modules.Quote.SaveQuoteData(data);
+            Bot.Database.Update(data);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"{(data.Enabled ? "Enabled" : "Disabled")} auto quoting!",
                 Color = Bot.Style.SuccessColor

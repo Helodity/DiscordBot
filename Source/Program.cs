@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace DiscordBotRewrite {
     class Program {
         static void Main() {
-            SetupExceptionHandler();
+            //SetupExceptionHandler();
             Bot.Start().GetAwaiter().GetResult();
         }
 

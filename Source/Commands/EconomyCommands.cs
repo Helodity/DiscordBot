@@ -352,7 +352,7 @@ namespace DiscordBotRewrite.Commands {
             string output = "";
             int toCount = Math.Min(accounts.Count, 5);
             for(int i = 0; i < toCount; i++) {
-                output += $"**#{i + 1}**: {(await ctx.Client.GetUserAsync((ulong)accounts[i].Id)).Username} - ${accounts[i].Balance + accounts[i].Bank}\n";
+                output += $"**#{i + 1}**: {(await ctx.Client.GetUserAsync((ulong)accounts[i].UserId)).Username} - ${accounts[i].Balance + accounts[i].Bank}\n";
             }
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {

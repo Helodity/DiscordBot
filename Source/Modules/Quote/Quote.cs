@@ -1,22 +1,24 @@
-﻿using Newtonsoft.Json;
+﻿using SQLite;
 
 namespace DiscordBotRewrite.Modules {
-    public readonly struct Quote {
-        #region Properties
+    [Table("quotes")]
+    public class Quote {
+        [PrimaryKey, AutoIncrement, Column("id")]
+        public long Id { get; set; }
+
         //The message that the bot sends
-        [JsonProperty("quote_message")]
-        public readonly ulong QuoteMessage;
+        [Column("quote_message")]
+        public long QuoteMessage { get; set; }
 
         //The message being quoted by the bot
-        [JsonProperty("original_message")]
-        public readonly ulong OriginalMessage;
-        #endregion
+        [Column("original_message")]
+        public long OriginalMessage { get; set; }
 
-        #region Constructors
-        public Quote(ulong quote, ulong original) {
+        public Quote() { }
+
+        public Quote(long quote, long original) {
             QuoteMessage = quote;
             OriginalMessage = original;
         }
-        #endregion
     }
 }
