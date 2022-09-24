@@ -59,7 +59,7 @@ namespace DiscordBotRewrite.Modules {
                 return false;
             }
             map.PlaceCooldowns.Add(userId, new Cooldown(DateTime.Now.AddSeconds(map.PlaceCooldown)));
-            map.PixelState[x, y] = color;
+            map.SetPixel(x, y, color);
             SavePixelMap(map);
             return true;
         }
@@ -104,7 +104,7 @@ namespace DiscordBotRewrite.Modules {
             }
 
             if(pixelMap.Width * pixelMap.Height != pixelMap.PixelState.Length) {
-                pixelMap.Resize(pixelMap.PixelState.GetLength(0), pixelMap.PixelState.GetLength(1));
+                pixelMap.Resize(pixelMap.Width, pixelMap.Height);
                 SavePixelMap(pixelMap);
             }
 
@@ -148,7 +148,7 @@ namespace DiscordBotRewrite.Modules {
                     if(absX < 0 || absX >= map.Width || absY < 0 || absY >= map.Height) {
                         color = SKColors.Black.WithAlpha(255);
                         exists = false;
-                    } else if(!PixelDict.TryGetValue((uint)map.PixelState[absX, absY], out color)) {
+                    } else if(!PixelDict.TryGetValue((uint)map.GetPixel(absX, absY), out color)) {
                         color = SKColors.White;
                     }
                     paint.Color = color;
