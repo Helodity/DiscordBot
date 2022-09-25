@@ -35,9 +35,7 @@ namespace DiscordBotRewrite.Modules {
         #region Constructors
 
 
-        public Poll() {
-            StartWatching();
-        }
+        public Poll() {}
 
         public Poll(DiscordMessage message, string question, List<string> choices, DateTime endTime) {
             GuildId = (long)message.Channel.Guild.Id;

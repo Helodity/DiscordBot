@@ -28,17 +28,17 @@ namespace DiscordBotRewrite.Commands {
                 }, true);
                 return;
             }
-
+            var id = $"poll_start_modal{DateTime.Now}";
             var form = new DiscordInteractionResponseBuilder()
               .WithTitle("Start a poll!")
-              .WithCustomId($"poll_start_modal")
+              .WithCustomId(id)
               .AddComponents(new TextInputComponent("Question", "question", "What do you want to ask?", max_length: 100))
               .AddComponents(new TextInputComponent("Choices", "choices", "Separate each choice with a comma.", style: TextInputStyle.Paragraph));
 
             await ctx.CreateResponseAsync(InteractionResponseType.Modal, form);
 
             var interactivity = ctx.Client.GetInteractivity();
-            var input = await interactivity.WaitForModalAsync($"poll_start_modal", ctx.User);
+            var input = await interactivity.WaitForModalAsync(id, ctx.User);
 
             if(input.TimedOut)
                 return;
@@ -46,17 +46,22 @@ namespace DiscordBotRewrite.Commands {
             List<string> choices = input.Result.Values["choices"].Split(",").ToList();
             choices.ForEach(choice => { choice = choice.Trim(); });
 
-            choices.RemoveAll(x => string.IsNullOrWhiteSpace(x));
-            choices = choices.Distinct().ToList();
+            choices.RemoveAll(x => string.IsNullOrWhiteSpace(x));;
+            if(choices.Count < 2) {
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = "Invalid choices: Make sure there are at least two unique choices!",
+                    Color = Bot.Style.ErrorColor
+                }, true);
+                return;
+            }
 
             DateTime endTime = DateTime.Now.AddTime((int)unitAmt, unit);
-
-            if(await Bot.Modules.Poll.StartPoll(ctx, input.Result.Values["question"], choices, endTime)) {
-                await input.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder {
-                    Description = "Started the poll!",
-                    Color = Bot.Style.SuccessColor
-                }).AsEphemeral());
-            };
+            await Bot.Modules.Poll.StartPoll(ctx, input.Result.Values["question"], choices, endTime);
+            await input.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder {
+                Description = "Started the poll!",
+                Color = Bot.Style.SuccessColor
+            }).AsEphemeral());
+            
         }
         #endregion
 

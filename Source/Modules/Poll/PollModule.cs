@@ -17,6 +17,10 @@ namespace DiscordBotRewrite.Modules {
             Bot.Database.CreateTable<Vote>();
             client.ComponentInteractionCreated += OnInteraction;
             client.GuildDownloadCompleted += RemoveFinishedPolls;
+
+            foreach(Poll p in Bot.Database.Table<Poll>()) {
+                p.StartWatching();
+            }
         }
 
         #region Public
@@ -33,25 +37,10 @@ namespace DiscordBotRewrite.Modules {
         }
 
         // Returns whether the poll was sucessfully created
-        public async Task<bool> StartPoll(InteractionContext ctx, string question, List<string> choices, DateTime endTime) {
+        public async Task StartPoll(InteractionContext ctx, string question, List<string> choices, DateTime endTime) {
             GuildPollData pollData = GetPollData((long)ctx.Guild.Id);
 
             DiscordChannel channel = ctx.Guild.GetChannel((ulong)pollData.PollChannelId);
-            //Make sure we can make the poll without problems
-            if(channel == null) {
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = "No poll channel has been set!",
-                    Color = Bot.Style.ErrorColor,
-                }, true);
-                return false;
-            }
-            if(choices.Count < 2) {
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = "Invalid choices, make sure there are at least two unique choices!",
-                    Color = Bot.Style.ErrorColor
-                }, true);
-                return false;
-            }
             //Send a dummy message to update
             var message = await channel.SendMessageAsync(new DiscordEmbedBuilder {
                 Description = "Preparing poll...",
@@ -63,19 +52,20 @@ namespace DiscordBotRewrite.Modules {
             await message.ModifyAsync(messageBuilder);
 
             Bot.Database.InsertOrReplace(poll);
-            return true;
         }
         public async void OnPollEnd(Poll poll) {
-            Bot.Database.Delete(poll);
-
             List<Vote> votes = Bot.Database.Table<Vote>().Where(x => x.PollId == poll.MessageId).ToList();
             List<PollChoice> choices = Bot.Database.Table<PollChoice>().Where(x => x.PollId == poll.MessageId).ToList();
 
-
             string voteString = string.Empty;
-            foreach(PollChoice choice in choices) {
-                voteString += $"**{choice.Name}:** {votes.Where(x => x.Choice == choice.Name).Count()} \n";
+            foreach(PollChoice c in choices) {
+                voteString += $"**{c.Name}:** {votes.Where(x => x.Choice == c.Name).Count()} \n";
+                Bot.Database.Delete(c);
             }
+            foreach(Vote v in votes) {
+                Bot.Database.Delete(v);
+            }
+            Bot.Database.Delete(poll);
 
             try {
                 var message = await poll.GetMessageAsync();
@@ -114,17 +104,22 @@ namespace DiscordBotRewrite.Modules {
 
             //Make sure message is a poll message
             GuildPollData pollData = GetPollData((long)e.Guild.Id);
-            Poll poll = Bot.Database.Table<Poll>().ToList().FirstOrDefault(x => x.MessageId == (long)e.Message.Id);
+            List<Poll> polls = Bot.Database.Table<Poll>().ToList();
+            Poll poll = polls.FirstOrDefault(x => x.MessageId == (long)e.Message.Id);
             if(poll == null)
                 return;
-
+            Vote vote = Bot.Database.Table<Vote>().ToList().FirstOrDefault(x => x.PollId == (long)e.Message.Id && x.VoterId == (long)e.User.Id);
             if(e.Values.First() == "Clear") {
-                Vote toDelete = Bot.Database.Table<Vote>().ToList().FirstOrDefault(x => x.PollId == (long)e.Message.Id && x.VoterId == (long)e.User.Id);
-                if(toDelete != null)
-                    Bot.Database.Delete(toDelete);
+                if(vote != null)
+                    Bot.Database.Delete(vote);
             } else {
-                Vote vote = new Vote((long)e.Message.Id, (long)e.User.Id, e.Values.First());
-                Bot.Database.InsertOrReplace(vote);
+                if(vote != null) {
+                    vote.Choice = e.Values.First();
+                    Bot.Database.Update(vote);
+                } else {
+                    vote = new Vote((long)e.Message.Id, (long)e.User.Id, e.Values.First());
+                    Bot.Database.InsertOrReplace(vote);
+                }
             }
             var message = await poll.GetMessageAsync();
             await message.ModifyAsync(GetActivePollMessageBuilder(poll));
