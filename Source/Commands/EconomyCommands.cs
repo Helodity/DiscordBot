@@ -37,6 +37,10 @@ namespace DiscordBotRewrite.Commands {
         #region Withdraw
         [SlashCommand("withdraw", "Pocket!!!!")]
         public async Task Withdraw(InteractionContext ctx, [Option("amount", "how much inflation")] long amount) {
+            if(amount < 0) {
+                await Deposit(ctx, -amount);
+                return;
+            }
             UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
             if(amount > account.Bank)
                 amount = account.Bank;
@@ -55,6 +59,10 @@ namespace DiscordBotRewrite.Commands {
         #region Deposit
         [SlashCommand("deposit", "Bank!!!!")]
         public async Task Deposit(InteractionContext ctx, [Option("amount", "how much inflation")] long amount) {
+            if(amount < 0) {
+                await Withdraw(ctx, -amount);
+                return;
+            }
             UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
             if(account.Bank + amount > account.BankMax)
                 amount = account.BankMax - account.Bank;
@@ -75,9 +83,16 @@ namespace DiscordBotRewrite.Commands {
         #region Give
         [SlashCommand("give", "Not your money!!")]
         public async Task Give(InteractionContext ctx, [Option("amount", "how much inflation")] long amount, [Option("user", "who gets your money?")] DiscordUser user) {
+            if(amount < 0) {
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = "Ok now that's a dick move.",
+                    Color = Bot.Style.ErrorColor
+                });
+                return;
+            }
             amount = Bot.Modules.Economy.Transfer((long)ctx.User.Id, (long)user.Id, (int)amount);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                Description = $"Transferred ${amount} to {user.Username}!",
+                Description = $"Gave ${amount} to {user.Username}!",
                 Color = Bot.Style.SuccessColor
             });
         }
@@ -309,7 +324,7 @@ namespace DiscordBotRewrite.Commands {
         #endregion
 
         #region Blackjack
-        [SlashCommand("blackjack", "Play blackjack against the bot")]
+        //[SlashCommand("blackjack", "Play blackjack against the bot")]
         public async Task BlackJack(InteractionContext ctx, [Option("bet", "how much to lose")] long bet) {
             UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
 
@@ -353,24 +368,6 @@ namespace DiscordBotRewrite.Commands {
             int toCount = Math.Min(accounts.Count, 5);
             for(int i = 0; i < toCount; i++) {
                 output += $"**#{i + 1}**: {(await ctx.Client.GetUserAsync((ulong)accounts[i].UserId)).Username} - ${accounts[i].Balance + accounts[i].Bank}\n";
-            }
-
-            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                Title = "Top Balances",
-                Description = output,
-                Color = Bot.Style.DefaultColor
-            });
-        }
-        #endregion
-
-        #region multipliers
-        [SlashCommand("multipliers", "Money?")]
-        public async Task ListWinningMultipliers(InteractionContext ctx, [Option("count", "how much to lose")] long count,
-            [Option("scale", "how much to lose")] double scale) {
-            string output = "";
-
-            for(int i = 1; i < count + 1; i++) {
-                output += $"**{i} win**: x{Bot.Modules.Economy.GetWinningsMultiplier(i, scale)}\n";
             }
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
