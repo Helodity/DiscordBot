@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DiscordBotRewrite.Attributes;
 using DiscordBotRewrite.Extensions;
+using DiscordBotRewrite.Modules;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
@@ -19,7 +20,8 @@ namespace DiscordBotRewrite.Commands {
             [Option("Duration", "How many units will this poll last?")] long unitAmt,
             [Option("Units", "How long is a unit?")] TimeUnit unit) {
 
-            if(!Bot.Modules.Poll.HasPollChannelSet(ctx)) {
+            //Make sure we can make the poll without problems
+            if(Bot.Modules.Poll.HasChannelSet(ctx)) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = "No poll channel has been set!",
                     Color = Bot.Style.ErrorColor,

@@ -6,9 +6,9 @@ namespace DiscordBotRewrite.Modules {
     [Table("guild_quote_data")]
     public class GuildQuoteData {
         [PrimaryKey, AutoIncrement, Column("id")]
-        public long Id { get; set; }
+        public int Id { get; set; }
 
-        [Column("guild_id")]
+        [Unique, Column("guild_id")]
         public long GuildId { get; set; }
 
         //Does this server have quoting enabled?

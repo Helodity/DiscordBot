@@ -8,7 +8,7 @@ namespace DiscordBotRewrite.Modules {
         #region Properties
         [PrimaryKey, AutoIncrement, Column("id")]
         public int Id { get; set; }
-        [Column("guild_id")]
+        [Unique, Column("guild_id")]
         public long GuildId { get; set; }
         [Column("width")]
         public int Width { get; set; }

@@ -4,7 +4,7 @@ namespace DiscordBotRewrite.Modules {
     [Table("quotes")]
     public class Quote {
         [PrimaryKey, AutoIncrement, Column("id")]
-        public long Id { get; set; }
+        public int Id { get; set; }
 
         //The message that the bot sends
         [Column("quote_message")]

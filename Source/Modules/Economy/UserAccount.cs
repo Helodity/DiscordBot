@@ -5,7 +5,7 @@ namespace DiscordBotRewrite.Modules {
     [Table("economy_accounts")]
     public class UserAccount {
         [PrimaryKey, AutoIncrement, Column("id")]
-        public long Id { get; set; }
+        public int Id { get; set; }
         [Unique, Column("user_id")]
         public long UserId { get; set; }
         [Column("balance")]

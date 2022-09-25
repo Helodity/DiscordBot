@@ -1,63 +1,54 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DiscordBotRewrite.Global;
 using DSharpPlus.Entities;
-using Newtonsoft.Json;
+using SQLite;
 
 namespace DiscordBotRewrite.Modules {
+    [Table("polls")]
     public class Poll {
-        #region Properites
+        [PrimaryKey, AutoIncrement, Column("id")]
+        public int Id { get; set; }
+
         //The guild this poll is posted in
-        [JsonProperty("guild_id")]
-        public readonly ulong GuildId;
+        [Column("guild_id")]
+        public long GuildId { get; set; }
 
         //The channel this poll is posted in
-        [JsonProperty("channel_id")]
-        public readonly ulong ChannelId;
+        [Column("channel_id")]
+        public long ChannelId { get; set; }
 
         //The message ID of this poll
-        [JsonProperty("message_id")]
-        public readonly ulong MessageId;
+        [Column("message_id")]
+        public long MessageId { get; set; }
 
         //The question to be answered
-        [JsonProperty("question")]
-        public readonly string Question;
+        [Column("question")]
+        public string Question { get; set; }
 
         //When this poll ends
-        [JsonProperty("end_time")]
-        public DateTime EndTime;
-
-        //Potential choices
-        [JsonProperty("choices")]
-        public List<string> Choices;
-
-        //List of votes and a corresponding user id
-        [JsonProperty("votes")]
-        public Dictionary<ulong, Vote> Votes;
-        #endregion
+        [Column("end_time")]
+        public DateTime EndTime { get; set; }
 
         #region Constructors
-        [JsonConstructor]
-        public Poll(ulong guildId, ulong channelId, ulong messageId, string question, List<string> choices, DateTime endTime) {
-            GuildId = guildId;
-            ChannelId = channelId;
-            MessageId = messageId;
-            Question = question;
-            EndTime = endTime;
-            Choices = choices;
-            Votes = new Dictionary<ulong, Vote>();
 
+
+        public Poll() {
             StartWatching();
         }
+
         public Poll(DiscordMessage message, string question, List<string> choices, DateTime endTime) {
-            GuildId = message.Channel.Guild.Id;
-            ChannelId = message.Channel.Id;
-            MessageId = message.Id;
+            GuildId = (long)message.Channel.Guild.Id;
+            ChannelId = (long)message.Channel.Id;
+            MessageId = (long)message.Id;
             Question = question;
             EndTime = endTime;
-            Choices = choices;
-            Votes = new Dictionary<ulong, Vote>();
+            foreach(string choice in choices.Distinct()) {
+                if(!Bot.Database.Table<PollChoice>().Any(x => x.PollId == MessageId && x.Name == choice))
+                    Bot.Database.Insert(new PollChoice(MessageId, choice));
+            }
 
             StartWatching();
         }
@@ -65,12 +56,10 @@ namespace DiscordBotRewrite.Modules {
 
         #region Public
         public async Task<DiscordMessage> GetMessageAsync() {
-            return await (await Bot.Client.GetChannelAsync(ChannelId)).GetMessageAsync(MessageId);
+            return await (await Bot.Client.GetChannelAsync((ulong)ChannelId)).GetMessageAsync((ulong)MessageId);
         }
-        #endregion
-
-        #region Private
-        void StartWatching() {
+        //Only 
+        public void StartWatching() {
             new TimeBasedEvent(EndTime - DateTime.Now, async () => {
                 while(Bot.Modules == null) {
                     await Task.Delay(100);

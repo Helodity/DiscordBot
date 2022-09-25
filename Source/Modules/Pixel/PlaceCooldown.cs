@@ -5,7 +5,7 @@ namespace DiscordBotRewrite.Modules {
     [Table("place_cooldown")]
     public class PlaceCooldown {
         [PrimaryKey, AutoIncrement, Column("id")]
-        public long Id { get; set; }
+        public int Id { get; set; }
         [Column("user_id")]
         public long UserID { get; set; }
         [Column("guild_id")]
