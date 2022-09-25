@@ -51,7 +51,7 @@ namespace DiscordBotRewrite.Modules {
             var messageBuilder = GetActivePollMessageBuilder(poll);
             await message.ModifyAsync(messageBuilder);
 
-            Bot.Database.InsertOrReplace(poll);
+            Bot.Database.Insert(poll);
         }
         public async void OnPollEnd(Poll poll) {
             List<Vote> votes = Bot.Database.Table<Vote>().Where(x => x.PollId == poll.MessageId).ToList();
@@ -118,7 +118,7 @@ namespace DiscordBotRewrite.Modules {
                     Bot.Database.Update(vote);
                 } else {
                     vote = new Vote((long)e.Message.Id, (long)e.User.Id, e.Values.First());
-                    Bot.Database.InsertOrReplace(vote);
+                    Bot.Database.Insert(vote);
                 }
             }
             var message = await poll.GetMessageAsync();
@@ -133,7 +133,7 @@ namespace DiscordBotRewrite.Modules {
             GuildPollData guildPollData = Bot.Database.Table<GuildPollData>().FirstOrDefault(x => x.GuildId == guildId);
             if(guildPollData == null) {
                 guildPollData = new GuildPollData(guildId);
-                Bot.Database.InsertOrReplace(guildPollData);
+                Bot.Database.Insert(guildPollData);
             }
             return guildPollData;
         }

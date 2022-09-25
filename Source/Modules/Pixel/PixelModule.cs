@@ -57,7 +57,7 @@ namespace DiscordBotRewrite.Modules {
             }
             if(cooldown == null) {
                 cooldown = new PlaceCooldown(guildId, userId);
-                Bot.Database.InsertOrReplace(cooldown);
+                Bot.Database.Insert(cooldown);
             }
 
             cooldown.EndTime = DateTime.Now.AddSeconds(map.PlaceCooldown);
@@ -106,7 +106,7 @@ namespace DiscordBotRewrite.Modules {
             PixelMap map = Bot.Database.Table<PixelMap>().FirstOrDefault(x => x.GuildId == id);
             if(map == null) {
                 map = new PixelMap(id);
-                Bot.Database.InsertOrReplace(map);
+                Bot.Database.Insert(map);
             }
             if(map.Width * map.Height != map.PixelState.Length) {
                 map.Resize(map.Width, map.Height);

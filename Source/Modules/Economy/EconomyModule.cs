@@ -17,7 +17,7 @@ namespace DiscordBotRewrite.Modules {
             UserAccount account = Bot.Database.Table<UserAccount>().FirstOrDefault(x => x.UserId == userId);
             if(account == null) {
                 account = new UserAccount(userId);
-                Bot.Database.InsertOrReplace(account);
+                Bot.Database.Insert(account);
             }
             return account;
         }
