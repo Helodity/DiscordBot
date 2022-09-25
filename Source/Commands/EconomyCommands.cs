@@ -4,6 +4,7 @@ using DiscordBotRewrite.Extensions;
 using DiscordBotRewrite.Modules;
 using DSharpPlus;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using static DiscordBotRewrite.Global.Global;
@@ -243,82 +244,82 @@ namespace DiscordBotRewrite.Commands {
                 new DiscordButtonComponent(ButtonStyle.Success, "continue", "Keep Playing"),
                 new DiscordButtonComponent(ButtonStyle.Danger, "quit", "Cash Out"),
             };
-
             await ctx.DeferAsync();
-
             var interactivity = ctx.Client.GetInteractivity();
+            while(true) {
+                var embed = new DiscordEmbedBuilder {
+                    Title = "Higher or Lower",
+                };
+                bool hasLost = false;
+                int gamesWon = 0;
+                Deck deck = Deck.GetStandardDeck();
+                Card anchorCard = deck.Draw();
+                while(true) {
+                    Card nextCard = deck.Draw();
+                    embed.WithColor(Bot.Style.DefaultColor);
+                    embed.WithDescription($"{ctx.User.Mention}, Will the next card I draw be higher or lower than a {anchorCard}?");
 
-            var embed = new DiscordEmbedBuilder {
-                Title = "Higher or Lower",
-            };
-            bool gameEnded = false;
-            bool hasLost = false;
-            int gamesWon = 0;
-            Deck deck = Deck.GetStandardDeck();
-            Card anchorCard = deck.Draw();
-            while(!gameEnded) {
-                Card nextCard = deck.Draw();
-                embed.WithColor(Bot.Style.DefaultColor);
-                embed.WithDescription($"{ctx.User.Mention}, Will the next card I draw be higher or lower than a {anchorCard}?");
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(highLowButtons));
+                    var interactivityResult = await interactivity.WaitForButtonAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
 
+                    if(interactivityResult.TimedOut) {
+                        embed.WithDescription("Sure, ok. Just leave on me.  I'm keeping your bet, fuck you.");
+                        Bot.Database.Update(account);
+                        await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
+                        return;
+                    }
+                    await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage);
 
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(highLowButtons));
-                var input = await interactivity.WaitForButtonAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
+                    if(interactivityResult.Result.Id == "lower") {
+                        hasLost = anchorCard.value < nextCard.value;
+                    }
+                    if(interactivityResult.Result.Id == "higher") {
+                        hasLost = anchorCard.value > nextCard.value;
+                    }
 
-                if(input.TimedOut) {
-                    //Act as if the game never happened
-                    account.Balance += bet;
-                    embed.WithDescription("Sure ok just leave on me. Fuck off.");
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
-                    break;
+                    if(hasLost) {
+                        embed.WithColor(Bot.Style.ErrorColor);
+                        embed.WithDescription($"Sorry, I drew {nextCard}. You lost your ${bet} bet.");
+                        break;
+                    } else {
+                        gamesWon++;
+                        long currentWinnings = (long)(bet * Bot.Modules.Economy.GetWinningsMultiplier(gamesWon, 0.4));
+                        long nextWinnings = (long)(bet * Bot.Modules.Economy.GetWinningsMultiplier(gamesWon + 1, 0.4));
+                        int cardsLeft = deck.Size();
+
+                        embed.WithColor(Bot.Style.SuccessColor);
+                        if(cardsLeft == 0) {
+                            embed.WithDescription($"Congrats, {ctx.User.Mention}, I drew {nextCard}! There are no cards left!.\n " +
+                            $"You win {currentWinnings}!");
+                            account.Balance += currentWinnings;
+                            Bot.Database.Update(account);
+                            break;
+                        }
+                        embed.WithDescription($"Congrats, {ctx.User.Mention}, I drew {nextCard}! There are {deck.Size()}/52 cards left!.\n " +
+                            $"You can cash out with your ${bet} bet and ${currentWinnings - bet} in winnings, or risk it all for ${nextWinnings - currentWinnings} more.");
+                        await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(continueQuitButtons));
+
+                        interactivityResult = await interactivity.WaitForButtonAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
+
+                        if(!interactivityResult.TimedOut)
+                            await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage);
+
+                        if(interactivityResult.TimedOut || interactivityResult.Result.Id == "quit") {
+                            embed.WithDescription($"You cashed out with ${currentWinnings}.");
+                            account.Balance += currentWinnings;
+                            Bot.Database.Update(account);
+                            break;
+                        }
+                        anchorCard = nextCard;
+                    }
                 }
-                await input.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage);
-
-                if(input.Result.Id == "lower") {
-                    hasLost = anchorCard.value < nextCard.value;
-                }
-                if(input.Result.Id == "higher") {
-                    hasLost = anchorCard.value > nextCard.value;
-                }
-
-                if(hasLost) {
-                    embed.WithColor(Bot.Style.ErrorColor);
-                    embed.WithDescription($"Sorry, I drew {nextCard}. You lost your ${bet} bet.");
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
-                    break;
-                }
-
-                gamesWon++;
-                long currentWinnings = (long)(bet * Bot.Modules.Economy.GetWinningsMultiplier(gamesWon, 0.4));
-                long nextWinnings = (long)(bet * Bot.Modules.Economy.GetWinningsMultiplier(gamesWon + 1, 0.4));
-                int cardsLeft = deck.Size();
-
-                embed.WithColor(Bot.Style.SuccessColor);
-                if(cardsLeft == 0) {
-                    embed.WithDescription($"Congrats, {ctx.User.Mention}, I drew {nextCard}! There are no cards left!.\n " +
-                    $"You win {currentWinnings}!");
-                    account.Balance += currentWinnings;
-                    Bot.Database.Update(account);
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(new DiscordButtonComponent(ButtonStyle.Primary, $"replay", $"Replay (${bet})", account.Balance < bet)));
+                var replayResult = await interactivity.WaitForButtonAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
+                if(replayResult.TimedOut) {
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(new DiscordButtonComponent(ButtonStyle.Primary, $"replay", $"Replay ${bet}", true)));
                     return;
                 }
-                embed.WithDescription($"Congrats, {ctx.User.Mention}, I drew {nextCard}! There are {deck.Size()}/52 cards left!.\n " +
-                    $"You can cash out with your ${bet} bet and ${currentWinnings - bet} in winnings, or risk it all for ${nextWinnings - currentWinnings} more.");
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(continueQuitButtons));
-
-                var continueResult = await interactivity.WaitForButtonAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
-
-                if(!continueResult.TimedOut)
-                    await continueResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage);
-
-                if(continueResult.TimedOut || continueResult.Result.Id == "quit") {
-                    embed.WithDescription($"You cashed out with ${currentWinnings}.");
-                    account.Balance += currentWinnings;
-                    Bot.Database.Update(account);
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
-                    gameEnded = true;
-                }
-                anchorCard = nextCard;
+                await replayResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage);
             }
         }
         #endregion
