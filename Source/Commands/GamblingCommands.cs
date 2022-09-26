@@ -65,6 +65,7 @@ namespace DiscordBotRewrite.Commands {
                 }
                 await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage);
 
+                stateString = string.Empty;
                 if(interactivityResult.Result.Id == "hit")
                     playerHand.Add(deck.Draw());
                 if(interactivityResult.Result.Id == "stand")
@@ -117,10 +118,10 @@ namespace DiscordBotRewrite.Commands {
             };
 
             UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
-            account.Balance -= bet;
             await ctx.DeferAsync();
             var interactivity = ctx.Client.GetInteractivity();
             while(true) {
+                account.Balance -= bet;
                 var embed = new DiscordEmbedBuilder {
                     Title = "Higher or Lower"
                 };
@@ -154,6 +155,7 @@ namespace DiscordBotRewrite.Commands {
                     if(hasLost) {
                         embed.WithColor(Bot.Style.ErrorColor);
                         embed.WithDescription($"Sorry, I drew {nextCard}. You lost your ${bet} bet.");
+                        Bot.Database.Update(account);
                         break;
                     } else {
                         gamesWon++;
