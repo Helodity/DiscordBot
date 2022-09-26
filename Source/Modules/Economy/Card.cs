@@ -1,5 +1,7 @@
-﻿namespace DiscordBotRewrite.Modules {
-    public readonly struct Card {
+﻿using System.Collections.Generic;
+
+namespace DiscordBotRewrite.Modules {
+    public class Card {
         public enum Suit {
             Spades,
             Hearts,
@@ -59,6 +61,12 @@
 
             return output;
         }
-
+        public static string ListToString(List<Card> cards) {
+            string str = string.Empty;
+            foreach(Card c in cards) {
+                str += c.ToString() + " ";
+            }
+            return str.Trim();
+        }
     }
 }

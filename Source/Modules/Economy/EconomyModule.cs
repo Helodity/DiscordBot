@@ -54,5 +54,25 @@ namespace DiscordBotRewrite.Modules {
         public double GetWinningsMultiplier(int gamesWon, double scale = 1.0) {
             return Math.Pow(2, gamesWon * scale);
         }
+
+        public int CalculateBlackJackHandValue(List<Card> hand) {
+            int value = 0;
+            int aces = 0;
+            foreach(Card c in hand) {
+                int thisValue = (int)c.value + 2;
+                if(thisValue > 10)
+                    thisValue = 10;
+                if(c.value == Card.Value.Ace) {
+                    aces++;
+                    thisValue = 11;
+                }
+                value += thisValue;
+            }
+            while(value > 21 && aces > 0) {
+                value -= 10;
+                aces -= 1;
+            }
+            return value;
+        }
     }
 }

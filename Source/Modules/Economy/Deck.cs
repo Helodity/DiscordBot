@@ -22,9 +22,23 @@ namespace DiscordBotRewrite.Modules {
             return d;
         }
         public Card Draw() {
+            if(Cards.Count == 0)
+                return null;
             Card c = Cards.First();
             Cards.RemoveAt(0);
             return c;
+        }
+        public List<Card> Draw(int amount) {
+            List<Card> l = new List<Card>();
+            for(int i = 0; i < amount; i++) {
+                if(Cards.Count == 0)
+                    break;
+                Card c = Cards.First();
+                Cards.RemoveAt(0);
+                l.Add(c);
+            }
+
+            return l;
         }
         public int Size() {
             return Cards.Count;
