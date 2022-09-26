@@ -78,12 +78,13 @@ namespace DiscordBotRewrite {
         private static Task InitCommands() {
             SlashExtension = Client.UseSlashCommands();
 
-            SlashExtension.RegisterCommands<UnsortedCommands>(TargetServer);
+            SlashExtension.RegisterCommands<EconomyCommands>(TargetServer);
+            SlashExtension.RegisterCommands<GamblingCommands>(TargetServer);
             SlashExtension.RegisterCommands<PixelCommands>(TargetServer);
+            SlashExtension.RegisterCommands<PollCommands>(TargetServer);
             SlashExtension.RegisterCommands<QuestionCommands>(TargetServer);
             SlashExtension.RegisterCommands<QuoteCommands>(TargetServer);
-            SlashExtension.RegisterCommands<PollCommands>(TargetServer);
-            SlashExtension.RegisterCommands<EconomyCommands>(TargetServer);
+            SlashExtension.RegisterCommands<UnsortedCommands>(TargetServer);
             if(Config.UseVoice) SlashExtension.RegisterCommands<VoiceCommands>(TargetServer);
 
             return Task.CompletedTask;

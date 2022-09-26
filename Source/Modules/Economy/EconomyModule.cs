@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using DSharpPlus.Entities;
+using DSharpPlus.SlashCommands;
 
 namespace DiscordBotRewrite.Modules {
     public class EconomyModule {
@@ -9,10 +12,9 @@ namespace DiscordBotRewrite.Modules {
         }
         #endregion
 
-        public List<UserAccount> GetUserAccounts() {
+        public List<UserAccount> GetAllAccounts() {
             return Bot.Database.Table<UserAccount>().ToList();
         }
-
         public UserAccount GetAccount(long userId) {
             UserAccount account = Bot.Database.Table<UserAccount>().FirstOrDefault(x => x.UserId == userId);
             if(account == null) {
@@ -27,8 +29,7 @@ namespace DiscordBotRewrite.Modules {
                 return 0;
             UserAccount account1 = GetAccount(id1);
             UserAccount account2 = GetAccount(id2);
-            if(value <= 0)
-                return 0;
+
             if(account1.Balance < value)
                 value = account1.Balance;
 
@@ -41,20 +42,10 @@ namespace DiscordBotRewrite.Modules {
             return value;
         }
 
-        public long GetTotalBalance() {
-            long total = 0;
-            List<UserAccount> accounts = GetUserAccounts();
-            foreach(UserAccount account in accounts) {
-                total += account.Balance;
-                total += account.Bank;
-            }
-            return total;
-        }
-
+        #region Gambling
         public double GetWinningsMultiplier(int gamesWon, double scale = 1.0) {
             return Math.Pow(2, gamesWon * scale);
         }
-
         public int CalculateBlackJackHandValue(List<Card> hand) {
             int value = 0;
             int aces = 0;
@@ -74,5 +65,27 @@ namespace DiscordBotRewrite.Modules {
             }
             return value;
         }
+        public async Task<bool> CheckForProperBetAsync(InteractionContext ctx, long bet) {
+            UserAccount account = GetAccount((long)ctx.User.Id);
+            if(bet < 0) {
+                account.Balance -= 1;
+                Bot.Database.Update(account);
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = $"Alright bitchass stop trying to game the system. I'm taking a dollar from you cuz of that.",
+                    Color = Bot.Style.ErrorColor
+                });
+                return false;
+            }
+
+            if(account.Balance < bet) {
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = $"This isn't the stock market, you can only bet what's in your pocket.",
+                    Color = Bot.Style.ErrorColor
+                });
+                return false;
+            }
+            return true;
+        }
+        #endregion
     }
 }
