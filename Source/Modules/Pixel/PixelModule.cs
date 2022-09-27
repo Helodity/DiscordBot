@@ -64,7 +64,6 @@ namespace DiscordBotRewrite.Modules {
             Bot.Database.Update(cooldown);
 
             map.SetPixel(x, y, color);
-            Bot.Database.Update(map);
 
             return true;
         }

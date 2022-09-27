@@ -20,7 +20,7 @@ namespace DiscordBotRewrite.Commands {
             };
 
             UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
-            account.Balance -= bet;
+            account.ModifyBalance(-bet);
             await ctx.DeferAsync();
             var interactivity = ctx.Client.GetInteractivity();
 
@@ -49,7 +49,6 @@ namespace DiscordBotRewrite.Commands {
                     embed.WithColor(Bot.Style.ErrorColor);
                     embed.WithDescription(stateString);
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
-                    Bot.Database.Update(account);
                     return;
                 }
 
@@ -60,7 +59,6 @@ namespace DiscordBotRewrite.Commands {
                 if(interactivityResult.TimedOut) {
                     embed.WithDescription("Sure, ok. Just leave on me.  I'm keeping your bet, fuck you.");
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
-                    Bot.Database.Update(account);
                     return;
                 }
                 await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage);
@@ -89,7 +87,7 @@ namespace DiscordBotRewrite.Commands {
             if(playerValue > dealerValue || dealerValue > 21) {
                 embed.WithColor(Bot.Style.SuccessColor);
                 stateString += $"You win ${bet}!";
-                account.Balance += bet * 2;
+                account.ModifyBalance(bet * 2);
             } else {
                 embed.WithColor(Bot.Style.ErrorColor);
                 stateString += $"You lose ${bet}!";
@@ -97,7 +95,6 @@ namespace DiscordBotRewrite.Commands {
             embed.WithDescription(stateString);
 
             await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
-            Bot.Database.Update(account);
         }
 
         #endregion
@@ -121,7 +118,7 @@ namespace DiscordBotRewrite.Commands {
             await ctx.DeferAsync();
             var interactivity = ctx.Client.GetInteractivity();
             while(true) {
-                account.Balance -= bet;
+                account.ModifyBalance(-bet);
                 var embed = new DiscordEmbedBuilder {
                     Title = "Higher or Lower"
                 };
@@ -139,7 +136,6 @@ namespace DiscordBotRewrite.Commands {
 
                     if(interactivityResult.TimedOut) {
                         embed.WithDescription("Sure, ok. Just leave on me.  I'm keeping your bet, fuck you.");
-                        Bot.Database.Update(account);
                         await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
                         return;
                     }
@@ -155,7 +151,6 @@ namespace DiscordBotRewrite.Commands {
                     if(hasLost) {
                         embed.WithColor(Bot.Style.ErrorColor);
                         embed.WithDescription($"Sorry, I drew {nextCard}. You lost your ${bet} bet.");
-                        Bot.Database.Update(account);
                         break;
                     } else {
                         gamesWon++;
@@ -167,8 +162,7 @@ namespace DiscordBotRewrite.Commands {
                         if(cardsLeft == 0) {
                             embed.WithDescription($"Congrats, {ctx.User.Mention}, I drew {nextCard}! There are no cards left!.\n " +
                             $"You win {currentWinnings}!");
-                            account.Balance += currentWinnings;
-                            Bot.Database.Update(account);
+                            account.ModifyBalance(currentWinnings);
                             break;
                         }
                         embed.WithDescription($"Congrats, {ctx.User.Mention}, I drew {nextCard}! There are {deck.Size()}/52 cards left!.\n " +
@@ -182,8 +176,7 @@ namespace DiscordBotRewrite.Commands {
 
                         if(interactivityResult.TimedOut || interactivityResult.Result.Id == "quit") {
                             embed.WithDescription($"You cashed out with ${currentWinnings}.");
-                            account.Balance += currentWinnings;
-                            Bot.Database.Update(account);
+                            account.ModifyBalance(currentWinnings);
                             break;
                         }
                         anchorCard = nextCard;

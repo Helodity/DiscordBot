@@ -33,12 +33,8 @@ namespace DiscordBotRewrite.Modules {
             if(account1.Balance < value)
                 value = account1.Balance;
 
-            account1.Balance -= value;
-            account2.Balance += value;
-            if(value != 0) {
-                Bot.Database.Update(account1);
-                Bot.Database.Update(account2);
-            }
+            account1.ModifyBalance(-value);
+            account2.ModifyBalance(value);
             return value;
         }
 
@@ -68,7 +64,7 @@ namespace DiscordBotRewrite.Modules {
         public async Task<bool> CheckForProperBetAsync(InteractionContext ctx, long bet) {
             UserAccount account = GetAccount((long)ctx.User.Id);
             if(bet < 0) {
-                account.Balance -= 1;
+                account.ModifyBalance(-1);
                 Bot.Database.Update(account);
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"Alright bitchass stop trying to game the system. I'm taking a dollar from you cuz of that.",

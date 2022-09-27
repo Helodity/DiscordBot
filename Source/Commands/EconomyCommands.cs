@@ -71,14 +71,13 @@ namespace DiscordBotRewrite.Commands {
 
             //48 total hours, daily cooldown accounts for 20
             if((account.DailyCooldown - DateTime.Now).TotalHours > 28) {
-                account.Streak = 0;
+                account.ResetStreak(false);
             } else {
-                account.Streak += 1;
+                account.IncrementStreak(false);
             }
 
-            account.DailyCooldown = DateTime.Now.AddHours(20);
-            account.Balance += amount;
-            Bot.Database.Update(account);
+            account.SetDailyCooldown(DateTime.Now.AddHours(20), false);
+            account.ModifyBalance(amount);
 
             string streakText = string.Empty;
             if(account.Streak > 0) {
@@ -98,19 +97,8 @@ namespace DiscordBotRewrite.Commands {
         #region Deposit
         [SlashCommand("deposit", "Bank!!!!")]
         public async Task Deposit(InteractionContext ctx, [Option("amount", "how much inflation")] long amount) {
-            if(amount < 0) {
-                await Withdraw(ctx, -amount);
-                return;
-            }
             UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
-            if(account.Bank + amount > account.BankMax)
-                amount = account.BankMax - account.Bank;
-            if(amount > account.Balance)
-                amount = account.Balance;
-
-            account.Balance -= amount;
-            account.Bank += amount;
-            Bot.Database.Update(account);
+            account.TransferToBank(amount);
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Deposited ${amount}!",
@@ -161,9 +149,8 @@ namespace DiscordBotRewrite.Commands {
                 embed.WithDescription($"Your bank has been expanded by ${account.BankMax}");
                 embed.WithColor(Bot.Style.SuccessColor);
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
-                account.Balance -= cost;
-                account.BankMax *= 2;
-                Bot.Database.Update(account);
+                account.ModifyBalance(-cost, false);
+                account.ModifyBankMax(account.BankMax);
             }
 
         }
@@ -215,7 +202,7 @@ namespace DiscordBotRewrite.Commands {
                 });
                 return;
             }
-            self.RobCooldown = DateTime.Now.AddSeconds(30);
+            self.SetRobCooldown(DateTime.Now.AddSeconds(30), false);
             int rng = GenerateRandomNumber(0, 10);
             if(rng == 0) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -224,13 +211,11 @@ namespace DiscordBotRewrite.Commands {
                 });
             } else {
                 long amount = (long)(target.Balance * 0.01 * rng);
+                amount = Bot.Modules.Economy.Transfer((long)user.Id, (long)ctx.User.Id, (int)amount);
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"You got ${amount} from {user.Username}!",
                     Color = Bot.Style.SuccessColor
                 });
-                self.Balance += amount;
-                target.Balance -= amount;
-                Bot.Database.Update(target);
             }
             Bot.Database.Update(self);
         }
@@ -257,17 +242,8 @@ namespace DiscordBotRewrite.Commands {
         #region Withdraw
         [SlashCommand("withdraw", "Pocket!!!!")]
         public async Task Withdraw(InteractionContext ctx, [Option("amount", "how much inflation")] long amount) {
-            if(amount < 0) {
-                await Deposit(ctx, -amount);
-                return;
-            }
             UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
-            if(amount > account.Bank)
-                amount = account.Bank;
-
-            account.Bank -= amount;
-            account.Balance += amount;
-            Bot.Database.Update(account);
+            account.TransferToBalance(amount);
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Withdrew ${amount}!",

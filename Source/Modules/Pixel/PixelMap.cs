@@ -11,10 +11,10 @@ namespace DiscordBotRewrite.Modules {
         [Unique, Column("guild_id")]
         public long GuildId { get; set; }
         [Column("width")]
-        public int Width { get; set; }
+        public int Width { get; private set; }
 
         [Column("height")]
-        public int Height { get; set; }
+        public int Height { get; private set; }
 
         [Column("cooldown_time")]
         public uint PlaceCooldown { get; set; }
@@ -48,10 +48,12 @@ namespace DiscordBotRewrite.Modules {
                     PixelState[x + y * Width] = old[x + y * Height];
                 }
             }
+            Bot.Database.Update(this);
         }
 
         public void SetPixel(int x, int y, PixelEnum color) {
             PixelState[x + y * Width] = (byte)color;
+            Bot.Database.Update(this);
         }
 
         public PixelEnum GetPixel(int x, int y) {
