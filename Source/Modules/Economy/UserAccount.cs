@@ -5,19 +5,19 @@ namespace DiscordBotRewrite.Modules {
     [Table("economy_accounts")]
     public class UserAccount {
         [PrimaryKey, AutoIncrement, Column("id")]
-        public int Id { get; private set; }
+        public int Id { get; set; }
         [Unique, Column("user_id")]
-        public long UserId { get; private set; }
+        public long UserId { get; set; }
         [Column("balance")]
-        public long Balance { get; private set; }
+        public long Balance { get; set; }
         [Column("bank")]
-        public long Bank { get; private set; }
+        public long Bank { get; set; }
         [Column("bank_max")]
-        public long BankMax { get; private set; }
+        public long BankMax { get; set; }
         [Column("daily_cooldown")]
-        public DateTime DailyCooldown { get; private set; }
+        public DateTime DailyCooldown { get; set; }
         [Column("rob_cooldown")]
-        public DateTime RobCooldown { get; private set; }
+        public DateTime RobCooldown { get; set; }
         [Column("daily_streak")]
         public int Streak { get; set; }
 

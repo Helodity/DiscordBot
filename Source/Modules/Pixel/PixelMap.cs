@@ -11,10 +11,10 @@ namespace DiscordBotRewrite.Modules {
         [Unique, Column("guild_id")]
         public long GuildId { get; set; }
         [Column("width")]
-        public int Width { get; private set; }
+        public int Width { get; set; }
 
         [Column("height")]
-        public int Height { get; private set; }
+        public int Height { get; set; }
 
         [Column("cooldown_time")]
         public uint PlaceCooldown { get; set; }
