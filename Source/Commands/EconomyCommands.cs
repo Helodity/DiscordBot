@@ -202,7 +202,7 @@ namespace DiscordBotRewrite.Commands {
                 });
                 return;
             }
-            self.SetRobCooldown(DateTime.Now.AddSeconds(30), false);
+            self.SetRobCooldown(DateTime.Now.AddSeconds(30));
             int rng = GenerateRandomNumber(0, 10);
             if(rng == 0) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -217,7 +217,6 @@ namespace DiscordBotRewrite.Commands {
                     Color = Bot.Style.SuccessColor
                 });
             }
-            Bot.Database.Update(self);
         }
         #endregion
 
