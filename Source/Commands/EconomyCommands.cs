@@ -66,7 +66,6 @@ namespace DiscordBotRewrite.Commands {
                 });
                 return;
             }
-
             long amount = (long)(100 * Math.Pow(1.3, account.Streak));
 
             //48 total hours, daily cooldown accounts for 20

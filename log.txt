@@ -1,0 +1,15 @@
+
+
+ 9/29/2022 6:18:14 PM
+Object reference not set to an instance of an object. :    at DiscordBotRewrite.Commands.EconomyCommands.Daily(InteractionContext ctx) in C:\Users\Kaelan\Documents\GitHub\DiscordBot\Source\Commands\EconomyCommands.cs:line 70
+
+ 9/29/2022 6:18:14 PM
+Object reference not set to an instance of an object. :    at DiscordBotRewrite.Commands.EconomyCommands.Daily(InteractionContext ctx) in C:\Users\Kaelan\Documents\GitHub\DiscordBot\Source\Commands\EconomyCommands.cs:line 70
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+
+ 9/29/2022 6:18:39 PM
+Object reference not set to an instance of an object. :    at DiscordBotRewrite.Commands.EconomyCommands.Daily(InteractionContext ctx) in C:\Users\Kaelan\Documents\GitHub\DiscordBot\Source\Commands\EconomyCommands.cs:line 70
+
+ 9/29/2022 6:18:40 PM
+Object reference not set to an instance of an object. :    at DiscordBotRewrite.Commands.EconomyCommands.Daily(InteractionContext ctx) in C:\Users\Kaelan\Documents\GitHub\DiscordBot\Source\Commands\EconomyCommands.cs:line 70
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
