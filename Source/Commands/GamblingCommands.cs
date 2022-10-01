@@ -195,7 +195,7 @@ namespace DiscordBotRewrite.Commands {
         }
         #endregion
 
-        #region rock paper scissors
+        #region Rock Paper Scissors
         [SlashCommand("rps", "Money?")]
         public async Task RPS(InteractionContext ctx, [Option("opponent", "who to make lose")] DiscordUser opponent, [Option("bet", "how much to lose")] long bet) {
             if(!await Bot.Modules.Economy.CheckForProperBetAsync(ctx, bet)) return;

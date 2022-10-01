@@ -108,14 +108,21 @@ namespace DiscordBotRewrite.Commands {
 
         #region Expand
         [SlashCommand("expand", "Store more in your bank!")]
-        public async Task Expand(InteractionContext ctx) {
+        public async Task Expand(InteractionContext ctx, [Option("amount", "how much to expand")] long amount) {
+            if(amount < 1) {
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = $"You can't change your bank size by that much!",
+                    Color = Bot.Style.ErrorColor
+                });
+                return;
+            }
             UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
 
-            long cost = account.BankMax * 10;
+            long cost = amount * 10;
 
             if(account.Balance < cost) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = $"You can't afford this! It will cost ${cost} to double your bank size!",
+                    Description = $"You can't afford this! It will cost ${cost} to increase you bank size by ${amount}!",
                     Color = Bot.Style.ErrorColor
                 });
                 return;
@@ -135,21 +142,22 @@ namespace DiscordBotRewrite.Commands {
             var interactivity = ctx.Client.GetInteractivity();
             var interactivityResult = await interactivity.WaitForButtonAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
 
-            if(!interactivityResult.TimedOut)
-                await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage);
-
-            if(interactivityResult.TimedOut || interactivityResult.Result.Id == "no") {
+            if(interactivityResult.Result.Id == "no") {
                 embed.WithDescription("Bank expansion cancelled.");
                 embed.WithColor(Bot.Style.ErrorColor);
+                if(!interactivityResult.TimedOut) {
+                    await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(embed));
+                    return;
+                }
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
                 return;
             }
             if(interactivityResult.Result.Id == "yes") {
-                embed.WithDescription($"Your bank has been expanded by ${account.BankMax}");
+                embed.WithDescription($"Your bank has been expanded by ${amount}!");
                 embed.WithColor(Bot.Style.SuccessColor);
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
+                await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(embed));
                 account.ModifyBalance(-cost, false);
-                account.ModifyBankMax(account.BankMax);
+                account.ModifyBankMax(amount);
             }
 
         }
