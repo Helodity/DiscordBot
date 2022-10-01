@@ -5,6 +5,8 @@ using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus;
 using DSharpPlus.SlashCommands;
+using System;
+using DiscordBotRewrite.Extensions;
 
 namespace DiscordBotRewrite.Commands {
     [SlashCommandGroup("gamble", "throw away your money")]
@@ -190,6 +192,126 @@ namespace DiscordBotRewrite.Commands {
                 }
                 await replayResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage);
             }
+        }
+        #endregion
+
+        #region rock paper scissors
+        [SlashCommand("rps", "Money?")]
+        public async Task RPS(InteractionContext ctx, [Option("opponent", "who to make lose")] DiscordUser opponent, [Option("bet", "how much to lose")] long bet) {
+            if(!await Bot.Modules.Economy.CheckForProperBetAsync(ctx, bet)) return;
+
+            DiscordButtonComponent[] rpsButtons = {
+                new DiscordButtonComponent(ButtonStyle.Primary, "rock", "Rock"),
+                new DiscordButtonComponent(ButtonStyle.Primary, "paper", "Paper"),
+                new DiscordButtonComponent(ButtonStyle.Primary, "scissors", "Scissors"),
+                new DiscordButtonComponent(ButtonStyle.Danger, "decline", "Decline")
+            };
+
+            UserAccount account1 = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
+            UserAccount account2 = Bot.Modules.Economy.GetAccount((long)opponent.Id);
+
+            bet = Math.Min(Math.Min(account1.Balance, account2.Balance), bet);
+
+            await ctx.DeferAsync();
+            var interactivity = ctx.Client.GetInteractivity();
+
+            var embed = new DiscordEmbedBuilder {
+                Title = "RPS"
+            };
+
+            string p1status = "Waiting...";
+            string p2status = "Waiting...";
+
+            embed.WithColor(Bot.Style.DefaultColor);
+            embed.WithDescription($"{ctx.User.Username} challenges {opponent.Username} to a game of Rock, Paper, Scissors for ${bet}!\n" +
+                $"**{ctx.User.Username}**: {p1status}\n" +
+                $"**{opponent.Username}**: {p2status}");
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(rpsButtons));
+
+            var originalMessage = await ctx.GetOriginalResponseAsync();
+            int p1_choice = -1;
+            string p1_str = "";
+            int p2_choice = -1;
+            string p2_str = "";
+            var task1 = new Task<Task>(async () => {
+                var a = interactivity.WaitForButtonAsync(originalMessage, ctx.User);
+                if(a.Result.TimedOut) {
+                    embed.WithDescription($"{ctx.User.Username} didn't respond...");
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
+                    return;
+                }
+                if(a.Result.Result.Id == "decline") {
+                    embed.WithDescription($"{ctx.User.Username} rejected the challenge.");
+                    await a.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(embed));
+                    return;
+                }
+                p1status = "Ready!";
+                p1_str = a.Result.Result.Id.ToFirstUpper();
+                p1_choice = a.Result.Result.Id switch {
+                    "rock" => 0,
+                    "paper" => 1,
+                    "scissors" => 2,
+                    _ => -1
+                };
+                embed.WithDescription($"{ctx.User.Username} challenges {opponent.Username} to a game of Rock, Paper, Scissors for ${bet}!\n" +
+                $"**{ctx.User.Username}**: {p1status}\n" +
+                $"**{opponent.Username}**: {p2status}");
+                await a.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(embed).AddComponents(rpsButtons));
+            });
+            var task2 = new Task<Task>(async () => {
+                var b = interactivity.WaitForButtonAsync(originalMessage, opponent);
+                if(b.Result.TimedOut) {
+                    embed.WithDescription($"{opponent.Username} didn't respond...");
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
+                    return;
+                }
+                if(b.Result.Result.Id == "decline") {
+                    embed.WithDescription($"{opponent.Username} rejected the challenge.");
+                    await b.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(embed));
+                    return;
+                }
+                p2status = "Ready!";
+                p2_str = b.Result.Result.Id.ToFirstUpper();
+                p2_choice = b.Result.Result.Id switch {
+                    "rock" => 0,
+                    "paper" => 1,
+                    "scissors" => 2,
+                    _ => -1
+                };
+
+                embed.WithDescription($"{ctx.User.Username} challenges {opponent.Username} to a game of Rock, Paper, Scissors for **${bet}**!\n" +
+                $"**{ctx.User.Username}**: {p1status}\n" +
+
+                $"**{opponent.Username}**: {p2status}");
+                await b.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(embed).AddComponents(rpsButtons));
+            });
+            task1.Start();
+            task2.Start();
+            await Task.WhenAll(await task1, await task2);
+
+            //Something went wrong, abort
+            if(p1_choice == -1 || p2_choice == -1)
+                return;
+
+            int result;
+            if(p1_choice == p2_choice) {
+                result = 0;
+            } else if(p1_choice == (p2_choice + 1) % 3) {
+                result = 1;
+            } else {
+                result = -1;
+            }
+            Bot.Modules.Economy.Transfer((long)opponent.Id, (long)ctx.User.Id, result * bet, true);
+
+            DiscordUser winner = result switch {
+                1 => ctx.User,
+                -1 => opponent,
+                _ => null
+            };
+            string resultString = $"{ctx.User.Mention} played {p1_str}, {opponent.Mention} played {p2_str}. ";
+            resultString += winner != null ? $"{winner.Mention} win ${bet}!" : "Draw.";
+            embed.WithDescription(resultString);
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
         }
         #endregion
     }

@@ -24,8 +24,8 @@ namespace DiscordBotRewrite.Modules {
             return account;
         }
 
-        public long Transfer(long id1, long id2, long value) {
-            if(value <= 0)
+        public long Transfer(long id1, long id2, long value, bool allowNegative = false) {
+            if(!allowNegative && value <= 0)
                 return 0;
             UserAccount account1 = GetAccount(id1);
             UserAccount account2 = GetAccount(id2);
