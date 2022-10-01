@@ -97,7 +97,7 @@ namespace DiscordBotRewrite.Commands {
         [SlashCommand("deposit", "Bank!!!!")]
         public async Task Deposit(InteractionContext ctx, [Option("amount", "how much inflation")] long amount) {
             UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
-            account.TransferToBank(amount);
+            amount = account.TransferToBank(amount);
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Deposited ${amount}!",
@@ -134,7 +134,7 @@ namespace DiscordBotRewrite.Commands {
             };
 
             var embed = new DiscordEmbedBuilder {
-                Description = $"It will cost ${cost} to double your bank size, are you sure?",
+                Description = $"It will cost ${cost} to increase you bank size by ${amount}, are you sure?",
                 Color = Bot.Style.DefaultColor
             };
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(embed).AddComponents(confirmationButtons));
@@ -249,7 +249,7 @@ namespace DiscordBotRewrite.Commands {
         [SlashCommand("withdraw", "Pocket!!!!")]
         public async Task Withdraw(InteractionContext ctx, [Option("amount", "how much inflation")] long amount) {
             UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
-            account.TransferToBalance(amount);
+            amount = account.TransferToBalance(amount);
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Withdrew ${amount}!",

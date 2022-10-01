@@ -1,5 +1,4 @@
 Bugs
-	- Sometimes skipping doesn't work?
 	
 Rate limit
 - Edit message in button response instead of after

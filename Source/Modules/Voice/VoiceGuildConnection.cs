@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using DiscordBotRewrite.Extensions;
@@ -83,6 +84,10 @@ namespace DiscordBotRewrite.Modules {
             await PlayNextTrackInQueue();
         }
         public async Task SkipTrack() {
+            if(!TrackQueue.Any()) {
+                await Conn.StopAsync();
+                return;
+            }
             await PlayNextTrackInQueue();
         }
         public bool IsPlayingTrack() {
@@ -108,7 +113,8 @@ namespace DiscordBotRewrite.Modules {
             }
         }
         private Task OnChannelDisconnect(LavalinkGuildConnection sender, WebSocketCloseEventArgs args) {
-            args.Handled = true;
+            if(args != null)
+                args.Handled = true;
             Bot.Client.Logger.LogDebug($"Web socket closed at {GuildId}");
             SetDefaultState();
             IdleDisconnectEvent.Cancel();
@@ -175,6 +181,7 @@ namespace DiscordBotRewrite.Modules {
             TrackQueue = new List<LavalinkTrack>();
             UsedShuffleTracks = new List<LavalinkTrack>();
             IsConnected = IsPaused = IsLooping = IsShuffling = false;
+            Conn.StopAsync();
         }
         #endregion
     }
