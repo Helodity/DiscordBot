@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using DiscordBotRewrite.Extensions;
-using DiscordBotRewrite.Global;
+using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using SkiaSharp;
-using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite.Modules {
     public class PixelModule {
-        #region Properties
         #region Constants
         //Update both when adding a color
         readonly Dictionary<uint, SKColor> PixelDict = new Dictionary<uint, SKColor>()
@@ -42,29 +40,35 @@ namespace DiscordBotRewrite.Modules {
         };
         #endregion
 
-        readonly Dictionary<ulong, PixelMap> PixelMaps;
-        #endregion
-
         #region Constructors
         public PixelModule() {
-            PixelMaps = LoadJson<Dictionary<ulong, PixelMap>>(PixelMap.JsonLocation);
+            Bot.Database.CreateTable<PixelMap>();
+            Bot.Database.CreateTable<PlaceCooldown>();
         }
         #endregion
 
         #region Public
-        public bool TryPlacePixel(ulong guildId, ulong userId, int x, int y, PixelEnum color) {
+        public bool TryPlacePixel(long guildId, long userId, int x, int y, PixelEnum color) {
             var map = GetPixelMap(guildId);
 
-            if(Cooldown.UserHasCooldown(userId, ref map.PlaceCooldowns)) {
+            PlaceCooldown cooldown = GetPlaceCooldown(guildId, userId);
+            if(cooldown != null && DateTime.Compare(DateTime.Now, cooldown.EndTime) < 0) {
                 return false;
             }
-            map.PlaceCooldowns.Add(userId, new Cooldown(DateTime.Now.AddSeconds(map.PlaceCooldown)));
-            map.PixelState[x, y] = color;
-            SavePixelMap(map);
+            if(cooldown == null) {
+                cooldown = new PlaceCooldown(guildId, userId);
+                Bot.Database.Insert(cooldown);
+            }
+
+            cooldown.EndTime = DateTime.Now.AddSeconds(map.PlaceCooldown);
+            Bot.Database.Update(cooldown);
+
+            map.SetPixel(x, y, color);
+
             return true;
         }
         public void CreateImage(InteractionContext ctx) {
-            PixelMap map = GetPixelMap(ctx.Guild.Id);
+            PixelMap map = GetPixelMap((long)ctx.Guild.Id);
 
             int pixelSize = Math.Max(1, 500 / Math.Max(map.Width, map.Height));
             SKPointI anchor = new SKPointI(0, 0);
@@ -74,7 +78,7 @@ namespace DiscordBotRewrite.Modules {
             surface.Snapshot().SaveToPng($"PixelImages/img{ctx.User.Id}.png");
         }
         public void CreateImage(InteractionContext ctx, int x, int y, int zoom) {
-            PixelMap map = GetPixelMap(ctx.Guild.Id);
+            PixelMap map = GetPixelMap((long)ctx.Guild.Id);
 
             int halfDistance = zoom / 2;
             SKPointI anchor = new SKPointI(x - halfDistance, y - halfDistance);
@@ -84,7 +88,7 @@ namespace DiscordBotRewrite.Modules {
             surface.Snapshot().SaveToPng($"PixelImages/img{ctx.User.Id}.png");
         }
         public void CreateImageWithUI(InteractionContext ctx, int x, int y, int zoom, PixelEnum selectedPixel) {
-            PixelMap map = GetPixelMap(ctx.Guild.Id);
+            PixelMap map = GetPixelMap((long)ctx.Guild.Id);
             int halfDistance = zoom / 2;
             SKPointI anchor = new SKPointI(x - halfDistance, y - halfDistance);
             SKPointI end = new SKPointI(x + halfDistance, y + halfDistance);
@@ -97,36 +101,34 @@ namespace DiscordBotRewrite.Modules {
 
             surface.Snapshot().SaveToPng($"PixelImages/img{ctx.User.Id}.png");
         }
-        public PixelMap GetPixelMap(ulong id) {
-            if(!PixelMaps.TryGetValue(id, out PixelMap pixelMap)) {
-                pixelMap = new PixelMap(id);
-                PixelMaps.Add(id, pixelMap);
+        public PixelMap GetPixelMap(long id) {
+            PixelMap map = Bot.Database.Table<PixelMap>().FirstOrDefault(x => x.GuildId == id);
+            if(map == null) {
+                map = new PixelMap(id);
+                Bot.Database.Insert(map);
             }
-
-            if(pixelMap.Width * pixelMap.Height != pixelMap.PixelState.Length) {
-                pixelMap.Resize(pixelMap.PixelState.GetLength(0), pixelMap.PixelState.GetLength(1));
-                SavePixelMap(pixelMap);
+            if(map.Width * map.Height != map.PixelState.Length) {
+                map.Resize(map.Width, map.Height);
+                Bot.Database.Update(map);
             }
-
-            return pixelMap;
+            return map;
         }
-        public void ResizeMap(ulong guildId, int width, int height) {
+        public PlaceCooldown GetPlaceCooldown(long guildId, long userId) {
+            return Bot.Database.Table<PlaceCooldown>().FirstOrDefault(x => x.GuildID == guildId && x.UserID == userId);
+        }
+        public void ResizeMap(long guildId, int width, int height) {
             var map = GetPixelMap(guildId);
             map.Resize(width, height);
-            SavePixelMap(map);
+            Bot.Database.Update(map);
         }
-        public void SetCooldown(ulong guildId, uint duration) {
+        public void SetCooldown(long guildId, uint duration) {
             var map = GetPixelMap(guildId);
             map.PlaceCooldown = duration;
-            SavePixelMap(map);
+            Bot.Database.Update(map);
         }
         #endregion
 
         #region Private
-        void SavePixelMap(PixelMap data) {
-            PixelMaps.AddOrUpdate(data.Id, data);
-            SaveJson(PixelMaps, PixelMap.JsonLocation);
-        }
         SKSurface CreateSurface(PixelMap map, SKPointI anchor, SKPointI end, int pixelSize) {
             int xDist = end.X + 1 - anchor.X;
             int yDist = end.Y + 1 - anchor.Y;
@@ -148,7 +150,7 @@ namespace DiscordBotRewrite.Modules {
                     if(absX < 0 || absX >= map.Width || absY < 0 || absY >= map.Height) {
                         color = SKColors.Black.WithAlpha(255);
                         exists = false;
-                    } else if(!PixelDict.TryGetValue((uint)map.PixelState[absX, absY], out color)) {
+                    } else if(!PixelDict.TryGetValue((uint)map.GetPixel(absX, absY), out color)) {
                         color = SKColors.White;
                     }
                     paint.Color = color;

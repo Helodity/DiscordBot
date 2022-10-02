@@ -2,27 +2,23 @@
 
 namespace DiscordBotRewrite.Modules {
 
-    [Table("votes")]
-    public class Vote {
+    [Table("choices")]
+    public class PollChoice {
         [PrimaryKey, AutoIncrement, Column("id")]
         public int Id { get; set; }
 
         //Id of the message this poll belongs to
         [Column("poll_id")]
         public long PollId { get; set; }
-        //Id of the voter
-        [Column("voter_id")]
-        public long VoterId { get; set; }
         //What the voter chose
-        [Column("choice")]
-        public string Choice { get; set; }
+        [Column("name")]
+        public string Name { get; set; }
 
         #region Constructor
-        public Vote() {}
-        public Vote(long pollId, long voterId, string choice) {
+        public PollChoice() {}
+        public PollChoice(long pollId, string name) {
             PollId = pollId;
-            VoterId = voterId;
-            Choice = choice;
+            Name = name;
         }
         #endregion
     }

@@ -1,10 +1,16 @@
-Features
-- Application Theme
-	- JSON file to change console and embed colors
-
+Bugs
+	
+Rate limit
+- Edit message in button response instead of after
+	- Poll
+	- Gambling
+	- Pixel
+	
 Improvements
-- Cleanup Poll Module files
-- Move lavalink config to its own file instead of being hard coded
+	- Cleanup Poll Module files
+	- Move lavalink config to its own file instead of being hard coded
+	- Add redo to Blackjack
+	- Task<Task> is kinda gross, find better solution (RPS)
 
-Bugs / Unhandled Edge Cases
-- Mobile doesn't work, why????
+Features
+	- Poker, include player vs player

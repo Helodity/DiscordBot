@@ -1,52 +1,68 @@
 ﻿using System;
-using System.Collections.Generic;
-using DiscordBotRewrite.Global;
-using Newtonsoft.Json;
+using SQLite;
 using static DiscordBotRewrite.Modules.PixelModule;
+
 namespace DiscordBotRewrite.Modules {
-    public class PixelMap : ModuleData {
+    [Table("pixel_maps")]
+    public class PixelMap {
         #region Properties
-        public const string JsonLocation = "Json/PixelMaps.json";
+        [PrimaryKey, AutoIncrement, Column("id")]
+        public int Id { get; set; }
+        [Unique, Column("guild_id")]
+        public long GuildId { get; set; }
+        [Column("width")]
+        public int Width { get; set; }
 
-        [JsonProperty("width")]
-        public int Width;
-        [JsonProperty("height")]
-        public int Height;
-        [JsonProperty("cooldown_sec")]
-        public uint PlaceCooldown;
-        [JsonProperty("pixel_data")]
-        public PixelEnum[,] PixelState;
+        [Column("height")]
+        public int Height { get; set; }
 
-        public Dictionary<ulong, Cooldown> PlaceCooldowns = new Dictionary<ulong, Cooldown>();
+        [Column("cooldown_time")]
+        public uint PlaceCooldown { get; set; }
+
+        [Column("pixel_data")]
+        public byte[] PixelState { get; set; }
         #endregion
 
         #region Constructor
-        public PixelMap(ulong id, int width = 100, int height = 100) : base(id) {
+        public PixelMap() {}
+        public PixelMap(long id, int width = 100, int height = 100) {
+            GuildId = id;
             Width = width;
             Height = height;
-            PixelState = new PixelEnum[Width, Height];
+            PixelState = new byte[Width * Height];
             PlaceCooldown = 0;
         }
         #endregion
 
         #region Public
         public void Resize(int width, int height) {
-            PixelEnum[,] old = PixelState;
-            int maxY = Math.Min(old.GetLength(1), height);
-            int maxX = Math.Min(old.GetLength(0), width);
+            byte[] old = PixelState;
+            int maxY = Math.Min(Height, height);
+            int maxX = Math.Min(Width, width);
 
             Width = width;
             Height = height;
-            PixelState = new PixelEnum[Width, Height];
+            PixelState = new byte[Width * Height];
             for(int y = 0; y < maxY; y++) {
                 for(int x = 0; x < maxX; x++) {
-                    PixelState[x, y] = old[x, y];
+                    PixelState[x + y * Width] = old[x + y * Height];
                 }
             }
+            Bot.Database.Update(this);
         }
 
-        public int TimeUntilNextPlace(ulong userId) {
-            return (int)Cooldown.TimeUntilExpiration(userId, ref PlaceCooldowns).TotalSeconds;
+        public void SetPixel(int x, int y, PixelEnum color) {
+            PixelState[x + y * Width] = (byte)color;
+            Bot.Database.Update(this);
+        }
+
+        public PixelEnum GetPixel(int x, int y) {
+            return (PixelEnum)PixelState[x + y * Width];
+        }
+
+        public DateTime NextPlaceTime(long userId) {
+            PlaceCooldown c = Bot.Modules.Pixel.GetPlaceCooldown(GuildId, userId);
+            return c.EndTime;
         }
         #endregion
     }

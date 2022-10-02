@@ -11,6 +11,7 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.Logging;
+using SQLite;
 using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite {
@@ -29,6 +30,7 @@ namespace DiscordBotRewrite {
         public static DiscordClient Client { get; private set; } //will need to change for sharding, deal with when that becomes important
         public static SlashCommandsExtension SlashExtension { get; private set; }
         public static Config Config { get; private set; }
+        public static SQLiteConnection Database { get; private set; }
         public static ModuleContainer Modules { get; private set; }
         public static Style Style { get; private set; }
         #endregion
@@ -37,6 +39,7 @@ namespace DiscordBotRewrite {
         public static async Task Start() {
             if(!TryLoadConfig()) return;
             await InitClient();
+            Database = new SQLiteConnection("SavedData.db3");
             Modules = new ModuleContainer(Client);
             Style = new Style();
             await InitCommands();
@@ -75,12 +78,13 @@ namespace DiscordBotRewrite {
         private static Task InitCommands() {
             SlashExtension = Client.UseSlashCommands();
 
-            SlashExtension.RegisterCommands<UnsortedCommands>(TargetServer);
+            SlashExtension.RegisterCommands<EconomyCommands>(TargetServer);
+            SlashExtension.RegisterCommands<GamblingCommands>(TargetServer);
             SlashExtension.RegisterCommands<PixelCommands>(TargetServer);
+            SlashExtension.RegisterCommands<PollCommands>(TargetServer);
             SlashExtension.RegisterCommands<QuestionCommands>(TargetServer);
             SlashExtension.RegisterCommands<QuoteCommands>(TargetServer);
-            SlashExtension.RegisterCommands<PollCommands>(TargetServer);
-            SlashExtension.RegisterCommands<EconomyCommands>(TargetServer);
+            SlashExtension.RegisterCommands<UnsortedCommands>(TargetServer);
             if(Config.UseVoice) SlashExtension.RegisterCommands<VoiceCommands>(TargetServer);
 
             return Task.CompletedTask;

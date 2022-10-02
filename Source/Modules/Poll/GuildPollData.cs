@@ -1,43 +1,26 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
-using Newtonsoft.Json;
+using SQLite;
 
 namespace DiscordBotRewrite.Modules {
-    public class GuildPollData : ModuleData {
-        #region Properties
-        //Reference to the Json file's relative path
-        public const string JsonLocation = "Json/Polls.json";
-
+    [Table("guild_poll_data")]
+    public class GuildPollData {
+        [PrimaryKey, AutoIncrement, Column("id")]
+        public int Id { get; set; }
+        [Unique, Column("guild_id")]
+        public long GuildId { get; set; }
         //Which channel to send polls?
-        [JsonProperty("poll_channel")]
-        public ulong PollChannelId;
+        [Column("poll_channel")]
+        public long PollChannelId { get; set; }
 
-        //List of currently running polls
-        [JsonProperty("polls")]
-        public List<Poll> ActivePolls;
-        #endregion
 
-        #region Constructor
-        public GuildPollData(ulong id) : base(id) {
+        public GuildPollData() {
             PollChannelId = 0;
-            ActivePolls = new List<Poll>();
-        }
-        #endregion
-
-        #region Public
-        public bool HasPollChannelSet() {
-            return GetPollChannelAsync() != null;
         }
 
-        async Task<DiscordChannel> GetPollChannelAsync() {
-            try {
-                return await Bot.Client.GetChannelAsync(PollChannelId);
-            } catch(NotFoundException) {
-                return null;
-            }
+        public GuildPollData(long guildId) {
+            GuildId = guildId;
         }
-        #endregion
     }
 }

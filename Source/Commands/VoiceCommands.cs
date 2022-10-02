@@ -226,11 +226,11 @@ namespace DiscordBotRewrite.Commands {
         }
         #endregion
 
-        [SlashCommandGroup("savestate", "Savestate related commands")]
-        public class SaveStateCommands : ApplicationCommandModule {
-            #region Create Savestate
+        [SlashCommandGroup("playlist", "Playlist related commands")]
+        public class PlaylistCommands : ApplicationCommandModule {
+            #region Create Playlist
             [SlashCommand("create", "Create a text file that represents the current state of the player")]
-            public async Task CreateSavestate(InteractionContext ctx) {
+            public async Task CreatePlaylist(InteractionContext ctx, [Option("title", "What is the name of the playlist?")] string title = "Untitled") {
                 VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
 
                 string toWrite = string.Empty;
@@ -248,6 +248,7 @@ namespace DiscordBotRewrite.Commands {
                 foreach(LavalinkTrack track in VGConn.TrackQueue) {
                     toWrite += $";{track.Identifier}";
                 }
+                toWrite += $"|{title}";
 
                 //Save the file to memory
                 string path = $"Queues/{ctx.User.Id}.txt";
@@ -262,13 +263,13 @@ namespace DiscordBotRewrite.Commands {
             }
             #endregion
 
-            #region Load Savestate
-            [SlashCommand("load", "Load a previously made player state")]
+            #region Load Playlist
+            [SlashCommand("load", "Load a previously made playlist")]
             [UserAbleToPlay]
-            public async Task LoadSaveState(InteractionContext ctx,
+            public async Task LoadPlaylist(InteractionContext ctx,
                 [Option("Save", "Paste the contents of your savestate here!")] string inputSavestate,
-                [Option("clear", "Do we remove preexisting songs from the queue?")] bool reset = true) {
-
+                [Option("clear", "Should I remove preexisting songs from the queue?")] bool reset = true) {
+                await ctx.DeferAsync();
                 List<string> sections = inputSavestate.Split("|").ToList();
 
                 VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
@@ -299,14 +300,17 @@ namespace DiscordBotRewrite.Commands {
                 }
                 await VGConn.RequestTracksAsync(tracks);
 
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = "Sucessfully loaded the queue!",
+                string description = "Sucessfully loaded the playlist!";
+                if(sections.Count >= 3 && !string.IsNullOrWhiteSpace(sections[2]))
+                    description = $"Loaded playlist: `{sections[2]}`!";
+
+                await ctx.EditResponseAsync(new DiscordEmbedBuilder {
+                    Description = description,
                     Color = Bot.Style.SuccessColor
                 });
 
             }
             #endregion
-
         }
     }
 }

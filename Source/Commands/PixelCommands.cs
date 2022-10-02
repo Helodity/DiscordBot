@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using DiscordBotRewrite.Attributes;
+using DiscordBotRewrite.Extensions;
 using DiscordBotRewrite.Modules;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -76,7 +77,7 @@ namespace DiscordBotRewrite.Commands {
 
             DiscordSelectComponent colorSelectComponent = new DiscordSelectComponent("color", "Select color to place:", colorOptions);
 
-            PixelMap map = Bot.Modules.Pixel.GetPixelMap(ctx.Guild.Id);
+            PixelMap map = Bot.Modules.Pixel.GetPixelMap((long)ctx.Guild.Id);
 
             int curX = (int)Math.Clamp(x, 0, map.Width - 1);
             int curY = (int)Math.Clamp(y, 0, map.Height - 1);
@@ -95,7 +96,6 @@ namespace DiscordBotRewrite.Commands {
 
             var interactivity = ctx.Client.GetInteractivity();
             while(true) {
-                embed.WithDescription($"{ctx.Guild.Name}'s canvas. ({curX},{curY}) is selected. {zoom} zoom. {jumpAmount} tiles per move.");
                 Bot.Modules.Pixel.CreateImageWithUI(ctx, curX, curY, zoom, curColor);
                 using(var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read)) {
                     msg = await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddComponents(row1).AddComponents(row2).AddComponents(row3).AddComponents(row4).AddComponents(row5).AddEmbed(embed).WithFile(Path.GetFileName(imagePath), fs));
@@ -124,10 +124,6 @@ namespace DiscordBotRewrite.Commands {
                 }
                 if(input.Result.Id == "exit") {
                     break;
-                }
-                if(input.Result.Id == "place") {
-                    if(!Bot.Modules.Pixel.TryPlacePixel(ctx.Guild.Id, ctx.User.Id, curX, curY, curColor))
-                        await ctx.Member.SendMessageAsync($"Can't place a pixel, wait {map.TimeUntilNextPlace(ctx.User.Id)} seconds!");
                 }
                 if(input.Result.Id == "moveUp") {
                     for(int i = 0; i < jumpAmount; i++) {
@@ -167,6 +163,14 @@ namespace DiscordBotRewrite.Commands {
                 if(input.Result.Id == "jumpAdd") {
                     jumpAmount++;
                 }
+                embed.WithDescription($"{ctx.Guild.Name}'s canvas. ({curX},{curY}) is selected. {zoom} zoom. {jumpAmount} tiles per move.");
+                embed.WithColor(Bot.Style.DefaultColor);
+                if(input.Result.Id == "place") {
+                    if(!Bot.Modules.Pixel.TryPlacePixel((long)ctx.Guild.Id, (long)ctx.User.Id, curX, curY, curColor)) {
+                        embed.WithColor(Bot.Style.ErrorColor);
+                        embed.WithDescription($"You can place another pixel {map.NextPlaceTime((long)ctx.User.Id).ToTimestamp()}!");
+                    }
+                }
 
                 await msg.DeleteAsync();
                 await Task.Delay(500);
@@ -174,7 +178,7 @@ namespace DiscordBotRewrite.Commands {
 
             using(var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read)) {
                 await msg.DeleteAsync();
-                embed.WithDescription($"{ctx.Guild.Name}'s canvas.");
+                embed.WithDescription($"{ctx.Guild.Name}'s canvas.").WithColor(Bot.Style.DefaultColor);
                 await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed).WithFile(Path.GetFileName(imagePath), fs));
             }
             File.Delete(imagePath);
@@ -188,7 +192,7 @@ namespace DiscordBotRewrite.Commands {
             [Option("x", "new x size")] long x,
             [Option("y", "new y size")] long y) {
 
-            Bot.Modules.Pixel.ResizeMap(ctx.Guild.Id, (int)x, (int)y);
+            Bot.Modules.Pixel.ResizeMap((long)ctx.Guild.Id, (int)x, (int)y);
             await ctx.CreateResponseAsync($"Resized Canvas to ({x},{y})!");
         }
         #endregion
@@ -198,7 +202,7 @@ namespace DiscordBotRewrite.Commands {
         [RequirePermissions(Permissions.Administrator)]
         public async Task Cooldown(InteractionContext ctx, [Option("duration", "Time in seconds")] long duration) {
             duration = System.Math.Max(0, duration);
-            Bot.Modules.Pixel.SetCooldown(ctx.Guild.Id, (uint)duration);
+            Bot.Modules.Pixel.SetCooldown((long)ctx.Guild.Id, (uint)duration);
             await ctx.CreateResponseAsync($"Set cooldown to {duration} seconds");
         }
         #endregion

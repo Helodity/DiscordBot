@@ -6,57 +6,42 @@ using DiscordBotRewrite.Extensions;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
-using DSharpPlus.Exceptions;
 using DSharpPlus.SlashCommands;
-using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite.Modules {
     public class PollModule {
-        #region Properties
-        public Dictionary<ulong, GuildPollData> PollData;
-        #endregion
-
-        #region Constructors
         public PollModule(DiscordClient client) {
-            PollData = LoadJson<Dictionary<ulong, GuildPollData>>(GuildPollData.JsonLocation);
+            Bot.Database.CreateTable<GuildPollData>();
+            Bot.Database.CreateTable<Poll>();
+            Bot.Database.CreateTable<PollChoice>();
+            Bot.Database.CreateTable<Vote>();
             client.ComponentInteractionCreated += OnInteraction;
             client.GuildDownloadCompleted += RemoveFinishedPolls;
+
+            foreach(Poll p in Bot.Database.Table<Poll>()) {
+                p.StartWatching();
+            }
         }
-        #endregion
 
         #region Public
         public void SetPollChannel(InteractionContext ctx) {
-            var data = Bot.Modules.Poll.GetPollData(ctx.Guild.Id);
-            data.PollChannelId = ctx.Channel.Id;
-            Bot.Modules.Poll.SavePollData(data);
+            var data = Bot.Modules.Poll.GetPollData((long)ctx.Guild.Id);
+            data.PollChannelId = (long)ctx.Channel.Id;
+            Bot.Database.Update(data);
         }
 
-        public bool HasPollChannelSet(InteractionContext ctx) {
-            GuildPollData pollData = GetPollData(ctx.Guild.Id);
-            return pollData.HasPollChannelSet();
+        public bool HasChannelSet(InteractionContext ctx) {
+            GuildPollData pollData = GetPollData((long)ctx.Guild.Id);
+            DiscordChannel channel = ctx.Guild.GetChannel((ulong)pollData.PollChannelId);
+            return channel == null;
         }
 
         // Returns whether the poll was sucessfully created
-        public async Task<bool> StartPoll(InteractionContext ctx, string question, List<string> choices, DateTime endTime) {
-            GuildPollData pollData = GetPollData(ctx.Guild.Id);
+        public async Task StartPoll(InteractionContext ctx, string question, List<string> choices, DateTime endTime) {
+            GuildPollData pollData = GetPollData((long)ctx.Guild.Id);
 
-            //Make sure we can make the poll without problems
-            if(!pollData.HasPollChannelSet()) {
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = "No poll channel has been set!",
-                    Color = Bot.Style.ErrorColor,
-                }, true);
-                return false;
-            }
-            if(choices.Count < 2) {
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = "Invalid choices, make sure there are at least two unique choices!",
-                    Color = Bot.Style.ErrorColor
-                }, true);
-                return false;
-            }
+            DiscordChannel channel = ctx.Guild.GetChannel((ulong)pollData.PollChannelId);
             //Send a dummy message to update
-            var channel = ctx.Guild.GetChannel(pollData.PollChannelId);
             var message = await channel.SendMessageAsync(new DiscordEmbedBuilder {
                 Description = "Preparing poll...",
                 Color = Bot.Style.DefaultColor
@@ -66,25 +51,21 @@ namespace DiscordBotRewrite.Modules {
             var messageBuilder = GetActivePollMessageBuilder(poll);
             await message.ModifyAsync(messageBuilder);
 
-            pollData.ActivePolls.Add(poll);
-            SavePollData(pollData);
-            return true;
+            Bot.Database.Insert(poll);
         }
         public async void OnPollEnd(Poll poll) {
-            var pData = GetPollData(poll.GuildId);
-            pData.ActivePolls.Remove(poll);
-            SavePollData(pData);
-
-            List<string> votes = poll.Choices;
-
-            foreach(KeyValuePair<ulong, Vote> kvp in poll.Votes) {
-                votes.Add(kvp.Value.Choice);
-            }
+            List<Vote> votes = Bot.Database.Table<Vote>().Where(x => x.PollId == poll.MessageId).ToList();
+            List<PollChoice> choices = Bot.Database.Table<PollChoice>().Where(x => x.PollId == poll.MessageId).ToList();
 
             string voteString = string.Empty;
-            foreach(string choice in votes.Distinct()) {
-                voteString += $"**{choice}:** {votes.Where(x => x == choice).Count() - 1} \n";
+            foreach(PollChoice c in choices) {
+                voteString += $"**{c.Name}:** {votes.Where(x => x.Choice == c.Name).Count()} \n";
+                Bot.Database.Delete(c);
             }
+            foreach(Vote v in votes) {
+                Bot.Database.Delete(v);
+            }
+            Bot.Database.Delete(poll);
 
             try {
                 var message = await poll.GetMessageAsync();
@@ -107,10 +88,8 @@ namespace DiscordBotRewrite.Modules {
         #region Events
         Task RemoveFinishedPolls(DiscordClient sender, GuildDownloadCompletedEventArgs args) {
             //Compile polls to be completed
-            List<Poll> toComplete = new List<Poll>();
-            foreach(var item in PollData) {
-                toComplete.AddRange(item.Value.ActivePolls.Where(x => (x.EndTime - DateTime.Now).TotalMilliseconds < 0));
-            }
+            List<Poll> toComplete = Bot.Database.Table<Poll>().ToList();
+            toComplete = toComplete.Where(x => DateTime.Compare(DateTime.Now, x.EndTime) > 0).ToList();
 
             //Complete the polls
             foreach(Poll p in toComplete) {
@@ -123,56 +102,55 @@ namespace DiscordBotRewrite.Modules {
             if(e.Guild == null)
                 return;
 
-            //Check if message is a poll message
-            GuildPollData pollData = GetPollData(e.Guild.Id);
-            var potentialPolls = pollData.ActivePolls.Where(x => x.MessageId == e.Message.Id);
-
-            if(!potentialPolls.Any())
+            //Make sure message is a poll message
+            GuildPollData pollData = GetPollData((long)e.Guild.Id);
+            List<Poll> polls = Bot.Database.Table<Poll>().ToList();
+            Poll poll = polls.FirstOrDefault(x => x.MessageId == (long)e.Message.Id);
+            if(poll == null)
                 return;
-
-            //There can only be one message in any guild with an ID, so we can just choose the first poll in the list.
-            Poll poll = potentialPolls.First();
-
+            Vote vote = Bot.Database.Table<Vote>().ToList().FirstOrDefault(x => x.PollId == (long)e.Message.Id && x.VoterId == (long)e.User.Id);
             if(e.Values.First() == "Clear") {
-                poll.Votes.Remove(e.User.Id);
+                if(vote != null)
+                    Bot.Database.Delete(vote);
             } else {
-                Vote vote = new Vote(e.User.Id, e.Values.First());
-                poll.Votes.AddOrUpdate(e.User.Id, vote);
+                if(vote != null) {
+                    vote.Choice = e.Values.First();
+                    Bot.Database.Update(vote);
+                } else {
+                    vote = new Vote((long)e.Message.Id, (long)e.User.Id, e.Values.First());
+                    Bot.Database.Insert(vote);
+                }
             }
             var message = await poll.GetMessageAsync();
             await message.ModifyAsync(GetActivePollMessageBuilder(poll));
-
-            //Save poll status and respond to the interaction
-            SavePollData(pollData);
 
             await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
         }
         #endregion
 
         #region Private
-        GuildPollData GetPollData(ulong guildId) {
-            if(!PollData.TryGetValue(guildId, out GuildPollData pollData)) {
-                pollData = new GuildPollData(guildId);
-                PollData.Add(guildId, pollData);
+        GuildPollData GetPollData(long guildId) {
+            GuildPollData guildPollData = Bot.Database.Table<GuildPollData>().FirstOrDefault(x => x.GuildId == guildId);
+            if(guildPollData == null) {
+                guildPollData = new GuildPollData(guildId);
+                Bot.Database.Insert(guildPollData);
             }
-            return pollData;
-        }
-        void SavePollData(GuildPollData data) {
-            PollData.AddOrUpdate(data.Id, data);
-            SaveJson(PollData, GuildPollData.JsonLocation);
+            return guildPollData;
         }
         DiscordMessageBuilder GetActivePollMessageBuilder(Poll poll) {
             //Create the selection component based on given choices
             var choiceSelections = new List<DiscordSelectComponentOption>();
-            for(int i = 0; i < poll.Choices.Count; i++) {
-                choiceSelections.Add(new DiscordSelectComponentOption(poll.Choices[i], poll.Choices[i]));
+            List<PollChoice> choices = Bot.Database.Table<PollChoice>().Where(x => x.PollId == poll.MessageId).ToList();
+            foreach(PollChoice c in choices) {
+                choiceSelections.Add(new DiscordSelectComponentOption(c.Name, c.Name));
             }
             choiceSelections.Add(new DiscordSelectComponentOption("Clear", "Clear"));
             var selectionComponent = new DiscordSelectComponent("choice", "Vote here!", choiceSelections);
 
+            int voteCount = Bot.Database.Table<Vote>().Count(x => x.PollId == poll.MessageId);
             return new DiscordMessageBuilder()
                 .AddEmbed(new DiscordEmbedBuilder {
-                    Description = $"Poll ends {poll.EndTime.ToTimestamp()}! \n {poll.Question.ToBold()}\n {poll.Votes.Count} members have voted.",
+                    Description = $"Poll ends {poll.EndTime.ToTimestamp()}! \n {poll.Question.ToBold()}\n {voteCount} members have voted.",
                     Color = Bot.Style.DefaultColor
                 })
                 .AddComponents(selectionComponent);
