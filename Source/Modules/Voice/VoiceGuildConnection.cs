@@ -52,6 +52,7 @@ namespace DiscordBotRewrite.Modules {
             IsConnected = true;
         }
         public async Task Disconnect() {
+            await Conn.StopAsync();
             await Conn.DisconnectAsync();
             await OnChannelDisconnect(Conn, null);
         }
@@ -181,7 +182,6 @@ namespace DiscordBotRewrite.Modules {
             TrackQueue = new List<LavalinkTrack>();
             UsedShuffleTracks = new List<LavalinkTrack>();
             IsConnected = IsPaused = IsLooping = IsShuffling = false;
-            Conn.StopAsync();
         }
         #endregion
     }

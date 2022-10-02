@@ -61,6 +61,18 @@ namespace DiscordBotRewrite.Modules {
             }
             return value;
         }
+
+        public async Task<bool> CheckForProperTargetAsync(InteractionContext ctx, DiscordUser user) {
+            if(user.IsBot) {
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = $"I'm gonna let you in on a secret: bots really don't like being chosen. Maybe pick an actual person next time.",
+                    Color = Bot.Style.ErrorColor
+                });
+                return false;
+            }
+            return true;
+        }
+
         public async Task<bool> CheckForProperBetAsync(InteractionContext ctx, long bet) {
             UserAccount account = GetAccount((long)ctx.User.Id);
             if(bet < 0) {

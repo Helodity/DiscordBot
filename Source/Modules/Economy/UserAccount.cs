@@ -12,6 +12,8 @@ namespace DiscordBotRewrite.Modules {
         public long Balance { get; set; }
         [Column("bank")]
         public long Bank { get; set; }
+
+        public long NetWorth => Balance + Bank;
         [Column("bank_max")]
         public long BankMax { get; set; }
         [Column("daily_cooldown")]

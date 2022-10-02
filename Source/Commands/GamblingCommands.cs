@@ -47,7 +47,7 @@ namespace DiscordBotRewrite.Commands {
                     $"Total: {playerValue}\n";
 
                 if(playerValue > 21) {
-                    stateString += $"Over 21! You bust and lose ${bet}";
+                    stateString += $"Over 21! You bust and lose ${bet}!";
                     embed.WithColor(Bot.Style.ErrorColor);
                     embed.WithDescription(stateString);
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
@@ -199,6 +199,7 @@ namespace DiscordBotRewrite.Commands {
         [SlashCommand("rps", "Money?")]
         public async Task RPS(InteractionContext ctx, [Option("opponent", "who to make lose")] DiscordUser opponent, [Option("bet", "how much to lose")] long bet) {
             if(!await Bot.Modules.Economy.CheckForProperBetAsync(ctx, bet)) return;
+            if(!await Bot.Modules.Economy.CheckForProperTargetAsync(ctx, opponent)) return;
 
             DiscordButtonComponent[] rpsButtons = {
                 new DiscordButtonComponent(ButtonStyle.Primary, "rock", "Rock"),
