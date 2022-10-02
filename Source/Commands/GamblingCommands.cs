@@ -9,11 +9,11 @@ using System;
 using DiscordBotRewrite.Extensions;
 
 namespace DiscordBotRewrite.Commands {
-    [SlashCommandGroup("gamble", "throw away your money")]
+    [SlashCommandGroup("gamble", "Throw away your money")]
     class GamblingCommands : ApplicationCommandModule {
         #region Blackjack
         [SlashCommand("blackjack", "Play blackjack against the bot")]
-        public async Task BlackJack(InteractionContext ctx, [Option("bet", "how much to lose")] long bet) {
+        public async Task BlackJack(InteractionContext ctx, [Option("bet", "How much money to lose")] long bet) {
             if(!await Bot.Modules.Economy.CheckForProperBetAsync(ctx, bet)) return;
 
             DiscordButtonComponent[] hitStandButtons = {
@@ -102,8 +102,8 @@ namespace DiscordBotRewrite.Commands {
         #endregion
 
         #region Highlow
-        [SlashCommand("highlow", "Money?")]
-        public async Task HighLow(InteractionContext ctx, [Option("bet", "how much to lose")] long bet) {
+        [SlashCommand("highlow", "Play higher lower against the bot.")]
+        public async Task HighLow(InteractionContext ctx, [Option("bet", "How much money to lose?")] long bet) {
             if(!await Bot.Modules.Economy.CheckForProperBetAsync(ctx, bet)) return;
 
             DiscordButtonComponent[] highLowButtons = {
@@ -196,8 +196,8 @@ namespace DiscordBotRewrite.Commands {
         #endregion
 
         #region Rock Paper Scissors
-        [SlashCommand("rps", "Money?")]
-        public async Task RPS(InteractionContext ctx, [Option("opponent", "who to make lose")] DiscordUser opponent, [Option("bet", "how much to lose")] long bet) {
+        [SlashCommand("rps", "Play rock paper scissors against another user")]
+        public async Task RPS(InteractionContext ctx, [Option("opponent", "Who to challenge?")] DiscordUser opponent, [Option("bet", "How much money to lose?")] long bet) {
             if(!await Bot.Modules.Economy.CheckForProperBetAsync(ctx, bet)) return;
             if(!await Bot.Modules.Economy.CheckForProperTargetAsync(ctx, opponent)) return;
 

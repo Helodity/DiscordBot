@@ -15,8 +15,8 @@ namespace DiscordBotRewrite.Commands {
     [SlashCommandGroup("economy", "money")]
     class EconomyCommands : ApplicationCommandModule {
         #region Balance
-        [SlashCommand("balance", "Money?")]
-        public async Task Balance(InteractionContext ctx, [Option("user", "who are we looking at?")] DiscordUser user = null) {
+        [SlashCommand("balance", "Check how much money someone has.")]
+        public async Task Balance(InteractionContext ctx, [Option("user", "Who are we checking?")] DiscordUser user = null) {
             if(user == null)
                 user = ctx.User;
             if(!await Bot.Modules.Economy.CheckForProperTargetAsync(ctx, user)) return;
@@ -31,7 +31,7 @@ namespace DiscordBotRewrite.Commands {
         #endregion
 
         #region Baltop
-        [SlashCommand("baltop", "Money?")]
+        [SlashCommand("baltop", "Who has the most money?")]
         public async Task Baltop(InteractionContext ctx) {
             var accounts = Bot.Modules.Economy.GetAllAccounts();
             List<UserAccount> topAccounts = new List<UserAccount>() { accounts[0] };
@@ -65,7 +65,7 @@ namespace DiscordBotRewrite.Commands {
         #endregion
 
         #region Daily
-        [SlashCommand("daily", "Print a reasonable amount of money.")]
+        [SlashCommand("daily", "Get your daily stimulus check.")]
         public async Task Daily(InteractionContext ctx) {
             UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
             if(DateTime.Compare(DateTime.Now, account.DailyCooldown) < 0) {
@@ -103,8 +103,8 @@ namespace DiscordBotRewrite.Commands {
         #endregion
 
         #region Deposit
-        [SlashCommand("deposit", "Bank!!!!")]
-        public async Task Deposit(InteractionContext ctx, [Option("amount", "how much inflation")] long amount) {
+        [SlashCommand("deposit", "Send monry to the bank.")]
+        public async Task Deposit(InteractionContext ctx, [Option("amount", "How much to store?")] long amount) {
             UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
             amount = account.TransferToBank(amount);
 
@@ -117,7 +117,7 @@ namespace DiscordBotRewrite.Commands {
 
         #region Expand
         [SlashCommand("expand", "Store more in your bank!")]
-        public async Task Expand(InteractionContext ctx, [Option("amount", "how much to expand")] long amount) {
+        public async Task Expand(InteractionContext ctx, [Option("amount", "How much to expand?")] long amount) {
             if(amount < 1) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"You can't change your bank size by that much!",
@@ -173,8 +173,8 @@ namespace DiscordBotRewrite.Commands {
         #endregion
 
         #region Give
-        [SlashCommand("give", "Not your money anymore!!")]
-        public async Task Give(InteractionContext ctx, [Option("amount", "how much to give")] long amount, [Option("user", "who gets your money?")] DiscordUser user) {
+        [SlashCommand("give", "Give some money to another user!")]
+        public async Task Give(InteractionContext ctx, [Option("user", "Who gets your money?")] DiscordUser user, [Option("amount", "How much to give?")] long amount) {
             if(!await Bot.Modules.Economy.CheckForProperTargetAsync(ctx, user)) return;
             if(amount < 0) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -192,7 +192,7 @@ namespace DiscordBotRewrite.Commands {
         #endregion
 
         #region Rob
-        [SlashCommand("rob", "My Money!")]
+        [SlashCommand("rob", "Take somebody's money!")]
         public async Task Rob(InteractionContext ctx, [Option("user", "Who are you stealing from?")] DiscordUser user) {
             if(!await Bot.Modules.Economy.CheckForProperTargetAsync(ctx, user)) return;
             if(ctx.User == user) {
@@ -238,7 +238,7 @@ namespace DiscordBotRewrite.Commands {
         #endregion
 
         #region Withdraw
-        [SlashCommand("withdraw", "Pocket!!!!")]
+        [SlashCommand("withdraw", "Send money to your pocket!")]
         public async Task Withdraw(InteractionContext ctx, [Option("amount", "how much to spend")] long amount) {
             UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
             amount = account.TransferToBalance(amount);
