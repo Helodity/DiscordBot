@@ -2,9 +2,7 @@ Bugs
 	
 Rate limit
 - Edit message in button response instead of after
-	- Poll
 	- Gambling
-	- Pixel
 	
 Improvements
 	- Cleanup Poll Module files
