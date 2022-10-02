@@ -1,13 +1,10 @@
 Bugs
 	
 Rate limit
-- Edit message in button response instead of after
-	- Gambling
 	
 Improvements
 	- Cleanup Poll Module files
 	- Move lavalink config to its own file instead of being hard coded
-	- Add redo to Blackjack
 	- Task<Task> is kinda gross, find better solution (RPS)
 
 Features

@@ -27,80 +27,101 @@ namespace DiscordBotRewrite.Commands {
             account.ModifyBalance(-bet);
             await ctx.DeferAsync();
             var interactivity = ctx.Client.GetInteractivity();
-
-            Deck deck = Deck.GetStandardDeck();
-            List<Card> dealerHand = deck.Draw(2);// yeah yeah i know this isn't "accurate" but it's more efficient
-            List<Card> playerHand = deck.Draw(2);
-
             var embed = new DiscordEmbedBuilder {
-                Title = "Blackjack",
-                Color = Bot.Style.DefaultColor
+                Title = "Blackjack"
             };
-            string stateString = string.Empty;
-            int playerValue;
-
             while(true) {
-                playerValue = Bot.Modules.Economy.CalculateBlackJackHandValue(playerHand);
-                stateString += $"**Dealer**\n" +
-                    $"Cards: {dealerHand[0]} ?\n" +
-                    $"Total: ?\n";
-                stateString += $"**{ctx.User.Username}**\n" +
-                    $"Cards: {Card.ListToString(playerHand)}\n" +
-                    $"Total: {playerValue}\n";
+                Deck deck = Deck.GetStandardDeck();
+                List<Card> dealerHand = deck.Draw(2);
+                List<Card> playerHand = deck.Draw(2);
+                InteractivityResult<ComponentInteractionCreateEventArgs> interactivityResult;
 
-                if(playerValue > 21) {
-                    stateString += $"Over 21! You bust and lose ${bet}!";
-                    embed.WithColor(Bot.Style.ErrorColor);
+                string stateString = string.Empty;
+                int playerValue;
+                bool hasBust = false;
+                while(true) {
+                    playerValue = Bot.Modules.Economy.CalculateBlackJackHandValue(playerHand);
+                    stateString += $"**Dealer**\n" +
+                        $"Cards: {dealerHand[0]} ?\n" +
+                        $"Total: ?\n";
+                    stateString += $"**{ctx.User.Username}**\n" +
+                        $"Cards: {Card.ListToString(playerHand)}\n" +
+                        $"Total: {playerValue}\n";
+
+                    if(playerValue > 21) {
+                        stateString += $"Over 21! You bust and lose ${bet}!";
+                        embed.WithDescription(stateString);
+                        embed.WithColor(Bot.Style.ErrorColor);
+                        hasBust = true;
+                        break;
+                    }
+                    embed.WithColor(Bot.Style.DefaultColor);
                     embed.WithDescription(stateString);
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
-                    return;
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(hitStandButtons));
+                    interactivityResult = await interactivity.WaitForButtonAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
+
+                    if(interactivityResult.TimedOut) {
+                        embed.WithDescription("Sure, ok. Just leave on me.  I'm keeping your bet, fuck you.");
+                        await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
+                        return;
+                    }
+                    await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+
+                    stateString = string.Empty;
+                    if(interactivityResult.Result.Id == "hit")
+                        playerHand.Add(deck.Draw());
+                    if(interactivityResult.Result.Id == "stand")
+                        break;
+                }
+                if(hasBust) {
+                    await ctx.EditResponseAsync(
+                    new DiscordWebhookBuilder().AddEmbed(embed)
+                    .AddComponents(new DiscordButtonComponent(ButtonStyle.Primary, $"replay", $"Replay (${bet})", account.Balance < bet)));
+
+                    interactivityResult = await interactivity.WaitForButtonAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
+                    if(interactivityResult.TimedOut) {
+                        await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
+                        return;
+                    }
+                    await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+                    continue;
                 }
 
+                while(Bot.Modules.Economy.CalculateBlackJackHandValue(dealerHand) < 18) {
+                    dealerHand.Add(deck.Draw());
+                }
+
+                playerValue = Bot.Modules.Economy.CalculateBlackJackHandValue(playerHand);
+                int dealerValue = Bot.Modules.Economy.CalculateBlackJackHandValue(dealerHand);
+                stateString += $"**Dealer**\n" +
+                        $"Cards: {Card.ListToString(dealerHand)}\n" +
+                        $"Total: {dealerValue}\n" +
+                        $"**{ctx.User.Username}**\n" +
+                        $"Cards: {Card.ListToString(playerHand)}\n" +
+                        $"Total: {playerValue}\n";
+
+                if(playerValue > dealerValue || dealerValue > 21) {
+                    embed.WithColor(Bot.Style.SuccessColor);
+                    stateString += $"You win ${bet}!";
+                    account.ModifyBalance(bet * 2);
+                } else {
+                    embed.WithColor(Bot.Style.ErrorColor);
+                    stateString += $"You lose ${bet}!";
+                }
                 embed.WithDescription(stateString);
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(hitStandButtons));
-                var interactivityResult = await interactivity.WaitForButtonAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
 
+                await ctx.EditResponseAsync(
+                new DiscordWebhookBuilder().AddEmbed(embed)
+                .AddComponents(new DiscordButtonComponent(ButtonStyle.Primary, $"replay", $"Replay (${bet})", account.Balance < bet)));
+
+                interactivityResult = await interactivity.WaitForButtonAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
                 if(interactivityResult.TimedOut) {
-                    embed.WithDescription("Sure, ok. Just leave on me.  I'm keeping your bet, fuck you.");
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
                     return;
                 }
-                await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage);
-
-                stateString = string.Empty;
-                if(interactivityResult.Result.Id == "hit")
-                    playerHand.Add(deck.Draw());
-                if(interactivityResult.Result.Id == "stand")
-                    break;
+                await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
             }
-
-            stateString = string.Empty;
-            while(Bot.Modules.Economy.CalculateBlackJackHandValue(dealerHand) < 18) {
-                dealerHand.Add(deck.Draw());
-            }
-
-            playerValue = Bot.Modules.Economy.CalculateBlackJackHandValue(playerHand);
-            int dealerValue = Bot.Modules.Economy.CalculateBlackJackHandValue(dealerHand);
-            stateString += $"**Dealer**\n" +
-                    $"Cards: {Card.ListToString(dealerHand)}\n" +
-                    $"Total: {dealerValue}\n" +
-                    $"**{ctx.User.Username}**\n" +
-                    $"Cards: {Card.ListToString(playerHand)}\n" +
-                    $"Total: {playerValue}\n";
-
-            if(playerValue > dealerValue || dealerValue > 21) {
-                embed.WithColor(Bot.Style.SuccessColor);
-                stateString += $"You win ${bet}!";
-                account.ModifyBalance(bet * 2);
-            } else {
-                embed.WithColor(Bot.Style.ErrorColor);
-                stateString += $"You lose ${bet}!";
-            }
-            embed.WithDescription(stateString);
-
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
         }
-
         #endregion
 
         #region Highlow
