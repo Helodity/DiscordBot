@@ -37,11 +37,11 @@ namespace DiscordBotRewrite.Modules {
             account2.ModifyBalance(value);
             return value;
         }
+        public double GetMultiplier(int streak, double scale = 1, double exponent = 1) {
+            return scale * Math.Pow(streak, exponent) + 1;//Math.Pow(2, streak * scale);
+        }
 
         #region Gambling
-        public double GetWinningsMultiplier(int gamesWon, double scale = 1.0) {
-            return Math.Pow(2, gamesWon * scale);
-        }
         public int CalculateBlackJackHandValue(List<Card> hand) {
             int value = 0;
             int aces = 0;

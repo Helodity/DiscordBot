@@ -75,7 +75,7 @@ namespace DiscordBotRewrite.Commands {
                 });
                 return;
             }
-            long amount = (long)(100 * Math.Pow(1.3, account.Streak));
+            long amount = (long)(100 * Bot.Modules.Economy.GetMultiplier(account.Streak, 0.2, 1.2));
 
             //48 total hours, daily cooldown accounts for 20
             if((account.DailyCooldown - DateTime.Now).TotalHours > 28) {

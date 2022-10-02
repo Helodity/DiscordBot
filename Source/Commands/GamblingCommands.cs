@@ -179,8 +179,8 @@ namespace DiscordBotRewrite.Commands {
                         break;
                     }
                     roundsWon++;
-                    long currentWinnings = (long)(bet * Bot.Modules.Economy.GetWinningsMultiplier(roundsWon, 0.4));
-                    long nextWinnings = (long)(bet * Bot.Modules.Economy.GetWinningsMultiplier(roundsWon + 1, 0.4));
+                    long currentWinnings = (long)(bet * Bot.Modules.Economy.GetMultiplier(roundsWon, 0.3, 1.5));
+                    long nextWinnings = (long)(bet * Bot.Modules.Economy.GetMultiplier(roundsWon + 1, 0.3, 1.5));
                     embed.WithColor(Bot.Style.SuccessColor);
 
                     if(deck.Size() == 0) {
@@ -196,15 +196,13 @@ namespace DiscordBotRewrite.Commands {
 
                     interactivityResult = await interactivity.WaitForButtonAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
 
-
+                    embed.WithDescription($"You cashed out with ${currentWinnings}.");
                     if(interactivityResult.TimedOut) {
-                        embed.WithDescription($"You cashed out with {currentWinnings}.");
                         await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
                         account.ModifyBalance(currentWinnings);
                         return;
                     }
                     if(interactivityResult.Result.Id == "quit") {
-                        embed.WithDescription($"You cashed out with {currentWinnings}.");
                         account.ModifyBalance(currentWinnings);
                         break;
                     }
