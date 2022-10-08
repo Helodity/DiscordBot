@@ -86,16 +86,20 @@ namespace DiscordBotRewrite.Commands {
             string imagePath = $"PixelImages/img{ctx.User.Id}.png";
             PixelModule.PixelEnum curColor = PixelModule.PixelEnum.White;
 
-            await ctx.DeferAsync();
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder {
+                Description = "Check dms for a canvas!",
+                Color = Bot.Style.SuccessColor
+            }).AsEphemeral());
 
             DiscordMessage msg;
             var embed = new DiscordEmbedBuilder()
                 .WithTitle("Pixel")
                 .WithColor(Bot.Style.DefaultColor)
-                .WithImageUrl($"attachment://{Path.GetFileName(imagePath)}");
+                .WithImageUrl($"attachment://{Path.GetFileName(imagePath)}")
+                .WithDescription($"{ctx.Guild.Name}'s canvas. ({curX},{curY}) is selected. {zoom} zoom. {jumpAmount} tiles per move.");
             Bot.Modules.Pixel.CreateImageWithUI(ctx, curX, curY, zoom, curColor);
             using(var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read)) {
-                msg = await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddComponents(row1).AddComponents(row2).AddComponents(row3).AddComponents(row4).AddComponents(row5).AddEmbed(embed).AddFile(Path.GetFileName(imagePath), fs));
+                msg = await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddComponents(row1).AddComponents(row2).AddComponents(row3).AddComponents(row4).AddComponents(row5).AddEmbed(embed).WithFile(Path.GetFileName(imagePath), fs));
             }
             var interactivity = ctx.Client.GetInteractivity();
             while(true) {
@@ -105,7 +109,7 @@ namespace DiscordBotRewrite.Commands {
                     using(var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read)) {
                         await msg.DeleteAsync();
                         embed.WithDescription($"{ctx.Guild.Name}'s canvas.").WithColor(Bot.Style.DefaultColor);
-                        await ctx.Channel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed).WithFile(Path.GetFileName(imagePath), fs));
+                        await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed).WithFile(Path.GetFileName(imagePath), fs));
                     }
                     File.Delete(imagePath);
                     return;

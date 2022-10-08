@@ -24,13 +24,13 @@ namespace DiscordBotRewrite.Commands {
             };
 
             UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
-            account.ModifyBalance(-bet);
             await ctx.DeferAsync();
             var interactivity = ctx.Client.GetInteractivity();
             var embed = new DiscordEmbedBuilder {
                 Title = "Blackjack"
             };
             while(true) {
+                account.ModifyBalance(-bet);
                 Deck deck = Deck.GetStandardDeck();
                 List<Card> dealerHand = deck.Draw(2);
                 List<Card> playerHand = deck.Draw(2);
