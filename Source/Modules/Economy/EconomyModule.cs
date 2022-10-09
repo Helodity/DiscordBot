@@ -38,7 +38,7 @@ namespace DiscordBotRewrite.Modules {
             return value;
         }
         public double GetMultiplier(int streak, double scale = 1, double exponent = 1) {
-            return scale * Math.Pow(streak, exponent) + 1;//Math.Pow(2, streak * scale);
+            return scale * Math.Pow(streak, exponent) + 1;
         }
 
         #region Gambling

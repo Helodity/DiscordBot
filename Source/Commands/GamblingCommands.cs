@@ -179,8 +179,8 @@ namespace DiscordBotRewrite.Commands {
                         break;
                     }
                     roundsWon++;
-                    long currentWinnings = (long)(bet * Bot.Modules.Economy.GetMultiplier(roundsWon, 0.3, 1.5));
-                    long nextWinnings = (long)(bet * Bot.Modules.Economy.GetMultiplier(roundsWon + 1, 0.3, 1.5));
+                    long currentWinnings = (long)(bet * (Bot.Modules.Economy.GetMultiplier(roundsWon, 0.3, 2) - 1));
+                    long nextWinnings = (long)(bet * (Bot.Modules.Economy.GetMultiplier(roundsWon + 1, 0.3, 2) - 1));
                     embed.WithColor(Bot.Style.SuccessColor);
 
                     if(deck.Size() == 0) {
