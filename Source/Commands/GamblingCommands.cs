@@ -36,20 +36,14 @@ namespace DiscordBotRewrite.Commands {
                 List<Card> dealerHand = deck.Draw(2);
                 List<Card> playerHand = deck.Draw(2);
 
-                string stateString = string.Empty;
+                string stateString;
                 int playerValue;
                 bool hasBust = false;
                 for(int roundsPlayed = 0; true; roundsPlayed++) {
-                    playerValue = Bot.Modules.Economy.CalculateBlackJackHandValue(playerHand);
-                    stateString += $"**Dealer**\n" +
-                        $"Cards: {dealerHand[0]} ?\n" +
-                        $"Total: ?\n";
-                    stateString += $"**{ctx.User.Username}**\n" +
-                        $"Cards: {Card.ListToString(playerHand)}\n" +
-                        $"Total: {playerValue}\n";
+                    stateString = GetBlackjackStateString(ctx.User.Username, playerHand, dealerHand, false, out playerValue, out _);
 
                     if(playerValue > 21) {
-                        stateString += $"Over 21! You bust and lose ${bet}!";
+                        stateString += $"Over 21! You bust and lose **${bet}**!";
                         embed.WithDescription(stateString);
                         embed.WithColor(Bot.Style.ErrorColor);
                         hasBust = true;
@@ -75,7 +69,6 @@ namespace DiscordBotRewrite.Commands {
                     }
                     //Don't respond to the interaction here, it's handled elsewhere
 
-                    stateString = string.Empty;
                     if(interactivityResult.Result.Id == "hit")
                         playerHand.Add(deck.Draw());
                     if(interactivityResult.Result.Id == "stand")
@@ -99,22 +92,15 @@ namespace DiscordBotRewrite.Commands {
                     dealerHand.Add(deck.Draw());
                 }
 
-                playerValue = Bot.Modules.Economy.CalculateBlackJackHandValue(playerHand);
-                int dealerValue = Bot.Modules.Economy.CalculateBlackJackHandValue(dealerHand);
-                stateString += $"**Dealer**\n" +
-                        $"Cards: {Card.ListToString(dealerHand)}\n" +
-                        $"Total: {dealerValue}\n" +
-                        $"**{ctx.User.Username}**\n" +
-                        $"Cards: {Card.ListToString(playerHand)}\n" +
-                        $"Total: {playerValue}\n";
+                stateString = GetBlackjackStateString(ctx.User.Username, playerHand, dealerHand, true, out playerValue, out int dealerValue);
 
                 if(playerValue > dealerValue || dealerValue > 21) {
                     embed.WithColor(Bot.Style.SuccessColor);
-                    stateString += $"You win ${bet}!";
+                    stateString += $"You win **${bet}**!";
                     account.ModifyBalance(bet * 2);
                 } else {
                     embed.WithColor(Bot.Style.ErrorColor);
-                    stateString += $"You lose ${bet}!";
+                    stateString += $"You lose **${bet}**!";
                 }
                 embed.WithDescription(stateString);
 
@@ -130,6 +116,26 @@ namespace DiscordBotRewrite.Commands {
                 //Don't respond to the interaction here, it's handled at the start of the loop since we need to setup the game first
             }
         }
+
+        public string GetBlackjackStateString(string playerName, List<Card> playerHand, List<Card> dealerHand, bool showDealer, out int playerValue, out int dealerValue) {
+            playerValue = Bot.Modules.Economy.CalculateBlackJackHandValue(playerHand);
+            dealerValue = Bot.Modules.Economy.CalculateBlackJackHandValue(dealerHand);
+            string statestring = $"**Dealer**\n";
+            if(showDealer) { 
+                statestring += $"Cards: {Card.ListToString(dealerHand)}\n" +
+                               $"Total: {dealerValue}\n"; 
+            }
+            else {
+                statestring += $"Cards: {dealerHand[0]} ?\n" +
+                               $"Total: ?\n";
+            }
+            statestring += $"**{playerName}**\n" +
+                           $"Cards: {Card.ListToString(playerHand)}\n" +
+                           $"Total: {playerValue}\n";
+            return statestring;
+        }
+
+
         #endregion
 
         #region Highlow
