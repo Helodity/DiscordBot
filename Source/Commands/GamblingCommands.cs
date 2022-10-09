@@ -29,17 +29,17 @@ namespace DiscordBotRewrite.Commands {
             var embed = new DiscordEmbedBuilder {
                 Title = "Blackjack"
             };
-            while(true) {
+            InteractivityResult<ComponentInteractionCreateEventArgs> interactivityResult = new();
+            for(int gamesPlayed = 0; true; gamesPlayed++) {
                 account.ModifyBalance(-bet);
                 Deck deck = Deck.GetStandardDeck();
                 List<Card> dealerHand = deck.Draw(2);
                 List<Card> playerHand = deck.Draw(2);
-                InteractivityResult<ComponentInteractionCreateEventArgs> interactivityResult;
 
                 string stateString = string.Empty;
                 int playerValue;
                 bool hasBust = false;
-                while(true) {
+                for(int roundsPlayed = 0; true; roundsPlayed++) {
                     playerValue = Bot.Modules.Economy.CalculateBlackJackHandValue(playerHand);
                     stateString += $"**Dealer**\n" +
                         $"Cards: {dealerHand[0]} ?\n" +
@@ -57,7 +57,15 @@ namespace DiscordBotRewrite.Commands {
                     }
                     embed.WithColor(Bot.Style.DefaultColor);
                     embed.WithDescription(stateString);
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(hitStandButtons));
+
+                    //This will only trigger on a loop, so we will have an interaction to respond to
+                    if(gamesPlayed > 0 || roundsPlayed > 1) {
+                        await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,
+                           new DiscordInteractionResponseBuilder().AddEmbed(embed).AddComponents(hitStandButtons));
+                    } else {
+                        await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(hitStandButtons));
+                    }
+
                     interactivityResult = await interactivity.WaitForButtonAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
 
                     if(interactivityResult.TimedOut) {
@@ -65,7 +73,7 @@ namespace DiscordBotRewrite.Commands {
                         await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
                         return;
                     }
-                    await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+                    //Don't respond to the interaction here, it's handled elsewhere
 
                     stateString = string.Empty;
                     if(interactivityResult.Result.Id == "hit")
@@ -74,8 +82,8 @@ namespace DiscordBotRewrite.Commands {
                         break;
                 }
                 if(hasBust) {
-                    await ctx.EditResponseAsync(
-                    new DiscordWebhookBuilder().AddEmbed(embed)
+                    await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,
+                    new DiscordInteractionResponseBuilder().AddEmbed(embed)
                     .AddComponents(new DiscordButtonComponent(ButtonStyle.Primary, $"replay", $"Replay (${bet})", account.Balance < bet)));
 
                     interactivityResult = await interactivity.WaitForButtonAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
@@ -83,7 +91,7 @@ namespace DiscordBotRewrite.Commands {
                         await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
                         return;
                     }
-                    await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+                    //Don't respond to the interaction here, it's handled at the start of the loop since we need to setup the game first
                     continue;
                 }
 
@@ -110,8 +118,8 @@ namespace DiscordBotRewrite.Commands {
                 }
                 embed.WithDescription(stateString);
 
-                await ctx.EditResponseAsync(
-                new DiscordWebhookBuilder().AddEmbed(embed)
+                await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,
+                    new DiscordInteractionResponseBuilder().AddEmbed(embed)
                 .AddComponents(new DiscordButtonComponent(ButtonStyle.Primary, $"replay", $"Replay (${bet})", account.Balance < bet)));
 
                 interactivityResult = await interactivity.WaitForButtonAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
@@ -119,7 +127,7 @@ namespace DiscordBotRewrite.Commands {
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
                     return;
                 }
-                await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+                //Don't respond to the interaction here, it's handled at the start of the loop since we need to setup the game first
             }
         }
         #endregion
@@ -145,19 +153,24 @@ namespace DiscordBotRewrite.Commands {
             var embed = new DiscordEmbedBuilder {
                 Title = "Higher or Lower"
             };
-
-            while(true) {
-                InteractivityResult<ComponentInteractionCreateEventArgs> interactivityResult;
-                int roundsWon = 0;
+            InteractivityResult<ComponentInteractionCreateEventArgs> interactivityResult = new();
+            for(int gamesPlayed = 0; true; gamesPlayed++) {
                 account.ModifyBalance(-bet);
                 Deck deck = Deck.GetStandardDeck();
                 Card anchorCard = deck.Draw();
-                while(true) {
+
+                for(int roundsWon = 1; true; roundsWon++) {
                     Card nextCard = deck.Draw();
                     embed.WithColor(Bot.Style.DefaultColor);
                     embed.WithDescription($"{ctx.User.Mention}, Will the next card I draw be higher or lower than a {anchorCard}?");
 
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(highLowButtons));
+                    //This will only trigger on a loop, so we will have an interaction to respond to
+                    if(gamesPlayed > 0 || roundsWon > 1) {
+                        await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,
+                           new DiscordInteractionResponseBuilder().AddEmbed(embed).AddComponents(highLowButtons));
+                    } else {
+                        await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(highLowButtons));
+                    }
                     interactivityResult = await interactivity.WaitForButtonAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
 
                     if(interactivityResult.TimedOut) {
@@ -178,7 +191,6 @@ namespace DiscordBotRewrite.Commands {
                         embed.WithDescription($"Sorry, I drew {nextCard}. You lost your ${bet} bet.");
                         break;
                     }
-                    roundsWon++;
                     long currentWinnings = (long)(bet * (Bot.Modules.Economy.GetMultiplier(roundsWon, 0.3, 2) - 1));
                     long nextWinnings = (long)(bet * (Bot.Modules.Economy.GetMultiplier(roundsWon + 1, 0.3, 2) - 1));
                     embed.WithColor(Bot.Style.SuccessColor);
@@ -190,7 +202,7 @@ namespace DiscordBotRewrite.Commands {
                         break;
                     }
                     embed.WithDescription($"Congrats, {ctx.User.Mention}, I drew {nextCard}! There are {deck.Size()}/52 cards left!.\n " +
-                            $"You can cash out with your ${bet} bet and ${currentWinnings - bet} in winnings, or risk it all for ${nextWinnings - currentWinnings} more.");
+                            $"You can cash out with ${currentWinnings}, or risk it all for ${nextWinnings - currentWinnings} more. You will not recieve your bet back");
                     await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,
                             new DiscordInteractionResponseBuilder().AddEmbed(embed).AddComponents(continueQuitButtons));
 
@@ -206,8 +218,8 @@ namespace DiscordBotRewrite.Commands {
                         account.ModifyBalance(currentWinnings);
                         break;
                     }
-                    await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
                     anchorCard = nextCard;
+                    //Don't respond to the interaction here, it's handled at the start of the loop since we need to setup the game first
                 }
                 await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,
                             new DiscordInteractionResponseBuilder().AddEmbed(embed)
@@ -218,7 +230,7 @@ namespace DiscordBotRewrite.Commands {
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
                     return;
                 }
-                await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+                //Don't respond to the interaction here, it's handled at the start of the loop since we need to setup the game first
             }
         }
         #endregion
