@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DiscordBotRewrite.Extensions;
 using DiscordBotRewrite.Global;
 using DSharpPlus.Entities;
 using SQLite;
@@ -24,7 +25,7 @@ namespace DiscordBotRewrite.Modules {
         [Column("message_id")]
         public long MessageId { get; set; }
 
-        //The question to be answered
+        //The question being asked
         [Column("question")]
         public string Question { get; set; }
 
@@ -32,21 +33,27 @@ namespace DiscordBotRewrite.Modules {
         [Column("end_time")]
         public DateTime EndTime { get; set; }
 
+        //When this poll ends
+        [Column("poll_type")]
+        public PollType Type { get; set; }
+
+        public enum PollType {
+            MultipleChoice,
+            ShortAnswer
+        }
+
         #region Constructors
 
 
         public Poll() {}
 
-        public Poll(DiscordMessage message, string question, List<string> choices, DateTime endTime) {
+        protected Poll(DiscordMessage message, string question, DateTime endTime) {
             GuildId = (long)message.Channel.Guild.Id;
             ChannelId = (long)message.Channel.Id;
             MessageId = (long)message.Id;
             Question = question;
             EndTime = endTime;
-            foreach(string choice in choices.Distinct()) {
-                if(!Bot.Database.Table<PollChoice>().Any(x => x.PollId == MessageId && x.Name == choice))
-                    Bot.Database.Insert(new PollChoice(MessageId, choice));
-            }
+            Type = PollType.ShortAnswer;
 
             StartWatching();
         }
@@ -56,14 +63,46 @@ namespace DiscordBotRewrite.Modules {
         public async Task<DiscordMessage> GetMessageAsync() {
             return await (await Bot.Client.GetChannelAsync((ulong)ChannelId)).GetMessageAsync((ulong)MessageId);
         }
-        //Only 
+
         public void StartWatching() {
             new TimeBasedEvent(EndTime - DateTime.Now, async () => {
                 while(Bot.Modules == null) {
                     await Task.Delay(100);
                 }
-                Bot.Modules.Poll.OnPollEnd(this);
+                OnEnd();
             }).Start();
+        }
+
+        public async virtual void OnEnd() {
+            List<Vote> votes = Bot.Database.Table<Vote>().Where(x => x.PollId == MessageId).ToList();
+
+            string voteString = string.Empty;
+            foreach(Vote v in votes) {
+                Bot.Database.Delete(v);
+            }
+            Bot.Database.Delete(this);
+
+            try {
+                var message = await GetMessageAsync();
+                var builder = new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder {
+                    Description = $"Poll has ended {EndTime.ToTimestamp()}!\n {Question.ToBold()}",
+                    Color = Bot.Style.DefaultColor
+                });
+
+                await message.ModifyAsync(builder);
+            } catch {
+                //We can't find the poll message, dont bother trying to edit it.
+                return;
+            }
+        }
+
+        public virtual DiscordMessageBuilder GetActiveMessageBuilder() {
+            int voteCount = Bot.Database.Table<Vote>().Count(x => x.PollId == MessageId);
+            return new DiscordMessageBuilder()
+                .AddEmbed(new DiscordEmbedBuilder {
+                    Description = $"Poll ends {EndTime.ToTimestamp()}! \n{Question.ToBold()}\n{voteCount} members have voted.",
+                    Color = Bot.Style.DefaultColor
+                });
         }
         #endregion
     }

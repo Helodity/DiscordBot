@@ -47,42 +47,12 @@ namespace DiscordBotRewrite.Modules {
                 Color = Bot.Style.DefaultColor
             });
 
-            Poll poll = new Poll(message, question, choices, endTime);
-            var messageBuilder = GetActivePollMessageBuilder(poll);
+            Poll poll = new MultipleChoicePoll(message, question, choices, endTime);
+            var messageBuilder = poll.GetActiveMessageBuilder();
             await message.ModifyAsync(messageBuilder);
 
             Bot.Database.Insert(poll);
         }
-        public async void OnPollEnd(Poll poll) {
-            List<Vote> votes = Bot.Database.Table<Vote>().Where(x => x.PollId == poll.MessageId).ToList();
-            List<PollChoice> choices = Bot.Database.Table<PollChoice>().Where(x => x.PollId == poll.MessageId).ToList();
-
-            string voteString = string.Empty;
-            foreach(PollChoice c in choices) {
-                voteString += $"**{c.Name}:** {votes.Where(x => x.Choice == c.Name).Count()} \n";
-                Bot.Database.Delete(c);
-            }
-            foreach(Vote v in votes) {
-                Bot.Database.Delete(v);
-            }
-            Bot.Database.Delete(poll);
-
-            try {
-                var message = await poll.GetMessageAsync();
-                var builder = new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder {
-                    Description = $"Poll has ended {poll.EndTime.ToTimestamp()}!\n {poll.Question.ToBold()} \n{voteString}",
-                    Color = Bot.Style.DefaultColor
-                });
-
-                await message.ModifyAsync(builder);
-            } catch {
-                //We can't find the poll message, dont bother trying to edit it.
-                return;
-            }
-        }
-
-
-
         #endregion
 
         #region Events
@@ -93,7 +63,7 @@ namespace DiscordBotRewrite.Modules {
 
             //Complete the polls
             foreach(Poll p in toComplete) {
-                OnPollEnd(p);
+                p.OnEnd();
             }
             return Task.CompletedTask;
         }
@@ -121,7 +91,11 @@ namespace DiscordBotRewrite.Modules {
                     Bot.Database.Insert(vote);
                 }
             }
-            var builder = GetActivePollMessageBuilder(poll);
+
+            if(poll.Type == Poll.PollType.MultipleChoice)
+                poll = new MultipleChoicePoll(poll);
+
+            var builder = poll.GetActiveMessageBuilder();
             await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder(builder));
         }
         #endregion
@@ -134,24 +108,6 @@ namespace DiscordBotRewrite.Modules {
                 Bot.Database.Insert(guildPollData);
             }
             return guildPollData;
-        }
-        DiscordMessageBuilder GetActivePollMessageBuilder(Poll poll) {
-            //Create the selection component based on given choices
-            var choiceSelections = new List<DiscordSelectComponentOption>();
-            List<PollChoice> choices = Bot.Database.Table<PollChoice>().Where(x => x.PollId == poll.MessageId).ToList();
-            foreach(PollChoice c in choices) {
-                choiceSelections.Add(new DiscordSelectComponentOption(c.Name, c.Name));
-            }
-            choiceSelections.Add(new DiscordSelectComponentOption("Clear", "Clear"));
-            var selectionComponent = new DiscordSelectComponent("choice", "Vote here!", choiceSelections);
-
-            int voteCount = Bot.Database.Table<Vote>().Count(x => x.PollId == poll.MessageId);
-            return new DiscordMessageBuilder()
-                .AddEmbed(new DiscordEmbedBuilder {
-                    Description = $"Poll ends {poll.EndTime.ToTimestamp()}! \n{poll.Question.ToBold()}\n{voteCount} members have voted.",
-                    Color = Bot.Style.DefaultColor
-                })
-                .AddComponents(selectionComponent);
         }
         #endregion
     }

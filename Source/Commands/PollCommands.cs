@@ -43,7 +43,7 @@ namespace DiscordBotRewrite.Commands {
             if(input.TimedOut)
                 return;
 
-            List<string> choices = input.Result.Values["choices"].Split(",").ToList();
+            List<string> choices = input.Result.Values["choices"].Split(new char[] {',','\n'}).ToList();
             choices.ForEach(choice => { choice = choice.Trim(); });
 
             choices.RemoveAll(x => string.IsNullOrWhiteSpace(x));;
