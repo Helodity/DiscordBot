@@ -29,6 +29,16 @@ namespace DiscordBotRewrite.Extensions {
             }
             return filteredMembers;
         }
+        public static async Task<List<ulong>> GetMembersIdAsync(this DiscordGuild guild, bool includeBots = false) {
+            var members = await guild.GetAllMembersAsync();
+            //Convert members to a list that can be written to.
+            List<ulong> filteredMembers = new List<ulong>();
+            foreach(DiscordMember member in members) {
+                if(!member.IsBot || includeBots)
+                    filteredMembers.Add(member.Id);
+            }
+            return filteredMembers;
+        }
 
         public static List<DiscordRole> GetAllRoles(this DiscordGuild guild) {
             var roles = guild.Roles;

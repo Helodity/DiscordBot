@@ -33,7 +33,8 @@ namespace DiscordBotRewrite.Commands {
         #region Baltop
         [SlashCommand("baltop", "Who has the most money?")]
         public async Task Baltop(InteractionContext ctx) {
-            var accounts = Bot.Modules.Economy.GetAllAccounts();
+            var allMembers = await ctx.Guild.GetMembersAsync();
+            var accounts = Bot.Modules.Economy.GetAllAccounts().Where(x => allMembers.Any(y => y.Id == (ulong)x.UserId)).ToList();
             List<UserAccount> topAccounts = new List<UserAccount>() { accounts[0] };
             long totalValue = accounts[0].NetWorth;
             foreach(UserAccount a in accounts.Skip(1)) {
@@ -227,7 +228,7 @@ namespace DiscordBotRewrite.Commands {
                     Color = Bot.Style.WarningColor
                 });
             } else {
-                long amount = (long)(target.Balance * 0.01 * rng);
+                long amount = Math.Max((long)(target.Balance * 0.01 * rng),1);
                 amount = Bot.Modules.Economy.Transfer((long)user.Id, (long)ctx.User.Id, (int)amount);
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"You got ${amount} from {user.Username}!",

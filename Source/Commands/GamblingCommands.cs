@@ -197,8 +197,8 @@ namespace DiscordBotRewrite.Commands {
                         embed.WithDescription($"Sorry, I drew {nextCard}. You lost your ${bet} bet.");
                         break;
                     }
-                    long currentWinnings = (long)(bet * (Bot.Modules.Economy.GetMultiplier(roundsWon, 0.3, 2) - 1));
-                    long nextWinnings = (long)(bet * (Bot.Modules.Economy.GetMultiplier(roundsWon + 1, 0.3, 2) - 1));
+                    long currentWinnings = (long)(bet * (Bot.Modules.Economy.GetMultiplier(roundsWon, 0.4, 1.4) - 0.3));
+                    long nextWinnings = (long)(bet * (Bot.Modules.Economy.GetMultiplier(roundsWon + 1, 0.4, 1.4) - 0.3));
                     embed.WithColor(Bot.Style.SuccessColor);
 
                     if(deck.Size() == 0) {

@@ -17,8 +17,8 @@ namespace DiscordBotRewrite {
                     Bot.Client.Logger.LogCritical(exception.JsonMessage);
                     text += exception.JsonMessage;
                 } else {
-                    Bot.Client.Logger.LogCritical($"{eventArgs.Exception.Message} : {eventArgs.Exception.StackTrace}");
-                    text += $"{eventArgs.Exception.Message} : {eventArgs.Exception.StackTrace}";
+                    Bot.Client.Logger.LogCritical($"{eventArgs.Exception.Message} : {eventArgs.Exception.StackTrace} : {eventArgs.Exception.InnerException} : {eventArgs.Exception.TargetSite}");
+                    text += $"{eventArgs.Exception.Message} : {eventArgs.Exception.StackTrace} : {eventArgs.Exception.InnerException} : {eventArgs.Exception.TargetSite}";
                 }
                 if(Bot.Config.TextLogging)
                     File.AppendAllText("log.txt", text);

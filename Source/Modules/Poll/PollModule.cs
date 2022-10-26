@@ -76,7 +76,7 @@ namespace DiscordBotRewrite.Modules {
 
                 await message.ModifyAsync(builder);
             } catch {
-                //We couldn't get the message, so just don't bother editing it
+                //We can't find the poll message, dont bother trying to edit it.
                 return;
             }
         }
@@ -121,8 +121,8 @@ namespace DiscordBotRewrite.Modules {
                     Bot.Database.Insert(vote);
                 }
             }
-
-            await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, GetActivePollInteractionResponseBuilder(poll));
+            var builder = GetActivePollMessageBuilder(poll);
+            await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder(builder));
         }
         #endregion
 
@@ -148,25 +148,7 @@ namespace DiscordBotRewrite.Modules {
             int voteCount = Bot.Database.Table<Vote>().Count(x => x.PollId == poll.MessageId);
             return new DiscordMessageBuilder()
                 .AddEmbed(new DiscordEmbedBuilder {
-                    Description = $"Poll ends {poll.EndTime.ToTimestamp()}! \n {poll.Question.ToBold()}\n {voteCount} members have voted.",
-                    Color = Bot.Style.DefaultColor
-                })
-                .AddComponents(selectionComponent);
-        }
-        DiscordInteractionResponseBuilder GetActivePollInteractionResponseBuilder(Poll poll) {
-            //Create the selection component based on given choices
-            var choiceSelections = new List<DiscordSelectComponentOption>();
-            List<PollChoice> choices = Bot.Database.Table<PollChoice>().Where(x => x.PollId == poll.MessageId).ToList();
-            foreach(PollChoice c in choices) {
-                choiceSelections.Add(new DiscordSelectComponentOption(c.Name, c.Name));
-            }
-            choiceSelections.Add(new DiscordSelectComponentOption("Clear", "Clear"));
-            var selectionComponent = new DiscordSelectComponent("choice", "Vote here!", choiceSelections);
-
-            int voteCount = Bot.Database.Table<Vote>().Count(x => x.PollId == poll.MessageId);
-            return new DiscordInteractionResponseBuilder()
-                .AddEmbed(new DiscordEmbedBuilder {
-                    Description = $"Poll ends {poll.EndTime.ToTimestamp()}! \n {poll.Question.ToBold()}\n {voteCount} members have voted.",
+                    Description = $"Poll ends {poll.EndTime.ToTimestamp()}! \n{poll.Question.ToBold()}\n{voteCount} members have voted.",
                     Color = Bot.Style.DefaultColor
                 })
                 .AddComponents(selectionComponent);
