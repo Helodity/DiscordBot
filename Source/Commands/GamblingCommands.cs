@@ -9,6 +9,7 @@ using System;
 using DiscordBotRewrite.Extensions;
 using DSharpPlus.Interactivity;
 using DSharpPlus.EventArgs;
+using DiscordBotRewrite.Global;
 
 namespace DiscordBotRewrite.Commands {
     [SlashCommandGroup("gamble", "Throw away your money")]
@@ -162,6 +163,7 @@ namespace DiscordBotRewrite.Commands {
             InteractivityResult<ComponentInteractionCreateEventArgs> interactivityResult = new();
             for(int gamesPlayed = 0; true; gamesPlayed++) {
                 account.ModifyBalance(-bet);
+                long effectiveBet = (long)Math.Pow(bet, 0.9);
                 Deck deck = Deck.GetStandardDeck();
                 Card anchorCard = deck.Draw();
 
@@ -197,8 +199,8 @@ namespace DiscordBotRewrite.Commands {
                         embed.WithDescription($"Sorry, I drew {nextCard}. You lost your ${bet} bet.");
                         break;
                     }
-                    long currentWinnings = (long)(bet * (Bot.Modules.Economy.GetMultiplier(roundsWon, 0.4, 1.4) - 0.3));
-                    long nextWinnings = (long)(bet * (Bot.Modules.Economy.GetMultiplier(roundsWon + 1, 0.4, 1.4) - 0.3));
+                    long currentWinnings = (long)(effectiveBet * (Bot.Modules.Economy.GetMultiplier(roundsWon, 0.4, 1.4) - 0.3));
+                    long nextWinnings = (long)(effectiveBet * (Bot.Modules.Economy.GetMultiplier(roundsWon + 1, 0.4, 1.4) - 0.3));
                     embed.WithColor(Bot.Style.SuccessColor);
 
                     if(deck.Size() == 0) {
