@@ -7,6 +7,7 @@ using DiscordBotRewrite.Global;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.Logging;
 using SQLite;
 
@@ -40,9 +41,10 @@ namespace DiscordBotRewrite.Modules {
         [Column("poll_type")]
         public PollType Type { get; set; }
 
+
         public enum PollType {
-            MultipleChoice,
-            ShortAnswer
+            [ChoiceName("Multiple Choice")] MultipleChoice,
+            [ChoiceName("Short Answer")] ShortAnswer
         }
 
         #region Constructors
