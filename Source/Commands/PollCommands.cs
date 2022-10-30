@@ -17,6 +17,7 @@ namespace DiscordBotRewrite.Commands {
         #region Start
         [SlashCommand("start", "Start a new poll")]
         public async Task StartPoll(InteractionContext ctx,
+            [Option("Type", "what type of poll is this?")] Poll.PollType type,
             [Option("Duration", "How many units will this poll last?")] long unitAmt,
             [Option("Units", "How long is a unit?")] TimeUnit unit) {
 
@@ -32,31 +33,36 @@ namespace DiscordBotRewrite.Commands {
             var form = new DiscordInteractionResponseBuilder()
               .WithTitle("Start a poll!")
               .WithCustomId(id)
-              .AddComponents(new TextInputComponent("Question", "question", "What do you want to ask?", max_length: 100))
-              .AddComponents(new TextInputComponent("Choices", "choices", "Separate each choice with a comma.", style: TextInputStyle.Paragraph));
+              .AddComponents(new TextInputComponent("Question", "question", "What do you want to ask?", max_length: 100));
+            if(type == Poll.PollType.MultipleChoice)
+              form.AddComponents(new TextInputComponent("Choices", "choices", "Separate each choice with a comma.", style: TextInputStyle.Paragraph));
 
             await ctx.CreateResponseAsync(InteractionResponseType.Modal, form);
 
             var interactivity = ctx.Client.GetInteractivity();
-            var input = await interactivity.WaitForModalAsync(id, ctx.User);
+            var input = await interactivity.WaitForModalAsync(id, ctx.User, timeoutOverride: TimeSpan.FromMinutes(5));
 
             if(input.TimedOut)
                 return;
 
-            List<string> choices = input.Result.Values["choices"].Split(new char[] {',','\n'}).ToList();
-            choices.ForEach(choice => { choice = choice.Trim(); });
 
-            choices.RemoveAll(x => string.IsNullOrWhiteSpace(x));;
-            if(choices.Count < 2) {
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = "Invalid choices: Make sure there are at least two unique choices!",
-                    Color = Bot.Style.ErrorColor
-                }, true);
-                return;
+            List<string> choices = null;
+            if(type == Poll.PollType.MultipleChoice) {
+                choices = input.Result.Values["choices"].Split(new char[] { ',', '\n' }).ToList();
+                choices.ForEach(choice => { choice = choice.Trim(); });
+
+                choices.RemoveAll(x => string.IsNullOrWhiteSpace(x)); ;
+                if(choices.Count < 2) {
+                    await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                        Description = "Invalid choices: Make sure there are at least two unique choices!",
+                        Color = Bot.Style.ErrorColor
+                    }, true);
+                    return;
+                }
             }
 
             DateTime endTime = DateTime.Now.AddTime((int)unitAmt, unit);
-            await Bot.Modules.Poll.StartPoll(ctx, input.Result.Values["question"], choices, endTime);
+            await Bot.Modules.Poll.StartPoll(ctx, input.Result.Values["question"], endTime, choices);
             await input.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder {
                 Description = "Started the poll!",
                 Color = Bot.Style.SuccessColor

@@ -4,7 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using DiscordBotRewrite.Extensions;
 using DiscordBotRewrite.Global;
+using DSharpPlus;
 using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
+using Microsoft.Extensions.Logging;
 using SQLite;
 
 namespace DiscordBotRewrite.Modules {
@@ -74,33 +77,16 @@ namespace DiscordBotRewrite.Modules {
         }
 
         public async virtual void OnEnd() {
-            List<Vote> votes = Bot.Database.Table<Vote>().Where(x => x.PollId == MessageId).ToList();
-
-            string voteString = string.Empty;
-            foreach(Vote v in votes) {
-                Bot.Database.Delete(v);
-            }
-            Bot.Database.Delete(this);
-
-            try {
-                var message = await GetMessageAsync();
-                var builder = new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder {
-                    Description = $"Poll has ended {EndTime.ToTimestamp()}!\n {Question.ToBold()}",
-                    Color = Bot.Style.DefaultColor
-                });
-
-                await message.ModifyAsync(builder);
-            } catch {
-                //We can't find the poll message, dont bother trying to edit it.
-                return;
-            }
+            Bot.Client.Logger.LogCritical("Tried to run OnEnd() on base class poll!");
         }
-
+        public async virtual Task OnVote(DiscordClient sender, ComponentInteractionCreateEventArgs e) {
+            Bot.Client.Logger.LogCritical("Tried to run OnVote() on base class poll!");
+        }
         public virtual DiscordMessageBuilder GetActiveMessageBuilder() {
             int voteCount = Bot.Database.Table<Vote>().Count(x => x.PollId == MessageId);
             return new DiscordMessageBuilder()
                 .AddEmbed(new DiscordEmbedBuilder {
-                    Description = $"Poll ends {EndTime.ToTimestamp()}! \n{Question.ToBold()}\n{voteCount} members have voted.",
+                    Description = $"Poll ends {EndTime.ToTimestamp()}!\n{Question.ToBold()}\n{voteCount} members have voted.",
                     Color = Bot.Style.DefaultColor
                 });
         }

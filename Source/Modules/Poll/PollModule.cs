@@ -18,7 +18,19 @@ namespace DiscordBotRewrite.Modules {
             client.ComponentInteractionCreated += OnInteraction;
             client.GuildDownloadCompleted += RemoveFinishedPolls;
 
-            foreach(Poll p in Bot.Database.Table<Poll>()) {
+            List<Poll> pollList = Bot.Database.Table<Poll>().ToList();
+            for(int i = 0; i < pollList.Count; i++) {
+                Poll p = pollList[i];
+
+                switch(p.Type) {
+                    case Poll.PollType.ShortAnswer:
+                        p = new ShortAnswerPoll(p);
+                        break;
+                    case Poll.PollType.MultipleChoice:
+                        p = new MultipleChoicePoll(p);
+                        break;
+                }
+
                 p.StartWatching();
             }
         }
@@ -37,7 +49,7 @@ namespace DiscordBotRewrite.Modules {
         }
 
         // Returns whether the poll was sucessfully created
-        public async Task StartPoll(InteractionContext ctx, string question, List<string> choices, DateTime endTime) {
+        public async Task StartPoll(InteractionContext ctx, string question, DateTime endTime, List<string> choices = null) {
             GuildPollData pollData = GetPollData((long)ctx.Guild.Id);
 
             DiscordChannel channel = ctx.Guild.GetChannel((ulong)pollData.PollChannelId);
@@ -47,7 +59,12 @@ namespace DiscordBotRewrite.Modules {
                 Color = Bot.Style.DefaultColor
             });
 
-            Poll poll = new MultipleChoicePoll(message, question, choices, endTime);
+            Poll poll;
+            if(choices != null) {
+                poll = new MultipleChoicePoll(message, question, choices, endTime);
+            } else {
+                poll = new ShortAnswerPoll(message, question, endTime);
+            }
             var messageBuilder = poll.GetActiveMessageBuilder();
             await message.ModifyAsync(messageBuilder);
 
@@ -58,7 +75,7 @@ namespace DiscordBotRewrite.Modules {
         #region Events
         Task RemoveFinishedPolls(DiscordClient sender, GuildDownloadCompletedEventArgs args) {
             //Compile polls to be completed
-            List<Poll> toComplete = Bot.Database.Table<Poll>().ToList();
+            List<Poll> toComplete = GetAllPolls();
             toComplete = toComplete.Where(x => DateTime.Compare(DateTime.Now, x.EndTime) > 0).ToList();
 
             //Complete the polls
@@ -72,35 +89,38 @@ namespace DiscordBotRewrite.Modules {
             if(e.Guild == null)
                 return;
 
+            if(e.Id.StartsWith("poll_vote_modal"))
+                return;
+
             //Make sure message is a poll message
             GuildPollData pollData = GetPollData((long)e.Guild.Id);
-            List<Poll> polls = Bot.Database.Table<Poll>().ToList();
+            List<Poll> polls = GetAllPolls();
             Poll poll = polls.FirstOrDefault(x => x.MessageId == (long)e.Message.Id);
             if(poll == null)
                 return;
-            Vote vote = Bot.Database.Table<Vote>().ToList().FirstOrDefault(x => x.PollId == (long)e.Message.Id && x.VoterId == (long)e.User.Id);
-            if(e.Values.First() == "Clear") {
-                if(vote != null)
-                    Bot.Database.Delete(vote);
-            } else {
-                if(vote != null) {
-                    vote.Choice = e.Values.First();
-                    Bot.Database.Update(vote);
-                } else {
-                    vote = new Vote((long)e.Message.Id, (long)e.User.Id, e.Values.First());
-                    Bot.Database.Insert(vote);
-                }
-            }
-
-            if(poll.Type == Poll.PollType.MultipleChoice)
-                poll = new MultipleChoicePoll(poll);
-
-            var builder = poll.GetActiveMessageBuilder();
-            await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder(builder));
+            Task.Run(async () => { await poll.OnVote(sender, e); });
         }
         #endregion
 
         #region Private
+
+        List<Poll> GetAllPolls() {
+            List<Poll> pollList = Bot.Database.Table<Poll>().ToList();
+            for(int i = 0; i < pollList.Count; i++) {
+                Poll p = pollList[i];
+
+                switch(p.Type) {
+                    case Poll.PollType.ShortAnswer:
+                        pollList[i] = new ShortAnswerPoll(p);
+                        break;
+                    case Poll.PollType.MultipleChoice:
+                        pollList[i] = new MultipleChoicePoll(p);
+                        break;
+                }
+            }
+            return pollList;
+        }
+
         GuildPollData GetPollData(long guildId) {
             GuildPollData guildPollData = Bot.Database.Table<GuildPollData>().FirstOrDefault(x => x.GuildId == guildId);
             if(guildPollData == null) {

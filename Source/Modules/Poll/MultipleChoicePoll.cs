@@ -4,7 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DiscordBotRewrite.Extensions;
+using DSharpPlus;
 using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
+using Microsoft.Extensions.Logging;
 using SQLite;
 
 namespace DiscordBotRewrite.Modules {
@@ -13,6 +16,7 @@ namespace DiscordBotRewrite.Modules {
         public MultipleChoicePoll() { }
 
         public MultipleChoicePoll(Poll poll) {
+            Id = poll.Id;
             MessageId = poll.MessageId;
             GuildId = poll.GuildId;
             ChannelId = poll.ChannelId;
@@ -36,18 +40,17 @@ namespace DiscordBotRewrite.Modules {
 
             string voteString = string.Empty;
             foreach(PollChoice c in choices) {
-                voteString += $"**{c.Name}:** {votes.Where(x => x.Choice == c.Name).Count()} \n";
+                voteString += $"**{c.Name}:** {votes.Where(x => x.Choice == c.Name).Count()}\n";
                 Bot.Database.Delete(c);
             }
             foreach(Vote v in votes) {
                 Bot.Database.Delete(v);
             }
             Bot.Database.Delete(this);
-
             try {
                 var message = await GetMessageAsync();
                 var builder = new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder {
-                    Description = $"Poll has ended {EndTime.ToTimestamp()}!\n {Question.ToBold()} \n{voteString}",
+                    Description = $"Poll has ended {EndTime.ToTimestamp()}!\n{Question.ToBold()}\n{voteString}",
                     Color = Bot.Style.DefaultColor
                 });
 
@@ -57,7 +60,24 @@ namespace DiscordBotRewrite.Modules {
                 return;
             }
         }
+        public async override Task OnVote(DiscordClient sender, ComponentInteractionCreateEventArgs e) {
+            Vote vote = Bot.Database.Table<Vote>().ToList().FirstOrDefault(x => x.PollId == (long)e.Message.Id && x.VoterId == (long)e.User.Id);
+            if(e.Values.First() == "Clear") {
+                if(vote != null)
+                    Bot.Database.Delete(vote);
+            } else {
+                if(vote != null) {
+                    vote.Choice = e.Values.First();
+                    Bot.Database.Update(vote);
+                } else {
+                    vote = new Vote((long)e.Message.Id, (long)e.User.Id, e.Values.First());
+                    Bot.Database.Insert(vote);
+                }
+            }
 
+            var builder = GetActiveMessageBuilder();
+            await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder(builder));
+        }
         public override DiscordMessageBuilder GetActiveMessageBuilder() {
             //Create the selection component based on given choices
             var choiceSelections = new List<DiscordSelectComponentOption>();
