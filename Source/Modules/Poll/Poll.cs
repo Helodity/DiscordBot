@@ -86,9 +86,10 @@ namespace DiscordBotRewrite.Modules {
         }
         public virtual DiscordMessageBuilder GetActiveMessageBuilder() {
             int voteCount = Bot.Database.Table<Vote>().Count(x => x.PollId == MessageId);
+            string voteString = voteCount == 1 ? $"{voteCount} member has voted." : $"{voteCount} members have voted.";
             return new DiscordMessageBuilder()
                 .AddEmbed(new DiscordEmbedBuilder {
-                    Description = $"Poll ends {EndTime.ToTimestamp()}!\n{Question.ToBold()}\n{voteCount} members have voted.",
+                    Description = $"Poll ends {EndTime.ToTimestamp()}!\n{Question.ToBold()}\n{voteString}",
                     Color = Bot.Style.DefaultColor
                 });
         }
