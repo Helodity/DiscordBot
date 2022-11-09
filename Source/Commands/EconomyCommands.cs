@@ -70,21 +70,21 @@ namespace DiscordBotRewrite.Commands {
         public async Task Daily(InteractionContext ctx) {
             UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
             if(DateTime.Compare(DateTime.Now, account.DailyCooldown) < 0) {
-                //await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                //    Description = $"You can't claim your daily reward yet!\nYou can claim more money {account.DailyCooldown.ToTimestamp()}!",
-                //    Color = Bot.Style.ErrorColor
-                //});
-                //return;
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = $"You can't claim your daily reward yet!\nYou can claim more money {account.DailyCooldown.ToTimestamp()}!",
+                    Color = Bot.Style.ErrorColor
+                });
+                return;
             }
-            long amount = (long)(100 * Bot.Modules.Economy.GetMultiplier(account.Streak, 0.2, 1.2));
 
             //48 total hours, daily cooldown accounts for 20
             if((DateTime.Now - account.DailyCooldown).TotalHours > 28) {
-                account.ResetStreak();
+                account.ResetStreak(false);
             } else {
                 account.IncrementStreak(false);
             }
 
+            long amount = (long)(100 * Bot.Modules.Economy.GetMultiplier(account.Streak - 1, 0.2, 1.3));
             account.SetDailyCooldown(DateTime.Now.AddHours(20), false);
             account.ModifyBalance(amount);
 

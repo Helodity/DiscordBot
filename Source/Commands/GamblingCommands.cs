@@ -272,7 +272,7 @@ namespace DiscordBotRewrite.Commands {
             string p2status = "Waiting...";
 
             embed.WithColor(Bot.Style.DefaultColor);
-            embed.WithDescription($"{ctx.User.Username} challenges {opponent.Username} to a game of Rock, Paper, Scissors for ${bet}!\n" +
+            embed.WithDescription($"{ctx.User.Username} challenges {opponent.Username} to a game of Rock, Paper, Scissors for **${bet}**!\n" +
                 $"**{ctx.User.Username}**: {p1status}\n" +
                 $"**{opponent.Username}**: {p2status}");
             await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(rpsButtons));
@@ -302,7 +302,7 @@ namespace DiscordBotRewrite.Commands {
                     "scissors" => 2,
                     _ => -1
                 };
-                embed.WithDescription($"{ctx.User.Username} challenges {opponent.Username} to a game of Rock, Paper, Scissors for ${bet}!\n" +
+                embed.WithDescription($"{ctx.User.Username} challenges {opponent.Username} to a game of Rock, Paper, Scissors for **${bet}**!\n" +
                 $"**{ctx.User.Username}**: {p1status}\n" +
                 $"**{opponent.Username}**: {p2status}");
                 await a.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(embed).AddComponents(rpsButtons));
@@ -358,7 +358,7 @@ namespace DiscordBotRewrite.Commands {
                 _ => null
             };
             string resultString = $"{ctx.User.Mention} played {p1_str}, {opponent.Mention} played {p2_str}. ";
-            resultString += winner != null ? $"{winner.Mention} win ${bet}!" : "Draw.";
+            resultString += winner != null ? $"{winner.Mention} win **${bet * 2}**" : "Draw.";
             embed.WithDescription(resultString);
             await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
         }
