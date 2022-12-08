@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DiscordBotRewrite.Extensions;
 
-namespace DiscordBotRewrite.Modules {
+namespace DiscordBotRewrite.Modules.Economy.Gambling {
     public class Deck {
         List<Card> Cards;
 

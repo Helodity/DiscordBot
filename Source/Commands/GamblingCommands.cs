@@ -10,8 +10,10 @@ using DiscordBotRewrite.Extensions;
 using DSharpPlus.Interactivity;
 using DSharpPlus.EventArgs;
 using DiscordBotRewrite.Global;
+using DiscordBotRewrite.Modules.Economy.Gambling;
 
-namespace DiscordBotRewrite.Commands {
+namespace DiscordBotRewrite.Commands
+{
     [SlashCommandGroup("gamble", "Throw away your money")]
     class GamblingCommands : ApplicationCommandModule {
         #region Blackjack
@@ -163,7 +165,7 @@ namespace DiscordBotRewrite.Commands {
             InteractivityResult<ComponentInteractionCreateEventArgs> interactivityResult = new();
             for(int gamesPlayed = 0; true; gamesPlayed++) {
                 account.ModifyBalance(-bet);
-                long effectiveBet = (long)Math.Pow(bet, 0.9);
+                long effectiveBet = (long)Math.Pow(bet, 0.99);
                 Deck deck = Deck.GetStandardDeck();
                 Card anchorCard = deck.Draw();
 

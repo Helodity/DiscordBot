@@ -27,6 +27,7 @@ namespace DiscordBotRewrite.Modules {
             Pixel = new PixelModule();
 
             Poll = new PollModule(client);
+
             if(Bot.Config.UseVoice) {
                 Voice = new VoiceModule(client);
                 Voice.EnableLavalink().Wait();

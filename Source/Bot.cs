@@ -1,6 +1,6 @@
-﻿using System;
+﻿global using static DiscordBotRewrite.Global.Global;
+
 using System.Reflection;
-using System.Threading.Tasks;
 using DiscordBotRewrite.Commands;
 using DiscordBotRewrite.Global;
 using DiscordBotRewrite.Modules;
@@ -12,7 +12,7 @@ using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.Logging;
 using SQLite;
-using static DiscordBotRewrite.Global.Global;
+
 
 namespace DiscordBotRewrite {
     public static class Bot {
@@ -84,6 +84,7 @@ namespace DiscordBotRewrite {
             SlashExtension.RegisterCommands<PollCommands>(TargetServer);
             SlashExtension.RegisterCommands<QuestionCommands>(TargetServer);
             SlashExtension.RegisterCommands<QuoteCommands>(TargetServer);
+            SlashExtension.RegisterCommands<StockCommands>(TargetServer);
             SlashExtension.RegisterCommands<UnsortedCommands>(TargetServer);
             if(Config.UseVoice) SlashExtension.RegisterCommands<VoiceCommands>(TargetServer);
 

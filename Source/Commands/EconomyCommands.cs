@@ -77,9 +77,11 @@ namespace DiscordBotRewrite.Commands {
                 return;
             }
 
+            bool lostStreak = false;
             //48 total hours, daily cooldown accounts for 20
             if((DateTime.Now - account.DailyCooldown).TotalHours > 28) {
                 account.ResetStreak(false);
+                lostStreak = true;
             } else {
                 account.IncrementStreak(false);
             }
@@ -89,7 +91,7 @@ namespace DiscordBotRewrite.Commands {
             account.ModifyBalance(amount);
 
             string streakText = string.Empty;
-            if(account.Streak > 0) {
+            if(!lostStreak) {
                 streakText += account.Streak;
                 streakText += account.Streak > 1 ? " days in a row!" : " day in a row!";
             } else {
@@ -183,8 +185,9 @@ namespace DiscordBotRewrite.Commands {
                     Color = Bot.Style.ErrorColor
                 });
                 return;
-            }
+            }   
             amount = Bot.Modules.Economy.Transfer((long)ctx.User.Id, (long)user.Id, (int)amount);
+            Bot.Modules.Economy.GetAccount((long)ctx.User.Id).ModifyKarma(1);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Gave ${amount} to {user.Username}!",
                 Color = Bot.Style.SuccessColor
@@ -206,6 +209,7 @@ namespace DiscordBotRewrite.Commands {
 
             UserAccount self = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
             UserAccount target = Bot.Modules.Economy.GetAccount((long)user.Id);
+            self.ModifyKarma(-5);
             if(target.Balance == 0) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"{user.Username} is kinda broke, maybe pick a better target",
@@ -220,15 +224,29 @@ namespace DiscordBotRewrite.Commands {
                 });
                 return;
             }
+
             self.SetRobCooldown(DateTime.Now.AddSeconds(30));
-            int rng = GenerateRandomNumber(0, 10);
-            if(rng == 0) {
+            int rng = GenerateRandomNumber(Math.Min((int)self.Karma, 25), 100);
+            if(rng <= 0) {
+                long amount = Math.Max((long)(target.Balance * 0.01 * -rng), 1);
+
+                long amtFromBank = 0;
+                if(self.Balance < amount) {
+                    amtFromBank = self.TransferToBalance(amount - self.Balance);
+                }
+
+                self.ModifyBalance(-amount);
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = $"You were caught and forced to pay ${amount}! {(amtFromBank > 0 ? $"${amtFromBank} was taken from your bank to pay the fine!" : "")}",
+                    Color = Bot.Style.SuccessColor
+                });
+            } else if(rng == 0) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"You couldn't find an opening, try again later!",
                     Color = Bot.Style.WarningColor
                 });
             } else {
-                long amount = Math.Max((long)(target.Balance * 0.01 * rng),1);
+                long amount = Math.Max((long)(target.Balance * 0.001 * rng),1);
                 amount = Bot.Modules.Economy.Transfer((long)user.Id, (long)ctx.User.Id, (int)amount);
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"You got ${amount} from {user.Username}!",

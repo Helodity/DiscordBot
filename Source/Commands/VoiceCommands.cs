@@ -45,7 +45,7 @@ namespace DiscordBotRewrite.Commands {
         #region Play
         [SlashCommand("play", "Play a song")]
         [UserAbleToPlay]
-        public async Task Play(InteractionContext ctx, [Option("search", "what to play")] string search) {
+        public async Task Play(InteractionContext ctx, [Option("search", "what to play")] string search, [Option("time", "how far in seconds to start")] long time = 0) {
             VoiceModule module = Bot.Modules.Voice;
             VoiceGuildConnection VGconn = module.GetGuildConnection(ctx);
 
@@ -64,6 +64,10 @@ namespace DiscordBotRewrite.Commands {
 
             bool canPlayFirstSong = !VGconn.IsPlayingTrack();
             await VGconn.RequestTracksAsync(tracks);
+
+            if(time > 0 && canPlayFirstSong) {
+                await VGconn.Conn.SeekAsync(TimeSpan.FromSeconds(time));
+            }
 
             string output = canPlayFirstSong ? $"Now playing `{tracks[0].Title}`" : $"Enqueued `{tracks[0].Title}`";
             if(tracks.Count > 1) {
@@ -102,6 +106,25 @@ namespace DiscordBotRewrite.Commands {
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Set the volume to {volume}%",
+                Color = Bot.Style.DefaultColor
+            });
+        }
+        #endregion
+
+        #region Seek
+        [SlashCommand("seek", "goto point in song")]
+        [UserAbleToModify]
+        public async Task Seek(InteractionContext ctx, [Option("time", "how far in seconds")] long time) {
+            if(time < 0)
+                time = 0;
+            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+            TimeSpan span = TimeSpan.FromSeconds(time);
+            await VGConn.Conn.SeekAsync(span);
+            //await VGConn.Conn.PauseAsync();
+            //await VGConn.Conn.ResumeAsync();
+
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Description = $"Set time to {span}!",
                 Color = Bot.Style.DefaultColor
             });
         }
@@ -223,6 +246,25 @@ namespace DiscordBotRewrite.Commands {
 
             embed.WithFooter($"Page {activePage} / {pageCount}");
             await ctx.CreateResponseAsync(embed);
+        }
+        #endregion
+
+        #region Now Playing
+        [SlashCommand("current", "currently playing song")]
+        [UserAbleToModify]
+        public async Task Current(InteractionContext ctx) {
+            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+            if(VGConn.Conn.CurrentState.CurrentTrack == null) {
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = $"Currently not playing!",
+                    Color = Bot.Style.DefaultColor
+                });
+                return;
+            }
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Description = $"Currently playing: {VGConn.Conn.CurrentState.CurrentTrack.Title} by {VGConn.Conn.CurrentState.CurrentTrack.Author}!",
+                Color = Bot.Style.DefaultColor
+            });
         }
         #endregion
 

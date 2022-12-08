@@ -29,11 +29,11 @@ namespace DiscordBotRewrite.Global {
             while(DateTime.Compare(DateTime.Now, runTime) < 0 && !Cancelled) {
                 await Task.Delay(CheckRate);
             }
-            if(!Cancelled) {
+            //Reset variables to allow the event to restart
+            Running = false;
+            if(!Cancelled)
                 OnTimer.Invoke();
-                //Reset variables to allow the event to restart
-                Running = Cancelled = false;
-            }
+            Cancelled = false;
         }
 
         public void Cancel() {

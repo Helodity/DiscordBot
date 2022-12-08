@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
 	<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
     <StartupObject>DiscordBotRewrite.Program</StartupObject>
     <AnalysisLevel>preview-minimum</AnalysisLevel>
@@ -11,6 +11,7 @@
 	<PropertyGroup>
 	   <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	   <Deterministic>False</Deterministic>
+	   <ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +25,10 @@
     <PackageReference Include="SkiaSharp" Version="2.88.2" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.2" />
     <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Modules\Economy\Stocks\" />
   </ItemGroup>
 
   <Target Name="PreBuildDebug" BeforeTargets="PreBuildEvent" Condition="'$(Configuration)' == 'Debug' ">

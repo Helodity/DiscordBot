@@ -12,7 +12,6 @@ namespace DiscordBotRewrite.Modules {
         public long Balance { get; set; }
         [Column("bank")]
         public long Bank { get; set; }
-
         public long NetWorth => Balance + Bank;
         [Column("bank_max")]
         public long BankMax { get; set; }
@@ -22,6 +21,8 @@ namespace DiscordBotRewrite.Modules {
         public DateTime RobCooldown { get; set; }
         [Column("daily_streak")]
         public int Streak { get; set; }
+        [Column("karma")]
+        public long Karma { get; set; }
 
         #region Constructor
         public UserAccount() {
@@ -30,6 +31,7 @@ namespace DiscordBotRewrite.Modules {
             BankMax = 1000;
             DailyCooldown = DateTime.Now;
             Streak = 0;
+            Karma = 0;
         }
         public UserAccount(long id) {
             UserId = id;
@@ -38,6 +40,7 @@ namespace DiscordBotRewrite.Modules {
             BankMax = 1000;
             DailyCooldown = DateTime.Now;
             Streak = 0;
+            Karma = 0;
         }
         #endregion
 
@@ -59,13 +62,18 @@ namespace DiscordBotRewrite.Modules {
             if(update)
                 Bot.Database.Update(this);
         }
+        public void ModifyKarma(long amount, bool update = true) {
+            Karma += amount;
+            if(update)
+                Bot.Database.Update(this);
+        }
         public void IncrementStreak(bool update = true) {
             Streak += 1;
             if(update)
                 Bot.Database.Update(this);
         }
         public void ResetStreak(bool update = true) {
-            Streak = 0;
+            Streak = 1;
             if(update)
                 Bot.Database.Update(this);
         }

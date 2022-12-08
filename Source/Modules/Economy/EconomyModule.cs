@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DiscordBotRewrite.Modules.Economy;
+using DiscordBotRewrite.Modules.Economy.Gambling;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 
-namespace DiscordBotRewrite.Modules {
+namespace DiscordBotRewrite.Modules
+{
     public class EconomyModule {
         #region Constructors
         public EconomyModule() {
             Bot.Database.CreateTable<UserAccount>();
+            StockMarket.Init();
         }
         #endregion
 
@@ -40,6 +44,18 @@ namespace DiscordBotRewrite.Modules {
         public double GetMultiplier(int streak, double scale = 1, double exponent = 1) {
             return scale * Math.Pow(streak, exponent) + 1;
         }
+
+        #region Stocks
+        public UserStockInfo GetStockInfo(long userId, string stockName) {
+            UserStockInfo account = Bot.Database.Table<UserStockInfo>().FirstOrDefault(x => x.UserId == userId);
+            if(account == null) {
+                account = new UserStockInfo(stockName, userId);
+                Bot.Database.Insert(account);
+            }
+            return account;
+        }
+
+        #endregion
 
         #region Gambling
         public int CalculateBlackJackHandValue(List<Card> hand) {
