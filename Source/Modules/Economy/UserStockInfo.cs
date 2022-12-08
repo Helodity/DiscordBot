@@ -23,5 +23,14 @@ namespace DiscordBotRewrite.Modules.Economy {
             UserId = userID;
             StockName = stockName;
         }
+
+        public void ModifyAmount(long amount, bool update = true) {
+            amount = Math.Max(-Amount, amount);
+            Amount += amount;
+            if(update)
+                Bot.Database.Update(this);
+        }
+
+
     }
 }

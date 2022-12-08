@@ -1,4 +1,5 @@
 ﻿using DiscordBotRewrite.Global;
+using SQLiteNetExtensions.Extensions;
 
 namespace DiscordBotRewrite.Modules.Economy {
 
@@ -34,11 +35,11 @@ namespace DiscordBotRewrite.Modules.Economy {
 
 
         public static void UpdateMarket() {
-            List<Stock> stocks = Bot.Database.Table<Stock>().ToList();
+            List<Stock> stocks = Bot.Database.GetAllWithChildren<Stock>();
 
             foreach(Stock stock in stocks) {
                 stock.SimulateStep();
-                Bot.Database.Update(stock);    
+                Bot.Database.UpdateWithChildren(stock);    
             }
 
             UpdateEvent.Start();

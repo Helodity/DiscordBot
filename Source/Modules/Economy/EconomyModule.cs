@@ -55,6 +55,10 @@ namespace DiscordBotRewrite.Modules
             return account;
         }
 
+        public Stock GetStock(string name) {
+            return Bot.Database.Table<Stock>().FirstOrDefault(x => x.Name == name);
+        }
+
         #endregion
 
         #region Gambling

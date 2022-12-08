@@ -1,5 +1,6 @@
 ﻿using System;
 using SQLite;
+using SQLiteNetExtensions.Attributes;
 using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite.Modules.Economy {
@@ -26,6 +27,10 @@ namespace DiscordBotRewrite.Modules.Economy {
         [Column("prev_earnings")]
         public float LastEarnings { get; set; }
 
+        [TextBlob("PriceHistoryBlobbed")]
+        public List<int> PriceHistory { get; set; }
+        public string PriceHistoryBlobbed { get; set; }
+
         public Stock() {}
 
         public Stock(string name, int initialCost, int priceVolality, int momentumVolatility) {
@@ -35,6 +40,7 @@ namespace DiscordBotRewrite.Modules.Economy {
             ShareCost = initialCost;
             LastEarnings = 0;
             Momentum = 0;
+            PriceHistory= new();
         }
 
 
@@ -46,6 +52,13 @@ namespace DiscordBotRewrite.Modules.Economy {
             if(toChange > -1 && toChange < 1) {
                 toChange /= Math.Abs(toChange);
             }
+
+            if(PriceHistory == null)
+                PriceHistory = new();
+
+            PriceHistory.Add(ShareCost);
+            if(PriceHistory.Count > 10)
+                PriceHistory.RemoveAt(0);
 
             ShareCost += (int)Math.Floor(toChange);
 

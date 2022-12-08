@@ -7,9 +7,9 @@ namespace DiscordBotRewrite.Commands {
 
     [SlashCommandGroup("stock", "Throw away your money")]
     class StockCommands : ApplicationCommandModule {
-        [SlashCommand("check", "Check if the bot is on")]
-        public async Task Check(InteractionContext ctx, [Option("Name", "Name of the stock")] string name) {
-            Stock s = Bot.Database.Table<Stock>().FirstOrDefault(x => x.Name == name);
+        [SlashCommand("detailed", "Get a detailed view of a single stock")]
+        public async Task DetailedView(InteractionContext ctx, [Option("Name", "Name of the stock")] string name) {
+            Stock s = Bot.Modules.Economy.GetStock(name);
 
             if(s == null) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -25,10 +25,19 @@ namespace DiscordBotRewrite.Commands {
             });
         }
 
-        [SlashCommand("buy", "Check if the bot is on")]
+        [SlashCommand("overview", "Get a quick rundown on all stocks")]
+        public async Task Overview(InteractionContext ctx) {
+            throw new NotImplementedException();
+        }
+
+        [SlashCommand("posession", "See the stocks you own")]
+        public async Task Owned(InteractionContext ctx) {
+            throw new NotImplementedException();
+        }
+
+        [SlashCommand("buy", "Purchase Stocks")]
         public async Task Buy(InteractionContext ctx, [Option("Name", "Name of the stock")] string name, [Option("Amount", "Amount to buy")] long amount) {
-            Stock stock = Bot.Database.Table<Stock>().FirstOrDefault(x => x.Name == name);
-            UserAccount user = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
+            Stock stock = Bot.Modules.Economy.GetStock(name);
             if(stock == null) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = "Nonexistent stock!",
@@ -37,8 +46,8 @@ namespace DiscordBotRewrite.Commands {
                 return;
             }
 
+            UserAccount user = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
             long price = stock.ShareCost * amount;
-
             if(price >= user.Balance) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"You can't afford that! It would cost ${price}!",
@@ -46,8 +55,9 @@ namespace DiscordBotRewrite.Commands {
                 });
                 return;
             }
+
             UserStockInfo stockInfo = Bot.Modules.Economy.GetStockInfo((long)ctx.User.Id, stock.Name);
-            stockInfo.Amount += amount;
+            stockInfo.ModifyAmount(amount);
             Bot.Database.Update(stockInfo);
 
             user.ModifyBalance(-price);        
@@ -57,10 +67,9 @@ namespace DiscordBotRewrite.Commands {
             });
         }
 
-        [SlashCommand("sell", "Check if the bot is on")]
+        [SlashCommand("sell", "Sell Stocks")]
         public async Task Sell(InteractionContext ctx, [Option("Name", "Name of the stock")] string name, [Option("Amount", "Amount to sell")] long amount) {
-            Stock stock = Bot.Database.Table<Stock>().FirstOrDefault(x => x.Name == name);
-            UserAccount user = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
+            Stock stock = Bot.Modules.Economy.GetStock(name);
             if(stock == null) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = "Nonexistent stock!",
@@ -68,10 +77,8 @@ namespace DiscordBotRewrite.Commands {
                 }, true);
                 return;
             }
+            UserAccount user = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
             UserStockInfo stockInfo = Bot.Modules.Economy.GetStockInfo((long)ctx.User.Id, stock.Name);
-
-
-            long price = stock.ShareCost * amount;
 
             if(stockInfo.Amount < amount) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -80,8 +87,8 @@ namespace DiscordBotRewrite.Commands {
                 });
                 return;
             }
-            stockInfo.Amount -= amount;
-            Bot.Database.Update(stockInfo);
+            long price = stock.ShareCost * amount;
+            stockInfo.ModifyAmount(-amount);
             user.ModifyBalance(price);
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
