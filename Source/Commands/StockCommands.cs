@@ -1,7 +1,9 @@
-﻿using DiscordBotRewrite.Modules;
+﻿using DiscordBotRewrite.Extensions;
+using DiscordBotRewrite.Modules;
 using DiscordBotRewrite.Modules.Economy;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
+using SQLiteNetExtensions.Extensions;
 
 namespace DiscordBotRewrite.Commands {
 
@@ -27,7 +29,7 @@ namespace DiscordBotRewrite.Commands {
                 .WithTitle(s.Name)
                 .WithColor(Bot.Style.DefaultColor)
                 .WithImageUrl($"attachment://{Path.GetFileName(imagePath)}")
-                .WithDescription($"${s.ShareCost} ({(float)Math.Round((float)(s.ShareCost - s.PriceHistory[0]) * 10000 / s.PriceHistory[0]) / 100f}%)");
+                .WithDescription($"${s.ShareCost} ({s.GetOverallEarningPercentage()}%)");
 
             using(var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read)) {
                 await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(embed).AddFile(Path.GetFileName(imagePath), fs));
@@ -37,12 +39,34 @@ namespace DiscordBotRewrite.Commands {
 
         [SlashCommand("overview", "Get a quick rundown on all stocks")]
         public async Task Overview(InteractionContext ctx) {
-            throw new NotImplementedException();
+            List<Stock> stocks = Bot.Database.GetAllWithChildren<Stock>().ToList();
+            string output = "";
+
+            foreach(Stock stock in stocks) {
+                output += $"{stock.Name.ToBold()}: ${stock.ShareCost} ({stock.GetOverallEarningPercentage()}%)\n";
+            }
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Title = "Stock Overview",
+                Description = output,
+                Color = Bot.Style.DefaultColor
+            });
         }
 
         [SlashCommand("posession", "See the stocks you own")]
         public async Task Owned(InteractionContext ctx) {
-            throw new NotImplementedException();
+            List<UserStockInfo> ownedStocks = Bot.Database.Table<UserStockInfo>().ToList();
+
+            string output = "";
+
+            foreach(UserStockInfo info in ownedStocks) {
+                Stock stock = Bot.Modules.Economy.GetStock(info.StockName);
+                output += $"{stock.Name.ToBold()}: {info.Amount} (${stock.ShareCost * info.Amount})\n";
+            }
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Title = "Your Shares",
+                Description = output,
+                Color = Bot.Style.DefaultColor
+            });
         }
 
         [SlashCommand("buy", "Purchase Stocks")]
