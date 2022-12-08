@@ -9,6 +9,7 @@ namespace DiscordBotRewrite.Commands {
     class StockCommands : ApplicationCommandModule {
         [SlashCommand("detailed", "Get a detailed view of a single stock")]
         public async Task DetailedView(InteractionContext ctx, [Option("Name", "Name of the stock")] string name) {
+            name = name.ToUpper();
             Stock s = Bot.Modules.Economy.GetStock(name);
 
             if(s == null) {
@@ -19,10 +20,19 @@ namespace DiscordBotRewrite.Commands {
                 return;
             }
 
-            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                Description = $"{s.Name}, {s.LastEarnings * 100}%, ${s.ShareCost}",
-                Color = Bot.Style.DefaultColor
-            });
+            StockMarket.CreateStockGraph(name, ctx.User.Id);
+
+            string imagePath = $"StockImages/img{ctx.User.Id}.png";
+            var embed = new DiscordEmbedBuilder()
+                .WithTitle(s.Name)
+                .WithColor(Bot.Style.DefaultColor)
+                .WithImageUrl($"attachment://{Path.GetFileName(imagePath)}")
+                .WithDescription($"${s.ShareCost} ({(float)Math.Round((float)(s.ShareCost - s.PriceHistory[0]) * 10000 / s.PriceHistory[0]) / 100f}%)");
+
+            using(var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read)) {
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(embed).AddFile(Path.GetFileName(imagePath), fs));
+            }
+            File.Delete(imagePath);
         }
 
         [SlashCommand("overview", "Get a quick rundown on all stocks")]
@@ -37,6 +47,7 @@ namespace DiscordBotRewrite.Commands {
 
         [SlashCommand("buy", "Purchase Stocks")]
         public async Task Buy(InteractionContext ctx, [Option("Name", "Name of the stock")] string name, [Option("Amount", "Amount to buy")] long amount) {
+            name = name.ToUpper();
             Stock stock = Bot.Modules.Economy.GetStock(name);
             if(stock == null) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -58,7 +69,8 @@ namespace DiscordBotRewrite.Commands {
 
             UserStockInfo stockInfo = Bot.Modules.Economy.GetStockInfo((long)ctx.User.Id, stock.Name);
             stockInfo.ModifyAmount(amount);
-            Bot.Database.Update(stockInfo);
+
+            stock.ModifySales(amount);
 
             user.ModifyBalance(-price);        
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -69,6 +81,7 @@ namespace DiscordBotRewrite.Commands {
 
         [SlashCommand("sell", "Sell Stocks")]
         public async Task Sell(InteractionContext ctx, [Option("Name", "Name of the stock")] string name, [Option("Amount", "Amount to sell")] long amount) {
+            name = name.ToUpper();
             Stock stock = Bot.Modules.Economy.GetStock(name);
             if(stock == null) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -90,6 +103,7 @@ namespace DiscordBotRewrite.Commands {
             long price = stock.ShareCost * amount;
             stockInfo.ModifyAmount(-amount);
             user.ModifyBalance(price);
+            stock.ModifySales(-amount);
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"You sold {amount} shares of {name} for ${price}!",

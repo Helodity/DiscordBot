@@ -1,7 +1,5 @@
-﻿using System;
-using SQLite;
+﻿using SQLite;
 using SQLiteNetExtensions.Attributes;
-using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite.Modules.Economy {
 
@@ -13,7 +11,7 @@ namespace DiscordBotRewrite.Modules.Economy {
         [Column("name")]
         public string Name { get; set; }
         [Column("cost")]
-        public int ShareCost { get; set; }
+        public long ShareCost { get; set; }
 
         [Column("momentum")]
         public float Momentum { get; set; }
@@ -28,10 +26,10 @@ namespace DiscordBotRewrite.Modules.Economy {
         public float LastEarnings { get; set; }
 
         [TextBlob("PriceHistoryBlobbed")]
-        public List<int> PriceHistory { get; set; }
+        public List<long> PriceHistory { get; set; }
         public string PriceHistoryBlobbed { get; set; }
 
-        public Stock() {}
+        public Stock() { }
 
         public Stock(string name, int initialCost, int priceVolality, int momentumVolatility) {
             Name = name;
@@ -40,13 +38,18 @@ namespace DiscordBotRewrite.Modules.Economy {
             ShareCost = initialCost;
             LastEarnings = 0;
             Momentum = 0;
-            PriceHistory= new();
+            PriceHistory = new();
         }
 
-
         public void SimulateStep() {
-            LastEarnings = ((float)GenerateRandomNumber(-10, 10) * PriceVolatility / 1000) + (float)Momentum / 100;
-            float momentumShift = ((float)GenerateRandomNumber(-100, 100) / 100 + LastEarnings) * MomentumVolatility;
+            float momentumShift = ((float)GenerateRandomNumber(-100, 100) / 100 + LastEarnings + 0.01f) * MomentumVolatility;
+            Momentum += momentumShift;
+            if(Momentum > 2)
+                Momentum = 2;
+            if(Momentum < -2)
+                Momentum = -2;
+
+            LastEarnings = (float)GenerateRandomNumber(-40, 40) * PriceVolatility / 10000 + (float)Momentum / 100;
 
             float toChange = ShareCost * LastEarnings;
             if(toChange > -1 && toChange < 1) {
@@ -56,20 +59,20 @@ namespace DiscordBotRewrite.Modules.Economy {
             if(PriceHistory == null)
                 PriceHistory = new();
 
+            ShareCost += (long)Math.Floor(toChange);
+            if(ShareCost < 10)
+                ShareCost = 10;
+
             PriceHistory.Add(ShareCost);
-            if(PriceHistory.Count > 10)
+            if(PriceHistory.Count > 100)
                 PriceHistory.RemoveAt(0);
-
-            ShareCost += (int)Math.Floor(toChange);
-
-            if(ShareCost < 100)
-                ShareCost = 100;
-
-            Momentum += momentumShift;
-            if(Momentum > 2)
-                Momentum = 2;
-            if(Momentum < -2)
-                Momentum = -2;
         }
+
+        public void ModifySales(long amount, bool update = true) {
+            Momentum += amount / 100f;
+            if(update)
+                Bot.Database.Update(this);
+        }
+
     }
 }

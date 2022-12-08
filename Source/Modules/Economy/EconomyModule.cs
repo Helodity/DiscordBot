@@ -5,6 +5,7 @@ using DiscordBotRewrite.Modules.Economy;
 using DiscordBotRewrite.Modules.Economy.Gambling;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
+using SQLiteNetExtensions.Extensions;
 
 namespace DiscordBotRewrite.Modules
 {
@@ -56,7 +57,7 @@ namespace DiscordBotRewrite.Modules
         }
 
         public Stock GetStock(string name) {
-            return Bot.Database.Table<Stock>().FirstOrDefault(x => x.Name == name);
+            return Bot.Database.GetAllWithChildren<Stock>().FirstOrDefault(x => x.Name == name);
         }
 
         #endregion
