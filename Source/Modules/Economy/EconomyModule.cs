@@ -94,6 +94,17 @@ namespace DiscordBotRewrite.Modules
             return true;
         }
 
+        public async Task<bool> PreventSelfTargetAsync(InteractionContext ctx, DiscordUser user) {
+            if(user == ctx.User) {
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = $"You can't target yourself!",
+                    Color = Bot.Style.ErrorColor
+                });
+                return false;
+            }
+            return true;
+        }
+
         public async Task<bool> CheckForProperBetAsync(InteractionContext ctx, long bet) {
             UserAccount account = GetAccount((long)ctx.User.Id);
             if(bet < 0) {

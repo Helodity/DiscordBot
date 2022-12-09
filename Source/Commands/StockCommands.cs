@@ -52,9 +52,13 @@ namespace DiscordBotRewrite.Commands {
             });
         }
 
+
         [SlashCommand("posession", "See the stocks you own")]
-        public async Task Owned(InteractionContext ctx) {
-            long castedUserID = (long)ctx.User.Id;
+        public async Task Owned(InteractionContext ctx, [Option("user", "Who are we checking?")] DiscordUser user = null) {
+            if(user == null)
+                user = ctx.User;
+
+            long castedUserID = (long)user.Id;
             List<UserStockInfo> ownedStocks = Bot.Database.Table<UserStockInfo>().Where(x =>x.UserId == castedUserID).ToList();
 
             string output = "";
@@ -64,7 +68,7 @@ namespace DiscordBotRewrite.Commands {
                 output += $"{stock.Name.ToBold()}: {info.Amount} (${stock.ShareCost * info.Amount})\n";
             }
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                Title = "Your Shares",
+                Title = $"{user.Username}'s Shares",
                 Description = output,
                 Color = Bot.Style.DefaultColor
             });

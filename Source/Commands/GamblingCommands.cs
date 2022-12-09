@@ -250,6 +250,7 @@ namespace DiscordBotRewrite.Commands
         public async Task RPS(InteractionContext ctx, [Option("opponent", "Who to challenge?")] DiscordUser opponent, [Option("bet", "How much money to lose?")] long bet) {
             if(!await Bot.Modules.Economy.CheckForProperBetAsync(ctx, bet)) return;
             if(!await Bot.Modules.Economy.CheckForProperTargetAsync(ctx, opponent)) return;
+            if(!await Bot.Modules.Economy.PreventSelfTargetAsync(ctx, opponent)) return;
 
             DiscordButtonComponent[] rpsButtons = {
                 new DiscordButtonComponent(ButtonStyle.Primary, "rock", "Rock"),
