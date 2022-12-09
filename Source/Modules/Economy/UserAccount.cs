@@ -12,7 +12,9 @@ namespace DiscordBotRewrite.Modules {
         public long Balance { get; set; }
         [Column("bank")]
         public long Bank { get; set; }
-        public long NetWorth => Balance + Bank;
+        [Column("Debt")]
+        public long Debt { get; set; }
+        public long NetWorth => Balance + Bank - Debt;
         [Column("bank_max")]
         public long BankMax { get; set; }
         [Column("daily_cooldown")]
@@ -28,6 +30,7 @@ namespace DiscordBotRewrite.Modules {
         public UserAccount() {
             Balance = 0;
             Bank = 0;
+            Debt = 0;
             BankMax = 1000;
             DailyCooldown = DateTime.Now;
             Streak = 0;
@@ -44,13 +47,39 @@ namespace DiscordBotRewrite.Modules {
         }
         #endregion
 
-        public void ModifyBalance(long amount, bool update = true) {
+        public void Pay(long amount) {
+            if(amount < 0) {
+                Receive(-amount);
+                return;
+            }
+
+
+            long amtFromBank = Math.Max(0, amount - Balance);
+            long amtToDebt = Math.Max(0, amtFromBank - Bank);
+            Debt += amtToDebt;
+            ModifyBank(-amtFromBank);
+            ModifyBalance(-amount);
+        }
+        public void Receive(long amount) {
+            if(amount < 0) {
+                Pay(-amount);
+                return;
+            }
+            if(Debt > 0) {
+                long toDebt = Math.Min(amount, Debt);
+                Debt -= toDebt;
+                amount -= toDebt;
+            }
+            ModifyBalance(amount);
+        }
+
+        void ModifyBalance(long amount, bool update = true) {
             amount = Math.Max(-Balance, amount);
             Balance += amount;
             if(update)
                 Bot.Database.Update(this);
         }
-        public void ModifyBank(long amount, bool update = true) {
+        void ModifyBank(long amount, bool update = true) {
             amount = Math.Max(-Bank, amount);
             Bank = Math.Min(Bank + amount, BankMax);
             if(update)
@@ -87,6 +116,7 @@ namespace DiscordBotRewrite.Modules {
             if(update)
                 Bot.Database.Update(this);
         }
+
         //Returns amount put in bank
         public long TransferToBank(long amount, bool update = true) {
             if(Bank + amount > BankMax)

@@ -38,8 +38,8 @@ namespace DiscordBotRewrite.Modules
             if(account1.Balance < value)
                 value = account1.Balance;
 
-            account1.ModifyBalance(-value);
-            account2.ModifyBalance(value);
+            account1.Pay(value);
+            account2.Receive(value);
             return value;
         }
         public double GetMultiplier(int streak, double scale = 1, double exponent = 1) {
@@ -108,7 +108,7 @@ namespace DiscordBotRewrite.Modules
         public async Task<bool> CheckForProperBetAsync(InteractionContext ctx, long bet) {
             UserAccount account = GetAccount((long)ctx.User.Id);
             if(bet < 0) {
-                account.ModifyBalance(-1);
+                account.Pay(1);
                 Bot.Database.Update(account);
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"Alright bitchass stop trying to game the system. I'm taking a dollar from you cuz of that.",

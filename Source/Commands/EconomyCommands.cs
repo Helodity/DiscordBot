@@ -88,7 +88,7 @@ namespace DiscordBotRewrite.Commands {
 
             long amount = (long)(100 * Bot.Modules.Economy.GetMultiplier(account.Streak - 1, 0.2, 1.3));
             account.SetDailyCooldown(DateTime.Now.AddHours(20), false);
-            account.ModifyBalance(amount);
+            account.Receive(amount);
 
             string streakText = string.Empty;
             if(!lostStreak) {
@@ -168,7 +168,7 @@ namespace DiscordBotRewrite.Commands {
                 embed.WithDescription($"Your bank has been expanded by ${amount}!");
                 embed.WithColor(Bot.Style.SuccessColor);
                 await interactivityResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(embed));
-                account.ModifyBalance(-cost, false);
+                account.Pay(cost);
                 account.ModifyBankMax(amount);
             }
 
@@ -235,7 +235,7 @@ namespace DiscordBotRewrite.Commands {
                     amtFromBank = self.TransferToBalance(amount - self.Balance);
                 }
 
-                self.ModifyBalance(-amount);
+                self.Pay(amount);
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"You were caught and forced to pay ${amount}! {(amtFromBank > 0 ? $"${amtFromBank} was taken from your bank to pay the fine!" : "")}",
                     Color = Bot.Style.SuccessColor

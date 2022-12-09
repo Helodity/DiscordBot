@@ -34,7 +34,7 @@ namespace DiscordBotRewrite.Commands
             };
             InteractivityResult<ComponentInteractionCreateEventArgs> interactivityResult = new();
             for(int gamesPlayed = 0; true; gamesPlayed++) {
-                account.ModifyBalance(-bet);
+                account.Pay(bet);
                 Deck deck = Deck.GetStandardDeck();
                 List<Card> dealerHand = deck.Draw(2);
                 List<Card> playerHand = deck.Draw(2);
@@ -100,7 +100,7 @@ namespace DiscordBotRewrite.Commands
                 if(playerValue > dealerValue || dealerValue > 21) {
                     embed.WithColor(Bot.Style.SuccessColor);
                     stateString += $"You win **${bet}**!";
-                    account.ModifyBalance(bet * 2);
+                    account.Receive(bet * 2);
                 } else {
                     embed.WithColor(Bot.Style.ErrorColor);
                     stateString += $"You lose **${bet}**!";
@@ -164,7 +164,7 @@ namespace DiscordBotRewrite.Commands
             };
             InteractivityResult<ComponentInteractionCreateEventArgs> interactivityResult = new();
             for(int gamesPlayed = 0; true; gamesPlayed++) {
-                account.ModifyBalance(-bet);
+                account.Pay(bet);
                 long effectiveBet = (long)Math.Pow(bet, 0.99);
                 Deck deck = Deck.GetStandardDeck();
                 Card anchorCard = deck.Draw();
@@ -208,7 +208,7 @@ namespace DiscordBotRewrite.Commands
                     if(deck.Size() == 0) {
                         embed.WithDescription($"Congrats, {ctx.User.Mention}, I drew {nextCard}! There are no cards left!.\n " +
                            $"You win {currentWinnings}!");
-                        account.ModifyBalance(currentWinnings);
+                        account.Receive(currentWinnings);
                         break;
                     }
                     embed.WithDescription($"Congrats, {ctx.User.Mention}, I drew {nextCard}! There are {deck.Size()}/52 cards left!.\n " +
@@ -221,11 +221,11 @@ namespace DiscordBotRewrite.Commands
                     embed.WithDescription($"You cashed out with ${currentWinnings}.");
                     if(interactivityResult.TimedOut) {
                         await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
-                        account.ModifyBalance(currentWinnings);
+                        account.Receive(currentWinnings);
                         return;
                     }
                     if(interactivityResult.Result.Id == "quit") {
-                        account.ModifyBalance(currentWinnings);
+                        account.Receive(currentWinnings);
                         break;
                     }
                     anchorCard = nextCard;

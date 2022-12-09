@@ -40,9 +40,9 @@ namespace DiscordBotRewrite.Modules.Economy {
                 stock = new Stock(s, 250, GenerateRandomNumber(1, 10), GenerateRandomNumber(1, 2));
                 Bot.Database.Insert(stock);
             }
-            UpdateMarketWithoutEventRequeue();
+            UpdateMarket();
 
-            UpdateEvent = new TimeBasedEvent(TimeSpan.FromMinutes(1), UpdateMarket);
+            UpdateEvent = new TimeBasedEvent(TimeSpan.FromMinutes(1), TimedMarketUpdate);
             UpdateEvent.Start();
         }
 
@@ -90,7 +90,7 @@ namespace DiscordBotRewrite.Modules.Economy {
 
             surface.Snapshot().SaveToPng($"StockImages/img{userId}.png");
         }
-        static void UpdateMarketWithoutEventRequeue() {
+        static void UpdateMarket() {
             List<Stock> stocks = Bot.Database.GetAllWithChildren<Stock>();
 
             foreach(Stock stock in stocks) {
@@ -99,14 +99,9 @@ namespace DiscordBotRewrite.Modules.Economy {
             }
         }
 
-        public static void UpdateMarket() {
-            List<Stock> stocks = Bot.Database.GetAllWithChildren<Stock>();
-
-            foreach(Stock stock in stocks) {
-                stock.SimulateStep();
-                Bot.Database.UpdateWithChildren(stock);    
-            }
-                UpdateEvent.Start();
+        public static void TimedMarketUpdate() {
+            UpdateMarket();
+            UpdateEvent.Start();
         }
 
     }

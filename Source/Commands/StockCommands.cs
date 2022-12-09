@@ -101,7 +101,7 @@ namespace DiscordBotRewrite.Commands {
 
             stock.ModifySales(amount);
 
-            user.ModifyBalance(-price);        
+            user.Pay(price);        
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"You bought {amount} shares of {name} for ${price}!",
                 Color = Bot.Style.DefaultColor
@@ -131,7 +131,7 @@ namespace DiscordBotRewrite.Commands {
             }
             long price = stock.ShareCost * amount;
             stockInfo.ModifyAmount(-amount);
-            user.ModifyBalance(price);
+            user.Receive(price);
             stock.ModifySales(-amount);
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
