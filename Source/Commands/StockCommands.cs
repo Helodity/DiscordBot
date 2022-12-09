@@ -54,7 +54,8 @@ namespace DiscordBotRewrite.Commands {
 
         [SlashCommand("posession", "See the stocks you own")]
         public async Task Owned(InteractionContext ctx) {
-            List<UserStockInfo> ownedStocks = Bot.Database.Table<UserStockInfo>().ToList();
+            long castedUserID = (long)ctx.User.Id;
+            List<UserStockInfo> ownedStocks = Bot.Database.Table<UserStockInfo>().Where(x =>x.UserId == castedUserID).ToList();
 
             string output = "";
 

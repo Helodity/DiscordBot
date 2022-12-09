@@ -1,5 +1,6 @@
 ﻿using SQLite;
 using SQLiteNetExtensions.Attributes;
+using SQLiteNetExtensions.Extensions;
 
 namespace DiscordBotRewrite.Modules.Economy {
 
@@ -38,7 +39,7 @@ namespace DiscordBotRewrite.Modules.Economy {
             ShareCost = initialCost;
             LastEarnings = 0;
             Momentum = 0;
-            PriceHistory = new();
+            PriceHistory = new() {initialCost};
         }
 
         public void SimulateStep() {
@@ -66,12 +67,12 @@ namespace DiscordBotRewrite.Modules.Economy {
             PriceHistory.Add(ShareCost);
             if(PriceHistory.Count > 100)
                 PriceHistory.RemoveAt(0);
-        }
 
+        }
         public void ModifySales(long amount, bool update = true) {
             Momentum += amount / 100f;
             if(update)
-                Bot.Database.Update(this);
+                Bot.Database.UpdateWithChildren(this);
         }
 
         public float GetOverallEarningPercentage() {

@@ -16,7 +16,11 @@ namespace DiscordBotRewrite.Modules.Economy {
             "WOLF",
             "PWR",
             "MMC",
-            "WD"
+            "WD",
+            "SHWG",
+            "LORD",
+            "KMN",
+            "CRSN"
         };
 
 
@@ -24,14 +28,20 @@ namespace DiscordBotRewrite.Modules.Economy {
             Bot.Database.CreateTable<UserStockInfo>();
             Bot.Database.CreateTable<Stock>();
             foreach(string s in StockNames) {
-                Stock stock = Bot.Database.Table<Stock>().FirstOrDefault(x => x.Name == s);
-                if(stock != null) continue;
+                Stock stock = Bot.Database.GetAllWithChildren<Stock>().FirstOrDefault(x => x.Name == s);
+                if(stock != null) {
+                    if(stock.PriceHistory == null) {
+                        stock.PriceHistory = new() {stock.ShareCost}; //Put a placeholder value to prevent an error
+                        Bot.Database.UpdateWithChildren(stock);
+                    }
+                    continue;
+                };
 
                 stock = new Stock(s, 250, GenerateRandomNumber(1, 10), GenerateRandomNumber(1, 2));
                 Bot.Database.Insert(stock);
             }
 
-            UpdateEvent = new TimeBasedEvent(TimeSpan.FromSeconds(1), UpdateMarket);
+            UpdateEvent = new TimeBasedEvent(TimeSpan.FromMinutes(10), UpdateMarket);
             UpdateEvent.Start();
         }
 
