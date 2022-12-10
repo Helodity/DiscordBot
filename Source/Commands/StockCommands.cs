@@ -52,14 +52,13 @@ namespace DiscordBotRewrite.Commands {
             });
         }
 
-
         [SlashCommand("posession", "See the stocks you own")]
         public async Task Owned(InteractionContext ctx, [Option("user", "Who are we checking?")] DiscordUser user = null) {
             if(user == null)
                 user = ctx.User;
 
             long castedUserID = (long)user.Id;
-            List<UserStockInfo> ownedStocks = Bot.Database.Table<UserStockInfo>().Where(x =>x.UserId == castedUserID).ToList();
+            List<UserStockInfo> ownedStocks = Bot.Database.Table<UserStockInfo>().Where(x =>x.UserId == castedUserID && x.Amount > 0).ToList();
 
             string output = "";
 
@@ -77,6 +76,15 @@ namespace DiscordBotRewrite.Commands {
         [SlashCommand("buy", "Purchase Stocks")]
         public async Task Buy(InteractionContext ctx, [Option("Name", "Name of the stock")] string name, [Option("Amount", "Amount to buy")] long amount) {
             name = name.ToUpper();
+
+            if(amount < 1) {
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = "Can't buy that many shares",
+                    Color = Bot.Style.ErrorColor
+                }, true);
+                return;
+            }
+
             Stock stock = Bot.Modules.Economy.GetStock(name);
             if(stock == null) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -111,6 +119,15 @@ namespace DiscordBotRewrite.Commands {
         [SlashCommand("sell", "Sell Stocks")]
         public async Task Sell(InteractionContext ctx, [Option("Name", "Name of the stock")] string name, [Option("Amount", "Amount to sell")] long amount) {
             name = name.ToUpper();
+
+            if(amount < 1) {
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = "Can't sell that many shares!",
+                    Color = Bot.Style.ErrorColor
+                }, true);
+                return;
+            }
+
             Stock stock = Bot.Modules.Economy.GetStock(name);
             if(stock == null) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -136,6 +153,48 @@ namespace DiscordBotRewrite.Commands {
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"You sold {amount} shares of {name} for ${price}!",
+                Color = Bot.Style.DefaultColor
+            });
+        }
+
+        public async Task Short(InteractionContext ctx, [Option("Name", "Name of the stock")] string name, [Option("Amount", "Amount to short.")] long amount) {
+            name = name.ToUpper();
+
+            if(amount < 1) {
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = "Can't short that many shares",
+                    Color = Bot.Style.ErrorColor
+                }, true);
+                return;
+            }
+
+            Stock stock = Bot.Modules.Economy.GetStock(name);
+            if(stock == null) {
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = "Nonexistent stock!",
+                    Color = Bot.Style.ErrorColor
+                }, true);
+                return;
+            }
+
+            UserAccount user = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
+            long price = stock.ShareCost * amount;
+            if(price >= user.Balance) {
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = $"You can't afford that! It would cost ${price}!",
+                    Color = Bot.Style.ErrorColor
+                });
+                return;
+            }
+
+            UserStockInfo stockInfo = Bot.Modules.Economy.GetStockInfo((long)ctx.User.Id, stock.Name);
+            stockInfo.ModifyAmount(-amount);
+
+            stock.ModifySales(-amount);
+
+            user.Pay(price);
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Description = $"You shorted {amount} shares of {name} for ${price}!",
                 Color = Bot.Style.DefaultColor
             });
         }

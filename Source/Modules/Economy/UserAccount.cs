@@ -72,19 +72,6 @@ namespace DiscordBotRewrite.Modules {
             }
             ModifyBalance(amount);
         }
-
-        void ModifyBalance(long amount, bool update = true) {
-            amount = Math.Max(-Balance, amount);
-            Balance += amount;
-            if(update)
-                Bot.Database.Update(this);
-        }
-        void ModifyBank(long amount, bool update = true) {
-            amount = Math.Max(-Bank, amount);
-            Bank = Math.Min(Bank + amount, BankMax);
-            if(update)
-                Bot.Database.Update(this);
-        }
         public void ModifyBankMax(long amount, bool update = true) {
             amount = Math.Max(-BankMax, amount);
             BankMax += amount;
@@ -142,6 +129,20 @@ namespace DiscordBotRewrite.Modules {
                 Bot.Database.Update(this);
 
             return amount;
+        }
+
+
+        void ModifyBalance(long amount, bool update = true) {
+            amount = Math.Max(-Balance, amount);
+            Balance += amount;
+            if(update)
+                Bot.Database.Update(this);
+        }
+        void ModifyBank(long amount, bool update = true) {
+            amount = Math.Max(-Bank, amount);
+            Bank = Math.Min(Bank + amount, BankMax);
+            if(update)
+                Bot.Database.Update(this);
         }
     }
 }

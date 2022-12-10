@@ -20,7 +20,8 @@ namespace DiscordBotRewrite.Modules.Economy {
             "SHWG",
             "LORD",
             "KMN",
-            "CRSN"
+            "CRSN",
+            "HAY"
         };
 
 
