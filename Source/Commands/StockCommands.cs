@@ -3,33 +3,39 @@ using DiscordBotRewrite.Modules;
 using DiscordBotRewrite.Modules.Economy;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
-using SQLiteNetExtensions.Extensions;
 
 namespace DiscordBotRewrite.Commands {
 
     [SlashCommandGroup("stock", "Throw away your money")]
     class StockCommands : ApplicationCommandModule {
-        [SlashCommand("detailed", "Get a detailed view of a single stock")]
-        public async Task DetailedView(InteractionContext ctx, [Option("Name", "Name of the stock")] string name) {
-            name = name.ToUpper();
-            Stock s = Bot.Modules.Economy.GetStock(name);
-
-            if(s == null) {
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = "Nonexistent stock!",
-                    Color = Bot.Style.ErrorColor
-                }, true);
-                return;
-            }
-
-            StockMarket.CreateStockGraph(name, ctx.User.Id);
+       
+        [SlashCommand("overview", "Get a quick rundown on all stocks")]
+        public async Task Overview(InteractionContext ctx, [Option("Name", "Name of the stock")] string name = null) {
 
             string imagePath = $"StockImages/img{ctx.User.Id}.png";
             var embed = new DiscordEmbedBuilder()
-                .WithTitle(s.Name)
                 .WithColor(Bot.Style.DefaultColor)
-                .WithImageUrl($"attachment://{Path.GetFileName(imagePath)}")
-                .WithDescription($"${s.ShareCost} ({s.GetOverallEarningPercentage()}%)");
+                .WithImageUrl($"attachment://{Path.GetFileName(imagePath)}");
+
+            if(name != null) {
+                name = name.ToUpper();
+                Stock stock = Bot.Modules.Economy.GetStock(name);
+                if(stock == null) {
+                    await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                        Description = "Nonexistent stock!",
+                        Color = Bot.Style.ErrorColor
+                    }, true);
+                    return;
+                }
+                StockMarket.CreateDetailedGraph(stock, ctx.User.Id);
+                embed
+                    .WithTitle(stock.Name)
+                    .WithDescription($"${stock.ShareCost} ({stock.GetOverallEarningPercentage()}%)");
+             
+            } else {
+                StockMarket.CreateOverviewGraph(ctx.User.Id);
+                embed.WithTitle("Stock Overview");
+            }
 
             using(var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read)) {
                 await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(embed).AddFile(Path.GetFileName(imagePath), fs));
@@ -37,22 +43,7 @@ namespace DiscordBotRewrite.Commands {
             File.Delete(imagePath);
         }
 
-        [SlashCommand("overview", "Get a quick rundown on all stocks")]
-        public async Task Overview(InteractionContext ctx) {
-            List<Stock> stocks = Bot.Database.GetAllWithChildren<Stock>().ToList();
-            string output = "";
-
-            foreach(Stock stock in stocks) {
-                output += $"{stock.Name.ToBold()}: ${stock.ShareCost} ({stock.GetOverallEarningPercentage()}%)\n";
-            }
-            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                Title = "Stock Overview",
-                Description = output,
-                Color = Bot.Style.DefaultColor
-            });
-        }
-
-        [SlashCommand("posession", "See the stocks you own")]
+        [SlashCommand("posession", "See someone's owned stocks")]
         public async Task Owned(InteractionContext ctx, [Option("user", "Who are we checking?")] DiscordUser user = null) {
             if(user == null)
                 user = ctx.User;
@@ -153,48 +144,6 @@ namespace DiscordBotRewrite.Commands {
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"You sold {amount} shares of {name} for ${price}!",
-                Color = Bot.Style.DefaultColor
-            });
-        }
-
-        public async Task Short(InteractionContext ctx, [Option("Name", "Name of the stock")] string name, [Option("Amount", "Amount to short.")] long amount) {
-            name = name.ToUpper();
-
-            if(amount < 1) {
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = "Can't short that many shares",
-                    Color = Bot.Style.ErrorColor
-                }, true);
-                return;
-            }
-
-            Stock stock = Bot.Modules.Economy.GetStock(name);
-            if(stock == null) {
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = "Nonexistent stock!",
-                    Color = Bot.Style.ErrorColor
-                }, true);
-                return;
-            }
-
-            UserAccount user = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
-            long price = stock.ShareCost * amount;
-            if(price >= user.Balance) {
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = $"You can't afford that! It would cost ${price}!",
-                    Color = Bot.Style.ErrorColor
-                });
-                return;
-            }
-
-            UserStockInfo stockInfo = Bot.Modules.Economy.GetStockInfo((long)ctx.User.Id, stock.Name);
-            stockInfo.ModifyAmount(-amount);
-
-            stock.ModifySales(-amount);
-
-            user.Pay(price);
-            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                Description = $"You shorted {amount} shares of {name} for ${price}!",
                 Color = Bot.Style.DefaultColor
             });
         }

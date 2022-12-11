@@ -24,7 +24,7 @@ namespace DiscordBotRewrite.Commands {
             UserAccount account = Bot.Modules.Economy.GetAccount((long)user.Id);
             string description = $"Balance: ${account.Balance}\nBank: ${account.Bank}/${account.BankMax}";
             if(account.Debt > 0)
-                description += $"\n **Debt**: {account.Debt}";
+                description += $"\n **Debt**: ${account.Debt}";
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Title = $"{user.Username}'s Account",
                 Description = description,
@@ -231,12 +231,14 @@ namespace DiscordBotRewrite.Commands {
             self.SetRobCooldown(DateTime.Now.AddSeconds(30));
             int rng = GenerateRandomNumber(Math.Min((int)self.Karma, 25), 100);
             if(rng <= 0) {
-                long amount = Math.Max((long)(target.Balance * 0.01 * -rng), 1);
+                long targetBalance = Math.Max(target.NetWorth, 1);
+                long amount = Math.Max((long)(targetBalance * 0.001 * -rng), 1);
 
-                long amtFromBank = 0;
+                long preDebt = self.Debt;
                 self.Pay(amount);
+
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = $"You were caught and forced to pay ${amount}! {(amtFromBank > 0 ? $"${amtFromBank} was taken from your bank to pay the fine!" : "")}",
+                    Description = $"You were caught and forced to pay ${amount}! {(preDebt < self.Debt ? $"You had to take a loan of ${self.Debt - preDebt} to pay the fine!" : "")}",
                     Color = Bot.Style.SuccessColor
                 });
             } else if(rng == 0) {

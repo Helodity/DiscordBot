@@ -75,8 +75,8 @@ namespace DiscordBotRewrite.Modules.Economy {
                 Bot.Database.UpdateWithChildren(this);
         }
 
-        public float GetOverallEarningPercentage() {
-            return (float)Math.Round((float)(ShareCost - PriceHistory[0]) * 10000 / PriceHistory[0]) / 100f;
+        public float GetOverallEarningPercentage(int decimals = 2) {
+            return (float)Math.Round((float)(ShareCost - PriceHistory[0]) * Math.Pow(10, 2 + decimals) / PriceHistory[0]) / (float)Math.Pow(10, decimals);
         }
 
 
