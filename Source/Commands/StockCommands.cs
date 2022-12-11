@@ -30,7 +30,7 @@ namespace DiscordBotRewrite.Commands {
                 StockMarket.CreateDetailedGraph(stock, ctx.User.Id);
                 embed
                     .WithTitle(stock.Name)
-                    .WithDescription($"${stock.ShareCost} ({stock.GetOverallEarningPercentage()}%)");
+                    .WithDescription($"${stock.ShareCost} ({stock.GetEarningsPercentString()})");
              
             } else {
                 StockMarket.CreateOverviewGraph(ctx.User.Id);

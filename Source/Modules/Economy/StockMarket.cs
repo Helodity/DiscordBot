@@ -101,7 +101,7 @@ namespace DiscordBotRewrite.Modules.Economy {
 
             int graphHeight = 100;
             int graphWidth = 180;
-            int spacingHeight = 25;
+            int spacingHeight = 50;
 
             int imgHeight = (graphHeight + spacingHeight) * rows;
             int imgWidth = graphWidth * graphsPerRow;
@@ -166,9 +166,8 @@ namespace DiscordBotRewrite.Modules.Economy {
 
                 paint.Color = SKColor.FromHsv(0, 0, 100);
                 paint.TextAlign = SKTextAlign.Left;
-                canvas.DrawText($"{stock.Name}", anchorX + 10, anchorY + spacingHeight - 3, paint);
-                paint.TextAlign = SKTextAlign.Right;
-                canvas.DrawText($"${stock.ShareCost}", anchorX + graphWidth - 10, anchorY + spacingHeight - 3, paint);
+                canvas.DrawText($"{stock.Name}", anchorX + 5, anchorY + spacingHeight / 2 - 3, paint);
+                canvas.DrawText($"${stock.ShareCost} ({stock.GetEarningsPercentString(1)})", anchorX + 5, anchorY + spacingHeight - 3, paint);
             }
 
             surface.Snapshot().SaveToPng($"StockImages/img{userId}.png");
