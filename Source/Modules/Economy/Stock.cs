@@ -45,10 +45,10 @@ namespace DiscordBotRewrite.Modules.Economy {
         public void SimulateStep() {
             float momentumShift = ((float)GenerateRandomNumber(-100, 100) / 100 + LastEarnings + 0.01f) * MomentumVolatility;
             Momentum += momentumShift;
-            if(Momentum > 2)
-                Momentum = 2;
-            if(Momentum < -2)
-                Momentum = -2;
+            if(Momentum > MomentumVolatility)
+                Momentum = MomentumVolatility;
+            if(Momentum < -MomentumVolatility)
+                Momentum = -MomentumVolatility;
 
             LastEarnings = (float)GenerateRandomNumber(-40, 40) * PriceVolatility / 10000 + (float)Momentum / 100;
 

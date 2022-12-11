@@ -39,7 +39,7 @@ namespace DiscordBotRewrite.Modules.Economy {
                     continue;
                 };
 
-                stock = new Stock(s, 250, GenerateRandomNumber(1, 10), GenerateRandomNumber(1, 2));
+                stock = new Stock(s, 250, GenerateRandomNumber(1, 10), GenerateRandomNumber(1, 3));
                 Bot.Database.Insert(stock);
             }
             UpdateMarket();
