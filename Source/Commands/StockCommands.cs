@@ -87,7 +87,7 @@ namespace DiscordBotRewrite.Commands {
 
             UserAccount user = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
             long price = stock.ShareCost * amount;
-            if(price >= user.Balance) {
+            if(price > user.Balance) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"You can't afford that! It would cost ${price}!",
                     Color = Bot.Style.ErrorColor

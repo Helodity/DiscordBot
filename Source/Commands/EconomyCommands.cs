@@ -198,6 +198,38 @@ namespace DiscordBotRewrite.Commands {
         }
         #endregion
 
+        #region Repayment
+        [SlashCommand("repayment", "Pay off your debt.")]
+        public async Task Repayment(InteractionContext ctx, [Option("amount", "How much to pay?")] long amount) {
+            UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
+
+            if(account.Debt <= 0) {
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = "You don't have a debt to pay off! Good on you!",
+                    Color = Bot.Style.ErrorColor
+                });
+                return;
+            }
+
+            if(amount < 0) {
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = "You know you actually need to pay something right?.",
+                    Color = Bot.Style.ErrorColor
+                });
+                return;
+            }
+
+            amount = Math.Min(amount, account.Debt);
+            account.Pay(amount);
+            account.ModifyDebt(-amount);
+
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Description = $"You paid ${amount} towards your debt!{(account.Debt <= 0 ? " You are now debt free!" : "" )}",
+                Color = Bot.Style.SuccessColor
+            });
+        }
+        #endregion
+
         #region Rob
         [SlashCommand("rob", "Take somebody's money!")]
         public async Task Rob(InteractionContext ctx, [Option("user", "Who are you stealing from?")] DiscordUser user) {

@@ -66,7 +66,7 @@ namespace DiscordBotRewrite.Modules {
                 return;
             }
             if(Debt > 0) {
-                long toDebt = Math.Min(amount, Debt);
+                long toDebt = Math.Min(amount / 2, Debt);
                 Debt -= toDebt;
                 amount -= toDebt;
             }
@@ -131,7 +131,11 @@ namespace DiscordBotRewrite.Modules {
             return amount;
         }
 
-
+        public void ModifyDebt(long amount, bool update = true) {
+            Debt += amount;
+            if(update)
+                Bot.Database.Update(this);
+        }
         void ModifyBalance(long amount, bool update = true) {
             amount = Math.Max(-Balance, amount);
             Balance += amount;
