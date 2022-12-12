@@ -21,7 +21,6 @@ namespace DiscordBotRewrite.Global {
 
         public bool IsOver => DateTime.Compare(DateTime.Now, EndTime) >= 0;
 
-
         public Cooldown() { }
 
 

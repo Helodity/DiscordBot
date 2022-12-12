@@ -38,7 +38,7 @@ namespace DiscordBotRewrite.Modules {
         }
         #endregion
 
-        public List<UserAccount> GetAllAccounts() {
+        public static List<UserAccount> GetAllAccounts() {
             return Bot.Database.Table<UserAccount>().ToList();
         }
 
