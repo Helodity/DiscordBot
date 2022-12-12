@@ -31,5 +31,14 @@ namespace DiscordBotRewrite.Modules.Economy {
         }
 
 
+        public static UserStockInfo GetStockInfo(long userId, string stockName) {
+            UserStockInfo account = Bot.Database.Table<UserStockInfo>().FirstOrDefault(x => x.UserId == userId && x.StockName == stockName);
+            if(account == null) {
+                account = new UserStockInfo(stockName, userId);
+                Bot.Database.Insert(account);
+            }
+            return account;
+        }
+
     }
 }

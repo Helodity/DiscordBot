@@ -26,7 +26,7 @@ namespace DiscordBotRewrite.Commands
                 new DiscordButtonComponent(ButtonStyle.Danger, "stand", "Stand"),
             };
 
-            UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
+            UserAccount account = UserAccount.GetAccount((long)ctx.User.Id);
             await ctx.DeferAsync();
             var interactivity = ctx.Client.GetInteractivity();
             var embed = new DiscordEmbedBuilder {
@@ -155,7 +155,7 @@ namespace DiscordBotRewrite.Commands
                 new DiscordButtonComponent(ButtonStyle.Success, "continue", "Keep Playing"),
                 new DiscordButtonComponent(ButtonStyle.Danger, "quit", "Cash Out"),
             };
-            UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
+            UserAccount account = UserAccount.GetAccount((long)ctx.User.Id);
             await ctx.DeferAsync();
 
             var interactivity = ctx.Client.GetInteractivity();
@@ -259,8 +259,8 @@ namespace DiscordBotRewrite.Commands
                 new DiscordButtonComponent(ButtonStyle.Danger, "decline", "Decline")
             };
 
-            UserAccount account1 = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
-            UserAccount account2 = Bot.Modules.Economy.GetAccount((long)opponent.Id);
+            UserAccount account1 = UserAccount.GetAccount((long)ctx.User.Id);
+            UserAccount account2 = UserAccount.GetAccount((long)opponent.Id);
 
             bet = Math.Min(Math.Min(account1.Balance, account2.Balance), bet);
 

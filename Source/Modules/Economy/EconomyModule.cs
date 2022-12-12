@@ -20,20 +20,12 @@ namespace DiscordBotRewrite.Modules
         public List<UserAccount> GetAllAccounts() {
             return Bot.Database.Table<UserAccount>().ToList();
         }
-        public UserAccount GetAccount(long userId) {
-            UserAccount account = Bot.Database.Table<UserAccount>().FirstOrDefault(x => x.UserId == userId);
-            if(account == null) {
-                account = new UserAccount(userId);
-                Bot.Database.Insert(account);
-            }
-            return account;
-        }
 
         public long Transfer(long id1, long id2, long value, bool allowNegative = false) {
             if(!allowNegative && value <= 0)
                 return 0;
-            UserAccount account1 = GetAccount(id1);
-            UserAccount account2 = GetAccount(id2);
+            UserAccount account1 = UserAccount.GetAccount(id1);
+            UserAccount account2 = UserAccount.GetAccount(id2);
 
             if(account1.Balance < value)
                 value = account1.Balance;
@@ -45,22 +37,6 @@ namespace DiscordBotRewrite.Modules
         public double GetMultiplier(int streak, double scale = 1, double exponent = 1) {
             return scale * Math.Pow(streak, exponent) + 1;
         }
-
-        #region Stocks
-        public UserStockInfo GetStockInfo(long userId, string stockName) {
-            UserStockInfo account = Bot.Database.Table<UserStockInfo>().FirstOrDefault(x => x.UserId == userId && x.StockName == stockName);
-            if(account == null) {
-                account = new UserStockInfo(stockName, userId);
-                Bot.Database.Insert(account);
-            }
-            return account;
-        }
-
-        public Stock GetStock(string name) {
-            return Bot.Database.GetAllWithChildren<Stock>().FirstOrDefault(x => x.Name == name);
-        }
-
-        #endregion
 
         #region Gambling
         public int CalculateBlackJackHandValue(List<Card> hand) {
@@ -106,7 +82,7 @@ namespace DiscordBotRewrite.Modules
         }
 
         public async Task<bool> CheckForProperBetAsync(InteractionContext ctx, long bet) {
-            UserAccount account = GetAccount((long)ctx.User.Id);
+            UserAccount account = UserAccount.GetAccount((long)ctx.User.Id);
             if(bet < 0) {
                 account.Pay(1);
                 Bot.Database.Update(account);

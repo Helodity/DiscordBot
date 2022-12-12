@@ -19,7 +19,7 @@ namespace DiscordBotRewrite.Commands {
 
             if(name != null) {
                 name = name.ToUpper();
-                Stock stock = Bot.Modules.Economy.GetStock(name);
+                Stock stock = Stock.GetStock(name);
                 if(stock == null) {
                     await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                         Description = "Nonexistent stock!",
@@ -54,7 +54,7 @@ namespace DiscordBotRewrite.Commands {
             string output = "";
 
             foreach(UserStockInfo info in ownedStocks) {
-                Stock stock = Bot.Modules.Economy.GetStock(info.StockName);
+                Stock stock = Stock.GetStock(info.StockName);
                 output += $"{stock.Name.ToBold()}: {info.Amount} (${stock.ShareCost * info.Amount})\n";
             }
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -76,7 +76,7 @@ namespace DiscordBotRewrite.Commands {
                 return;
             }
 
-            Stock stock = Bot.Modules.Economy.GetStock(name);
+            Stock stock = Stock.GetStock(name);
             if(stock == null) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = "Nonexistent stock!",
@@ -85,7 +85,7 @@ namespace DiscordBotRewrite.Commands {
                 return;
             }
 
-            UserAccount user = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
+            UserAccount user = UserAccount.GetAccount((long)ctx.User.Id);
             long price = stock.ShareCost * amount;
             if(price > user.Balance) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -95,7 +95,7 @@ namespace DiscordBotRewrite.Commands {
                 return;
             }
 
-            UserStockInfo stockInfo = Bot.Modules.Economy.GetStockInfo((long)ctx.User.Id, stock.Name);
+            UserStockInfo stockInfo = UserStockInfo.GetStockInfo((long)ctx.User.Id, stock.Name);
             stockInfo.ModifyAmount(amount);
 
             stock.ModifySales(amount);
@@ -119,7 +119,7 @@ namespace DiscordBotRewrite.Commands {
                 return;
             }
 
-            Stock stock = Bot.Modules.Economy.GetStock(name);
+            Stock stock = Stock.GetStock(name);
             if(stock == null) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = "Nonexistent stock!",
@@ -127,8 +127,8 @@ namespace DiscordBotRewrite.Commands {
                 }, true);
                 return;
             }
-            UserAccount user = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
-            UserStockInfo stockInfo = Bot.Modules.Economy.GetStockInfo((long)ctx.User.Id, stock.Name);
+            UserAccount user = UserAccount.GetAccount((long)ctx.User.Id);
+            UserStockInfo stockInfo = UserStockInfo.GetStockInfo((long)ctx.User.Id, stock.Name);
 
             if(stockInfo.Amount < amount) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {

@@ -1,4 +1,5 @@
-﻿using DSharpPlus;
+﻿using DiscordBotRewrite.Global;
+using DSharpPlus;
 
 namespace DiscordBotRewrite.Modules {
     public class ModuleContainer {
@@ -18,6 +19,8 @@ namespace DiscordBotRewrite.Modules {
 
         #region Constructors
         public ModuleContainer(DiscordClient client) {
+            Bot.Database.CreateTable<Cooldown>();
+
             Economy = new EconomyModule();
 
             Quote = new QuoteModule(client);

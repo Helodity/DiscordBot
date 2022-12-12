@@ -87,7 +87,10 @@ namespace DiscordBotRewrite.Modules.Economy {
             return $"{scale * Math.Round((decimal)percent / scale)}%";
         }
 
-
+        public static Stock GetStock(string name) {
+            //Don't insert if the name isn't valid here. We dont want to be inserting random stocks now.
+            return Bot.Database.GetAllWithChildren<Stock>().FirstOrDefault(x => x.Name == name);
+        }
     }
 }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using DiscordBotRewrite.Global;
 using SQLite;
 
 namespace DiscordBotRewrite.Modules {
@@ -7,7 +8,7 @@ namespace DiscordBotRewrite.Modules {
         [PrimaryKey, AutoIncrement, Column("id")]
         public int Id { get; set; }
         [Unique, Column("user_id")]
-        public long UserId { get; set; }
+        public long UserID { get; set; }
         [Column("balance")]
         public long Balance { get; set; }
         [Column("bank")]
@@ -17,14 +18,8 @@ namespace DiscordBotRewrite.Modules {
         public long NetWorth => Balance + Bank - Debt;
         [Column("bank_max")]
         public long BankMax { get; set; }
-        [Column("daily_cooldown")]
-        public DateTime DailyCooldown { get; set; }
-        [Column("rob_cooldown")]
-        public DateTime RobCooldown { get; set; }
         [Column("daily_streak")]
         public int Streak { get; set; }
-        [Column("karma")]
-        public long Karma { get; set; }
 
         #region Constructor
         public UserAccount() {
@@ -32,27 +27,32 @@ namespace DiscordBotRewrite.Modules {
             Bank = 0;
             Debt = 0;
             BankMax = 1000;
-            DailyCooldown = DateTime.Now;
             Streak = 0;
-            Karma = 0;
         }
         public UserAccount(long id) {
-            UserId = id;
+            UserID = id;
             Balance = 0;
             Bank = 0;
             BankMax = 1000;
-            DailyCooldown = DateTime.Now;
             Streak = 0;
-            Karma = 0;
         }
         #endregion
+
+        public static UserAccount GetAccount(long userID) {
+            UserAccount account = Bot.Database.Table<UserAccount>().FirstOrDefault(x => x.UserID == userID);
+            if(account == null) {
+                account = new UserAccount(userID);
+                Bot.Database.Insert(account);
+            }
+            return account;
+        }
+
 
         public void Pay(long amount) {
             if(amount < 0) {
                 Receive(-amount);
                 return;
             }
-
 
             long amtFromBank = Math.Max(0, amount - Balance);
             long amtToDebt = Math.Max(0, amtFromBank - Bank);
@@ -78,11 +78,6 @@ namespace DiscordBotRewrite.Modules {
             if(update)
                 Bot.Database.Update(this);
         }
-        public void ModifyKarma(long amount, bool update = true) {
-            Karma += amount;
-            if(update)
-                Bot.Database.Update(this);
-        }
         public void IncrementStreak(bool update = true) {
             Streak += 1;
             if(update)
@@ -94,14 +89,10 @@ namespace DiscordBotRewrite.Modules {
                 Bot.Database.Update(this);
         }
         public void SetDailyCooldown(DateTime time, bool update = true) {
-            DailyCooldown = time;
+            Cooldown cooldown = Cooldown.GetCooldown(UserID, "daily");
+            cooldown.EndTime = time;
             if(update)
-                Bot.Database.Update(this);
-        }
-        public void SetRobCooldown(DateTime time, bool update = true) {
-            RobCooldown = time;
-            if(update)
-                Bot.Database.Update(this);
+                Bot.Database.Update(cooldown);
         }
 
         //Returns amount put in bank

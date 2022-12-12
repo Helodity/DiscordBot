@@ -1,42 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
+using DiscordBotRewrite.Modules;
+using SQLite;
 
 namespace DiscordBotRewrite.Global {
-    public readonly struct Cooldown {
-        #region Properties
-        public readonly DateTime EndTime;
+    [Table("cooldowns")]
+    public class Cooldown {
+
+        [PrimaryKey, AutoIncrement, Column("id")]
+        public int Id { get; set; }
+
+        [Column("user_id")]
+        public long UserID { get; set; }
+
+        [Column("cooldown_id")]
+        public string CooldownID { get; set; }
+
+        [Column("endtime")]
+        public DateTime EndTime { get; set; }
+
         public bool IsOver => DateTime.Compare(DateTime.Now, EndTime) >= 0;
-        #endregion
 
-        #region Constructors
-        public Cooldown(DateTime endTime) {
-            EndTime = endTime;
+
+        public Cooldown() { }
+
+
+        public Cooldown(long userID, string cooldownID) {
+            UserID = userID;
+            CooldownID = cooldownID;
+            EndTime = DateTime.Now;
         }
-        #endregion
 
-        #region Public
-        public static bool UserHasCooldown(ulong userId, ref Dictionary<ulong, Cooldown> cooldowns) {
-            if(cooldowns.TryGetValue(userId, out Cooldown cooldown)) {
-                if(!cooldown.IsOver)
-                    return true;
-                cooldowns.Remove(userId);
+        public static Cooldown GetCooldown(long userID, string cooldownID) {
+            Cooldown cooldown = Bot.Database.Table<Cooldown>().FirstOrDefault(x => x.UserID == userID && x.CooldownID == cooldownID);
+            if(cooldown == null) {
+                cooldown = new Cooldown(userID, cooldownID);
+                Bot.Database.Insert(cooldown);
             }
-            return false;
+            return cooldown;
         }
-        public static TimeSpan TimeUntilExpiration(ulong userId, ref Dictionary<ulong, Cooldown> cooldowns) {
-            if(cooldowns.TryGetValue(userId, out Cooldown cooldown)) {
-                if(!cooldown.IsOver)
-                    return cooldown.EndTime - DateTime.Now;
-                cooldowns.Remove(userId);
-            }
-            return TimeSpan.Zero;
-        }
-        #endregion
 
-        #region Private
-        public TimeSpan TimeUntilExpiration() {
-            return EndTime - DateTime.Now;
-        }
-        #endregion
     }
 }

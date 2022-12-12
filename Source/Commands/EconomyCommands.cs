@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using DiscordBotRewrite.Extensions;
+using DiscordBotRewrite.Global;
 using DiscordBotRewrite.Modules;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -21,7 +22,7 @@ namespace DiscordBotRewrite.Commands {
                 user = ctx.User;
             if(!await Bot.Modules.Economy.CheckForProperTargetAsync(ctx, user)) return;
 
-            UserAccount account = Bot.Modules.Economy.GetAccount((long)user.Id);
+            UserAccount account = UserAccount.GetAccount((long)user.Id);
             string description = $"Balance: ${account.Balance}\nBank: ${account.Bank}/${account.BankMax}";
             if(account.Debt > 0)
                 description += $"\n **Debt**: ${account.Debt}";
@@ -37,7 +38,7 @@ namespace DiscordBotRewrite.Commands {
         [SlashCommand("baltop", "Who has the most money?")]
         public async Task Baltop(InteractionContext ctx) {
             var allMembers = await ctx.Guild.GetMembersAsync();
-            var accounts = Bot.Modules.Economy.GetAllAccounts().Where(x => allMembers.Any(y => y.Id == (ulong)x.UserId)).ToList();
+            var accounts = Bot.Modules.Economy.GetAllAccounts().Where(x => allMembers.Any(y => y.Id == (ulong)x.UserID)).ToList();
             List<UserAccount> topAccounts = new List<UserAccount>() { accounts[0] };
             long totalValue = accounts[0].NetWorth;
             foreach(UserAccount a in accounts.Skip(1)) {
@@ -55,7 +56,7 @@ namespace DiscordBotRewrite.Commands {
             int toCount = Math.Min(topAccounts.Count, 5);
             string description = "";
             for(int i = 0; i < toCount; i++) {
-                description += $"**#{i + 1}**: {(await ctx.Client.GetUserAsync((ulong)topAccounts[i].UserId)).Username} - ${topAccounts[i].Balance + topAccounts[i].Bank}\n";
+                description += $"**#{i + 1}**: {(await ctx.Client.GetUserAsync((ulong)topAccounts[i].UserID)).Username} - ${topAccounts[i].Balance + topAccounts[i].Bank}\n";
             }
             string footer = $"There is ${totalValue} in circulation!";
 
@@ -71,10 +72,11 @@ namespace DiscordBotRewrite.Commands {
         #region Daily
         [SlashCommand("daily", "Get your daily stimulus check.")]
         public async Task Daily(InteractionContext ctx) {
-            UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
-            if(DateTime.Compare(DateTime.Now, account.DailyCooldown) < 0) {
+            UserAccount account = UserAccount.GetAccount((long)ctx.User.Id);
+            Cooldown dailyCooldown = Cooldown.GetCooldown((long)ctx.User.Id, "daily");
+            if (dailyCooldown.IsOver) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = $"You can't claim your daily reward yet!\nYou can claim more money {account.DailyCooldown.ToTimestamp()}!",
+                    Description = $"You can't claim your daily reward yet!\nYou can claim more money {dailyCooldown.EndTime.ToTimestamp()}!",
                     Color = Bot.Style.ErrorColor
                 });
                 return;
@@ -82,7 +84,7 @@ namespace DiscordBotRewrite.Commands {
 
             bool lostStreak = false;
             //48 total hours, daily cooldown accounts for 20
-            if((DateTime.Now - account.DailyCooldown).TotalHours > 28) {
+            if((DateTime.Now - dailyCooldown.EndTime).TotalHours > 28) {
                 account.ResetStreak(false);
                 lostStreak = true;
             } else {
@@ -111,7 +113,7 @@ namespace DiscordBotRewrite.Commands {
         #region Deposit
         [SlashCommand("deposit", "Send monry to the bank.")]
         public async Task Deposit(InteractionContext ctx, [Option("amount", "How much to store?")] long amount) {
-            UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
+            UserAccount account = UserAccount.GetAccount((long)ctx.User.Id);
             amount = account.TransferToBank(amount);
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -131,7 +133,7 @@ namespace DiscordBotRewrite.Commands {
                 });
                 return;
             }
-            UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
+            UserAccount account = UserAccount.GetAccount((long)ctx.User.Id);
 
             long cost = amount * 10;
 
@@ -190,7 +192,6 @@ namespace DiscordBotRewrite.Commands {
                 return;
             }   
             amount = Bot.Modules.Economy.Transfer((long)ctx.User.Id, (long)user.Id, (int)amount);
-            Bot.Modules.Economy.GetAccount((long)ctx.User.Id).ModifyKarma(1);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Gave ${amount} to {user.Username}!",
                 Color = Bot.Style.SuccessColor
@@ -201,7 +202,7 @@ namespace DiscordBotRewrite.Commands {
         #region Repayment
         [SlashCommand("repayment", "Pay off your debt.")]
         public async Task Repayment(InteractionContext ctx, [Option("amount", "How much to pay?")] long amount) {
-            UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
+            UserAccount account = UserAccount.GetAccount((long)ctx.User.Id);
 
             if(account.Debt <= 0) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
@@ -230,69 +231,10 @@ namespace DiscordBotRewrite.Commands {
         }
         #endregion
 
-        #region Rob
-        [SlashCommand("rob", "Take somebody's money!")]
-        public async Task Rob(InteractionContext ctx, [Option("user", "Who are you stealing from?")] DiscordUser user) {
-            if(!await Bot.Modules.Economy.CheckForProperTargetAsync(ctx, user)) return;
-            if(ctx.User == user) {
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = $"You... can't rob yourself.",
-                    Color = Bot.Style.ErrorColor
-                });
-                return;
-            }
-
-            UserAccount self = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
-            UserAccount target = Bot.Modules.Economy.GetAccount((long)user.Id);
-            self.ModifyKarma(-5);
-            if(target.Balance == 0) {
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = $"{user.Username} is kinda broke, maybe pick a better target",
-                    Color = Bot.Style.ErrorColor
-                });
-                return;
-            }
-            if(DateTime.Compare(DateTime.Now, self.RobCooldown) < 0) {
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = $"You're still under suspicion from your last attempt, try again {self.RobCooldown.ToTimestamp()}.",
-                    Color = Bot.Style.ErrorColor
-                });
-                return;
-            }
-
-            self.SetRobCooldown(DateTime.Now.AddSeconds(30));
-            int rng = GenerateRandomNumber(Math.Min((int)self.Karma, 25), 100);
-            if(rng <= 0) {
-                long targetBalance = Math.Max(target.NetWorth, 1);
-                long amount = Math.Max((long)(targetBalance * 0.001 * -rng), 1);
-
-                long preDebt = self.Debt;
-                self.Pay(amount);
-
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = $"You were caught and forced to pay ${amount}! {(preDebt < self.Debt ? $"You had to take a loan of ${self.Debt - preDebt} to pay the fine!" : "")}",
-                    Color = Bot.Style.SuccessColor
-                });
-            } else if(rng == 0) {
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = $"You couldn't find an opening, try again later!",
-                    Color = Bot.Style.WarningColor
-                });
-            } else {
-                long amount = Math.Max((long)(target.Balance * 0.001 * rng),1);
-                amount = Bot.Modules.Economy.Transfer((long)user.Id, (long)ctx.User.Id, (int)amount);
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = $"You got ${amount} from {user.Username}!",
-                    Color = Bot.Style.SuccessColor
-                });
-            }
-        }
-        #endregion
-
         #region Withdraw
         [SlashCommand("withdraw", "Send money to your pocket!")]
         public async Task Withdraw(InteractionContext ctx, [Option("amount", "how much to spend")] long amount) {
-            UserAccount account = Bot.Modules.Economy.GetAccount((long)ctx.User.Id);
+            UserAccount account = UserAccount.GetAccount((long)ctx.User.Id);
             amount = account.TransferToBalance(amount);
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
