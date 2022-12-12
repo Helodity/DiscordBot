@@ -19,7 +19,7 @@ namespace DiscordBotRewrite.Commands
         #region Blackjack
         [SlashCommand("blackjack", "Play blackjack against the bot")]
         public async Task BlackJack(InteractionContext ctx, [Option("bet", "How much money to lose")] long bet) {
-            if(!await Bot.Modules.Economy.CheckForProperBetAsync(ctx, bet)) return;
+            if(!await CommandGuards.CheckForProperBetAsync(ctx, bet)) return;
 
             DiscordButtonComponent[] hitStandButtons = {
                 new DiscordButtonComponent(ButtonStyle.Primary, "hit", "Hit!"),
@@ -144,7 +144,7 @@ namespace DiscordBotRewrite.Commands
         #region Highlow
         [SlashCommand("highlow", "Play higher lower against the bot.")]
         public async Task HighLow(InteractionContext ctx, [Option("bet", "How much money to lose?")] long bet) {
-            if(!await Bot.Modules.Economy.CheckForProperBetAsync(ctx, bet)) return;
+            if(!await CommandGuards.CheckForProperBetAsync(ctx, bet)) return;
 
             //Create all the used buttons
             DiscordButtonComponent[] highLowButtons = {
@@ -248,9 +248,9 @@ namespace DiscordBotRewrite.Commands
         #region Rock Paper Scissors
         [SlashCommand("rps", "Play rock paper scissors against another user")]
         public async Task RPS(InteractionContext ctx, [Option("opponent", "Who to challenge?")] DiscordUser opponent, [Option("bet", "How much money to lose?")] long bet) {
-            if(!await Bot.Modules.Economy.CheckForProperBetAsync(ctx, bet)) return;
-            if(!await Bot.Modules.Economy.CheckForProperTargetAsync(ctx, opponent)) return;
-            if(!await Bot.Modules.Economy.PreventSelfTargetAsync(ctx, opponent)) return;
+            if(!await CommandGuards.CheckForProperBetAsync(ctx, bet)) return;
+            if(!await CommandGuards.PreventBotTargetAsync(ctx, opponent)) return;
+            if(!await CommandGuards.PreventSelfTargetAsync(ctx, opponent)) return;
 
             DiscordButtonComponent[] rpsButtons = {
                 new DiscordButtonComponent(ButtonStyle.Primary, "rock", "Rock"),

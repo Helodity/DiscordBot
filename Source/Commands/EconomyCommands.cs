@@ -20,7 +20,7 @@ namespace DiscordBotRewrite.Commands {
         public async Task Balance(InteractionContext ctx, [Option("user", "Who are we checking?")] DiscordUser user = null) {
             if(user == null)
                 user = ctx.User;
-            if(!await Bot.Modules.Economy.CheckForProperTargetAsync(ctx, user)) return;
+            if(!await CommandGuards.PreventBotTargetAsync(ctx, user)) return;
 
             UserAccount account = UserAccount.GetAccount((long)user.Id);
             string description = $"Balance: ${account.Balance}\nBank: ${account.Bank}/${account.BankMax}";
@@ -38,7 +38,7 @@ namespace DiscordBotRewrite.Commands {
         [SlashCommand("baltop", "Who has the most money?")]
         public async Task Baltop(InteractionContext ctx) {
             var allMembers = await ctx.Guild.GetMembersAsync();
-            var accounts = Bot.Modules.Economy.GetAllAccounts().Where(x => allMembers.Any(y => y.Id == (ulong)x.UserID)).ToList();
+            var accounts = UserAccount.GetAllAccounts().Where(x => allMembers.Any(y => y.Id == (ulong)x.UserID)).ToList();
             List<UserAccount> topAccounts = new List<UserAccount>() { accounts[0] };
             long totalValue = accounts[0].NetWorth;
             foreach(UserAccount a in accounts.Skip(1)) {
@@ -72,7 +72,7 @@ namespace DiscordBotRewrite.Commands {
         #region Beg
         [SlashCommand("beg", "Cry on the streets for some money.")]
         public async Task Beg(InteractionContext ctx) {
-            if(!await Bot.Modules.Economy.CheckForCooldown(ctx, "beg")) return;
+            if(!await CommandGuards.CheckForCooldown(ctx, "beg")) return;
 
             Cooldown begCooldown = Cooldown.GetCooldown((long)ctx.User.Id, "beg");
             begCooldown.SetEndTime(DateTime.Now + TimeSpan.FromMinutes(1));
@@ -91,7 +91,7 @@ namespace DiscordBotRewrite.Commands {
         #region Daily
         [SlashCommand("daily", "Get your daily stimulus check.")]
         public async Task Daily(InteractionContext ctx) {
-            if(!await Bot.Modules.Economy.CheckForCooldown(ctx, "daily")) return;
+            if(!await CommandGuards.CheckForCooldown(ctx, "daily")) return;
 
             UserAccount account = UserAccount.GetAccount((long)ctx.User.Id);
             Cooldown dailyCooldown = Cooldown.GetCooldown((long)ctx.User.Id, "daily");
@@ -196,7 +196,7 @@ namespace DiscordBotRewrite.Commands {
         #region Give
         [SlashCommand("give", "Give some money to another user!")]
         public async Task Give(InteractionContext ctx, [Option("user", "Who gets your money?")] DiscordUser user, [Option("amount", "How much to give?")] long amount) {
-            if(!await Bot.Modules.Economy.CheckForProperTargetAsync(ctx, user)) return;
+            if(!await CommandGuards.PreventBotTargetAsync(ctx, user)) return;
             if(amount < 0) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = "Ok now that's a dick move.",

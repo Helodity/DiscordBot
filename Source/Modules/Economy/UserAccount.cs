@@ -38,6 +38,10 @@ namespace DiscordBotRewrite.Modules {
         }
         #endregion
 
+        public List<UserAccount> GetAllAccounts() {
+            return Bot.Database.Table<UserAccount>().ToList();
+        }
+
         public static UserAccount GetAccount(long userID) {
             UserAccount account = Bot.Database.Table<UserAccount>().FirstOrDefault(x => x.UserID == userID);
             if(account == null) {
@@ -46,7 +50,6 @@ namespace DiscordBotRewrite.Modules {
             }
             return account;
         }
-
 
         public void Pay(long amount) {
             if(amount < 0) {
