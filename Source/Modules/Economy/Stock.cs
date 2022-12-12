@@ -18,10 +18,10 @@ namespace DiscordBotRewrite.Modules.Economy {
         public float Momentum { get; set; }
 
         [Column("price_volatility")]
-        public int PriceVolatility { get; set; }
+        public float PriceVolatility { get; set; }
 
         [Column("momentum_volatility")]
-        public int MomentumVolatility { get; set; }
+        public float MomentumVolatility { get; set; }
 
         [Column("prev_earnings")]
         public float LastEarnings { get; set; }
@@ -32,7 +32,7 @@ namespace DiscordBotRewrite.Modules.Economy {
 
         public Stock() { }
 
-        public Stock(string name, int initialCost, int priceVolality, int momentumVolatility) {
+        public Stock(string name, int initialCost, float priceVolality, float momentumVolatility) {
             Name = name;
             PriceVolatility = priceVolality;
             MomentumVolatility = momentumVolatility;
@@ -65,7 +65,9 @@ namespace DiscordBotRewrite.Modules.Economy {
                 ShareCost = 10;
 
             PriceHistory.Add(ShareCost);
-            if(PriceHistory.Count > 100)
+
+            //Track the last 2 hours
+            if(PriceHistory.Count > 120)
                 PriceHistory.RemoveAt(0);
 
         }
