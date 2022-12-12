@@ -30,7 +30,11 @@ namespace DiscordBotRewrite.Global {
             CooldownID = cooldownID;
             EndTime = DateTime.Now;
         }
-
+        public void SetEndTime(DateTime time, bool update = true) {
+            EndTime = time;
+            if(update)
+                Bot.Database.Update(this);
+        }
         public static Cooldown GetCooldown(long userID, string cooldownID) {
             Cooldown cooldown = Bot.Database.Table<Cooldown>().FirstOrDefault(x => x.UserID == userID && x.CooldownID == cooldownID);
             if(cooldown == null) {
@@ -38,6 +42,11 @@ namespace DiscordBotRewrite.Global {
                 Bot.Database.Insert(cooldown);
             }
             return cooldown;
+        }
+
+        public static bool UserHasCooldown(long userID, string cooldownID) {
+            Cooldown c = GetCooldown(userID, cooldownID);
+            return c.IsOver;
         }
 
     }

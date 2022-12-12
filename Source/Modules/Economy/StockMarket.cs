@@ -30,7 +30,7 @@ namespace DiscordBotRewrite.Modules.Economy {
             Bot.Database.CreateTable<UserStockInfo>();
             Bot.Database.CreateTable<Stock>();
             foreach(string s in StockNames) {
-                Stock stock = Bot.Database.GetAllWithChildren<Stock>().FirstOrDefault(x => x.Name == s);
+                Stock stock = Stock.GetStock(s);
                 if(stock != null) {
                     if(stock.PriceHistory == null) {
                         stock.PriceHistory = new() {stock.ShareCost}; //Put a placeholder value to prevent an error
@@ -44,7 +44,7 @@ namespace DiscordBotRewrite.Modules.Economy {
             }
             UpdateMarket();
 
-            UpdateEvent = new TimeBasedEvent(TimeSpan.FromMinutes(1), TimedMarketUpdate);
+            UpdateEvent = new TimeBasedEvent(TimeSpan.FromMinutes(1), () => { UpdateMarket(); UpdateEvent.Start(); });
             UpdateEvent.Start();
         }
 
@@ -180,7 +180,6 @@ namespace DiscordBotRewrite.Modules.Economy {
                 return SKColor.FromHsv(0, 100, 100);
         }
 
-
         static void UpdateMarket() {
             List<Stock> stocks = Bot.Database.GetAllWithChildren<Stock>();
 
@@ -189,11 +188,5 @@ namespace DiscordBotRewrite.Modules.Economy {
                 Bot.Database.UpdateWithChildren(stock);
             }
         }
-
-        public static void TimedMarketUpdate() {
-            UpdateMarket();
-            UpdateEvent.Start();
-        }
-
     }
 }

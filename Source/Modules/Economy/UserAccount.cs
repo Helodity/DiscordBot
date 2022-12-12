@@ -88,12 +88,6 @@ namespace DiscordBotRewrite.Modules {
             if(update)
                 Bot.Database.Update(this);
         }
-        public void SetDailyCooldown(DateTime time, bool update = true) {
-            Cooldown cooldown = Cooldown.GetCooldown(UserID, "daily");
-            cooldown.EndTime = time;
-            if(update)
-                Bot.Database.Update(cooldown);
-        }
 
         //Returns amount put in bank
         public long TransferToBank(long amount, bool update = true) {

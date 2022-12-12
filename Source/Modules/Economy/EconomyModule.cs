@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DiscordBotRewrite.Extensions;
+using DiscordBotRewrite.Global;
 using DiscordBotRewrite.Modules.Economy;
 using DiscordBotRewrite.Modules.Economy.Gambling;
 using DSharpPlus.Entities;
@@ -58,13 +60,15 @@ namespace DiscordBotRewrite.Modules
             }
             return value;
         }
+        #endregion
 
+        #region Command Guards
         public async Task<bool> CheckForProperTargetAsync(InteractionContext ctx, DiscordUser user) {
             if(user.IsBot) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"I'm gonna let you in on a secret: bots really don't like being chosen. Maybe pick an actual person next time.",
                     Color = Bot.Style.ErrorColor
-                });
+                }, true);
                 return false;
             }
             return true;
@@ -75,7 +79,19 @@ namespace DiscordBotRewrite.Modules
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"You can't target yourself!",
                     Color = Bot.Style.ErrorColor
-                });
+                }, true);
+                return false;
+            }
+            return true;
+        }
+
+        public async Task<bool> CheckForCooldown(InteractionContext ctx, string cooldownName) {
+            Cooldown cooldown = Cooldown.GetCooldown((long)ctx.User.Id, cooldownName);
+            if(!cooldown.IsOver) {
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = $"You can run this again {cooldown.EndTime.ToTimestamp()}",
+                    Color = Bot.Style.ErrorColor
+                }, true);
                 return false;
             }
             return true;
@@ -85,19 +101,18 @@ namespace DiscordBotRewrite.Modules
             UserAccount account = UserAccount.GetAccount((long)ctx.User.Id);
             if(bet < 0) {
                 account.Pay(1);
-                Bot.Database.Update(account);
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"Alright bitchass stop trying to game the system. I'm taking a dollar from you cuz of that.",
                     Color = Bot.Style.ErrorColor
-                });
+                }, true);
                 return false;
             }
 
             if(account.Balance < bet) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = $"This isn't the stock market, you can only bet what's in your pocket.",
+                    Description = $"You can only bet what's in your pocket!",
                     Color = Bot.Style.ErrorColor
-                });
+                }, true);
                 return false;
             }
             return true;

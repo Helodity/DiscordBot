@@ -69,19 +69,32 @@ namespace DiscordBotRewrite.Commands {
         }
         #endregion
 
+        #region Beg
+        [SlashCommand("beg", "Cry on the streets for some money.")]
+        public async Task Beg(InteractionContext ctx) {
+            if(!await Bot.Modules.Economy.CheckForCooldown(ctx, "beg")) return;
+
+            Cooldown begCooldown = Cooldown.GetCooldown((long)ctx.User.Id, "beg");
+            begCooldown.SetEndTime(DateTime.Now + TimeSpan.FromMinutes(1));
+
+            UserAccount account = UserAccount.GetAccount((long)ctx.User.Id);
+            int amount = GenerateRandomNumber(5, 20);
+            account.Receive(amount);
+
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Description = $"Someone pities you and gave you ${amount}!",
+                Color = Bot.Style.SuccessColor
+            });
+        }
+        #endregion
+
         #region Daily
         [SlashCommand("daily", "Get your daily stimulus check.")]
         public async Task Daily(InteractionContext ctx) {
+            if(!await Bot.Modules.Economy.CheckForCooldown(ctx, "daily")) return;
+
             UserAccount account = UserAccount.GetAccount((long)ctx.User.Id);
             Cooldown dailyCooldown = Cooldown.GetCooldown((long)ctx.User.Id, "daily");
-            if (dailyCooldown.IsOver) {
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = $"You can't claim your daily reward yet!\nYou can claim more money {dailyCooldown.EndTime.ToTimestamp()}!",
-                    Color = Bot.Style.ErrorColor
-                });
-                return;
-            }
-
             bool lostStreak = false;
             //48 total hours, daily cooldown accounts for 20
             if((DateTime.Now - dailyCooldown.EndTime).TotalHours > 28) {
@@ -92,7 +105,7 @@ namespace DiscordBotRewrite.Commands {
             }
 
             long amount = (long)(100 * Bot.Modules.Economy.GetMultiplier(account.Streak - 1, 0.2, 1.3));
-            account.SetDailyCooldown(DateTime.Now.AddHours(20), false);
+            dailyCooldown.SetEndTime(DateTime.Now.AddHours(20));
             account.Receive(amount);
 
             string streakText = string.Empty;
