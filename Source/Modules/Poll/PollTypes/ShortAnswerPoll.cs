@@ -46,7 +46,7 @@ namespace DiscordBotRewrite.Modules {
                 var builder = new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder {
                     Description = $"Poll has ended {EndTime.ToTimestamp()}!\n{Question.ToBold()}\nAnswers are above.",
                     Color = Bot.Style.DefaultColor
-                }).WithFile("votes.txt", stream);
+                }).AddFile("votes.txt", stream);
 
                 await message.ModifyAsync(builder);
             } catch {

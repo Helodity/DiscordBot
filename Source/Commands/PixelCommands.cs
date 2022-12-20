@@ -99,7 +99,7 @@ namespace DiscordBotRewrite.Commands {
                 .WithDescription($"{ctx.Guild.Name}'s canvas. ({curX},{curY}) is selected. {zoom} zoom. {jumpAmount} tiles per move.");
             Bot.Modules.Pixel.CreateImageWithUI(ctx, curX, curY, zoom, curColor);
             using(var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read)) {
-                msg = await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddComponents(row1).AddComponents(row2).AddComponents(row3).AddComponents(row4).AddComponents(row5).AddEmbed(embed).WithFile(Path.GetFileName(imagePath), fs));
+                msg = await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddComponents(row1).AddComponents(row2).AddComponents(row3).AddComponents(row4).AddComponents(row5).AddEmbed(embed).AddFile(Path.GetFileName(imagePath), fs));
             }
             var interactivity = ctx.Client.GetInteractivity();
             while(true) {
@@ -109,7 +109,7 @@ namespace DiscordBotRewrite.Commands {
                     using(var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read)) {
                         await msg.DeleteAsync();
                         embed.WithDescription($"{ctx.Guild.Name}'s canvas.").WithColor(Bot.Style.DefaultColor);
-                        await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed).WithFile(Path.GetFileName(imagePath), fs));
+                        await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed).AddFile(Path.GetFileName(imagePath), fs));
                     }
                     File.Delete(imagePath);
                     return;

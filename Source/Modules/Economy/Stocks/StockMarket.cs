@@ -1,9 +1,11 @@
 ﻿using DiscordBotRewrite.Extensions;
 using DiscordBotRewrite.Global;
+using DiscordBotRewrite.Modules.Economy.Stocks;
 using SkiaSharp;
 using SQLiteNetExtensions.Extensions;
 
-namespace DiscordBotRewrite.Modules.Economy {
+namespace DiscordBotRewrite.Modules.Economy
+{
 
     public static class StockMarket {
 
@@ -31,15 +33,19 @@ namespace DiscordBotRewrite.Modules.Economy {
             Bot.Database.CreateTable<Stock>();
             foreach(string s in StockNames) {
                 Stock stock = Stock.GetStock(s);
+
                 if(stock != null) {
                     if(stock.PriceHistory == null) {
-                        stock.PriceHistory = new() {stock.ShareCost}; //Put a placeholder value to prevent an error
-                        Bot.Database.UpdateWithChildren(stock);
+                        stock.PriceHistory = new() {stock.ShareCost};
                     }
+                    if(stock.MaxMomentum < 1) {
+                        stock.MaxMomentum = (float)GenerateRandomNumber(10, 50) / 10;
+                    }
+                    Bot.Database.UpdateWithChildren(stock);
                     continue;
                 };
 
-                stock = new Stock(s, 250, GenerateRandomNumber(1, 100) / 10, GenerateRandomNumber(1, 30) / 10);
+                stock = new Stock(s, 250, (float)GenerateRandomNumber(1, 100) / 10, (float)GenerateRandomNumber(1, 30) / 10, (float)GenerateRandomNumber(10,50) / 10);
                 Bot.Database.Insert(stock);
             }
             UpdateMarket();
@@ -167,7 +173,7 @@ namespace DiscordBotRewrite.Modules.Economy {
                 paint.Color = SKColor.FromHsv(0, 0, 100);
                 paint.TextAlign = SKTextAlign.Left;
                 canvas.DrawText($"{stock.Name}", anchorX + 5, anchorY + spacingHeight / 2 - 3, paint);
-                canvas.DrawText($"${stock.ShareCost} ({stock.GetEarningsPercentString(1)})", anchorX + 5, anchorY + spacingHeight - 3, paint);
+                canvas.DrawText($"${stock.ShareCost} ({stock.GetEarningsPercentString(2)})", anchorX + 5, anchorY + spacingHeight - 3, paint);
             }
 
             surface.Snapshot().SaveToPng($"StockImages/img{userId}.png");

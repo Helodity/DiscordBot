@@ -52,9 +52,13 @@ namespace DiscordBotRewrite.Modules {
             IsConnected = true;
         }
         public async Task Disconnect() {
+            if(!IsConnected)
+                return;
+
             await Conn.StopAsync();
             await Conn.DisconnectAsync();
             await OnChannelDisconnect(Conn, null);
+            IsConnected = false;
         }
         public async Task RequestTracksAsync(List<LavalinkTrack> tracks) {
             if(tracks == null) {

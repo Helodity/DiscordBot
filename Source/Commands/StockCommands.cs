@@ -1,10 +1,12 @@
 ﻿using DiscordBotRewrite.Extensions;
 using DiscordBotRewrite.Modules;
 using DiscordBotRewrite.Modules.Economy;
+using DiscordBotRewrite.Modules.Economy.Stocks;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 
-namespace DiscordBotRewrite.Commands {
+namespace DiscordBotRewrite.Commands
+{
 
     [SlashCommandGroup("stock", "Throw away your money")]
     class StockCommands : ApplicationCommandModule {
@@ -30,7 +32,8 @@ namespace DiscordBotRewrite.Commands {
                 StockMarket.CreateDetailedGraph(stock, ctx.User.Id);
                 embed
                     .WithTitle(stock.Name)
-                    .WithDescription($"${stock.ShareCost} ({stock.GetEarningsPercentString()})");
+                    .WithDescription($"${stock.ShareCost} ({stock.GetEarningsPercentString()})\n" +
+                    $"**Last Tick Earnings:** {stock.ToPercent((decimal)stock.LastEarnings, 3)}");
              
             } else {
                 StockMarket.CreateOverviewGraph(ctx.User.Id);
