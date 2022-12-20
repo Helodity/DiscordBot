@@ -1,6 +1,4 @@
-﻿global using static DiscordBotRewrite.Global.Global;
-
-using System.Reflection;
+﻿using System.Reflection;
 using DiscordBotRewrite.Commands;
 using DiscordBotRewrite.Global;
 using DiscordBotRewrite.Modules;
@@ -46,6 +44,17 @@ namespace DiscordBotRewrite {
             await Client.ConnectAsync();
             await Task.Delay(-1);
         }
+        public static void LogException(Exception e, string source = "") {
+            string text = $"\n" +
+                $"{DateTime.Now} | {source}\n" +
+                $"MESSAGE: {e.Message}\n" +
+                $"STACK TRACE:{e.StackTrace}\n" +
+                $"INNER EXCEPTION:{e.InnerException}\n" +
+                $"TARGETSITE:{e.TargetSite}";
+            Client.Logger.LogCritical(text);
+            if(Config.TextLogging)
+                File.AppendAllText("log.txt", text);
+        }
         #endregion
 
         #region Private
@@ -70,6 +79,10 @@ namespace DiscordBotRewrite {
 
             Client = new DiscordClient(config);
             Client.Ready += OnClientReady;
+            Client.ClientErrored += (sender, args) => {
+                LogException(args.Exception, "ClientError");
+                return Task.CompletedTask;
+            };
             Client.UseInteractivity(new InteractivityConfiguration() {
                 Timeout = TimeSpan.FromMinutes(2)
             });
@@ -87,6 +100,11 @@ namespace DiscordBotRewrite {
             SlashExtension.RegisterCommands<StockCommands>(TargetServer);
             SlashExtension.RegisterCommands<UnsortedCommands>(TargetServer);
             if(Config.UseVoice) SlashExtension.RegisterCommands<VoiceCommands>(TargetServer);
+
+            SlashExtension.SlashCommandErrored += (sender, args) => {
+                LogException(args.Exception, "SlashCommandError");
+                return Task.CompletedTask;
+            };
 
             return Task.CompletedTask;
         }
