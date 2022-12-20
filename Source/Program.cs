@@ -1,6 +1,4 @@
 ﻿using System;
-using System.IO;
-using DSharpPlus.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace DiscordBotRewrite {
@@ -11,18 +9,20 @@ namespace DiscordBotRewrite {
         }
 
         static void SetupExceptionHandler() {
-            AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) => {
-                string text = $"\n\n {DateTime.Now}\n";
-                if(eventArgs.Exception is DiscordException exception) {
-                    Bot.Client.Logger.LogCritical(exception.JsonMessage);
-                    text += exception.JsonMessage;
-                } else {
-                    Bot.Client.Logger.LogCritical($"{eventArgs.Exception.Message} : {eventArgs.Exception.StackTrace} : {eventArgs.Exception.InnerException} : {eventArgs.Exception.TargetSite}");
-                    text += $"{eventArgs.Exception.Message} : {eventArgs.Exception.StackTrace} : {eventArgs.Exception.InnerException} : {eventArgs.Exception.TargetSite}";
-                }
-                if(Bot.Config.TextLogging)
-                    File.AppendAllText("log.txt", text);
+            AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) => {
+                LogException((Exception)eventArgs.ExceptionObject, "AppDomain");
             };
+            TaskScheduler.UnobservedTaskException += (sender, eventArgs) => {
+                LogException(eventArgs.Exception, "TaskScheduler");
+            };
+        }
+
+        static void LogException(Exception e, string source = "") {
+            string text = $"\n\n{DateTime.Now} | {source}\n";
+            text += $"MESSAGE: {e.Message}\nSTACK TRACE:{e.StackTrace}\nINNER EXCEPTION:{e.InnerException}\nTARGETSITE:{e.TargetSite}";
+            Bot.Client.Logger.LogCritical(text);
+            if(Bot.Config.TextLogging)
+                File.AppendAllText("log.txt", text);
         }
     }
 }
