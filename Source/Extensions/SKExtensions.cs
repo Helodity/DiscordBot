@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using SkiaSharp;
+﻿using SkiaSharp;
 
 namespace DiscordBotRewrite.Extensions {
     public static class SKExtensions {

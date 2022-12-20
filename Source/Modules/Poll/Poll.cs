@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DiscordBotRewrite.Extensions;
+﻿using DiscordBotRewrite.Extensions;
 using DiscordBotRewrite.Global;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -50,7 +46,7 @@ namespace DiscordBotRewrite.Modules {
         #region Constructors
 
 
-        public Poll() {}
+        public Poll() { }
 
         protected Poll(DiscordMessage message, string question, DateTime endTime) {
             GuildId = (long)message.Channel.Guild.Id;

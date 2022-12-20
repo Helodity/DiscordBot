@@ -1,19 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using DiscordBotRewrite.Modules;
-using DSharpPlus.Entities;
-using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus;
-using DSharpPlus.SlashCommands;
-using System;
-using DiscordBotRewrite.Extensions;
-using DSharpPlus.Interactivity;
-using DSharpPlus.EventArgs;
+﻿using DiscordBotRewrite.Extensions;
 using DiscordBotRewrite.Global;
+using DiscordBotRewrite.Modules;
 using DiscordBotRewrite.Modules.Economy.Gambling;
+using DSharpPlus;
+using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.SlashCommands;
 
-namespace DiscordBotRewrite.Commands
-{
+namespace DiscordBotRewrite.Commands {
     [SlashCommandGroup("gamble", "Throw away your money")]
     class GamblingCommands : ApplicationCommandModule {
         #region Blackjack
@@ -124,11 +120,10 @@ namespace DiscordBotRewrite.Commands
             playerValue = Bot.Modules.Economy.CalculateBlackJackHandValue(playerHand);
             dealerValue = Bot.Modules.Economy.CalculateBlackJackHandValue(dealerHand);
             string statestring = $"**Dealer**\n";
-            if(showDealer) { 
+            if(showDealer) {
                 statestring += $"Cards: {Card.ListToString(dealerHand)}\n" +
-                               $"Total: {dealerValue}\n"; 
-            }
-            else {
+                               $"Total: {dealerValue}\n";
+            } else {
                 statestring += $"Cards: {dealerHand[0]} ?\n" +
                                $"Total: ?\n";
             }

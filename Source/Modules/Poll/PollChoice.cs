@@ -15,7 +15,7 @@ namespace DiscordBotRewrite.Modules {
         public string Name { get; set; }
 
         #region Constructor
-        public PollChoice() {}
+        public PollChoice() { }
         public PollChoice(long pollId, string name) {
             PollId = pollId;
             Name = name;

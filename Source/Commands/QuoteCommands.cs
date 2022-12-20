@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using DiscordBotRewrite.Attributes;
+﻿using DiscordBotRewrite.Attributes;
 using DiscordBotRewrite.Extensions;
 using DSharpPlus;
 using DSharpPlus.Entities;

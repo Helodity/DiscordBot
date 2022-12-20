@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace DiscordBotRewrite.Global {
+﻿namespace DiscordBotRewrite.Global {
     public class TimeBasedEvent {
         #region Properties
         readonly TimeSpan Duration;

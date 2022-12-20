@@ -1,7 +1,4 @@
-﻿using System.Threading.Tasks;
-using DSharpPlus.Entities;
-using DSharpPlus.Exceptions;
-using SQLite;
+﻿using SQLite;
 
 namespace DiscordBotRewrite.Modules {
     [Table("guild_poll_data")]

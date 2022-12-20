@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using DSharpPlus.Entities;
+﻿using DSharpPlus.Entities;
 
 namespace DiscordBotRewrite.Global {
     public class Style {

@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
-using DiscordBotRewrite.Extensions;
+﻿using DiscordBotRewrite.Extensions;
 using DiscordBotRewrite.Global;
 using DiscordBotRewrite.Modules;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
-using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite.Commands {
     [SlashCommandGroup("economy", "money")]
@@ -63,7 +57,7 @@ namespace DiscordBotRewrite.Commands {
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Title = "Top Balances",
                 Description = description,
-                Footer = new DiscordEmbedBuilder.EmbedFooter() {Text = footer},
+                Footer = new DiscordEmbedBuilder.EmbedFooter() { Text = footer },
                 Color = Bot.Style.DefaultColor
             });
         }
@@ -203,7 +197,7 @@ namespace DiscordBotRewrite.Commands {
                     Color = Bot.Style.ErrorColor
                 });
                 return;
-            }   
+            }
             amount = Bot.Modules.Economy.Transfer((long)ctx.User.Id, (long)user.Id, (int)amount);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"Gave ${amount} to {user.Username}!",
@@ -238,7 +232,7 @@ namespace DiscordBotRewrite.Commands {
             account.ModifyDebt(-amount);
 
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                Description = $"You paid ${amount} towards your debt!{(account.Debt <= 0 ? " You are now debt free!" : "" )}",
+                Description = $"You paid ${amount} towards your debt!{(account.Debt <= 0 ? " You are now debt free!" : "")}",
                 Color = Bot.Style.SuccessColor
             });
         }

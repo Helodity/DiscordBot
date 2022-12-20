@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 using DiscordBotRewrite.Extensions;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -78,7 +73,7 @@ namespace DiscordBotRewrite.Modules {
                 return;
 
             string v = input.Result.Values["vote"];
-            if(vote != null) {  
+            if(vote != null) {
                 vote.Choice = v;
                 Bot.Database.Update(vote);
             } else {

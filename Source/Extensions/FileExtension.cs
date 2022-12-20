@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace DiscordBotRewrite.Extensions {
+﻿namespace DiscordBotRewrite.Extensions {
     public static class FileExtension {
         //Creates all sub directories needed and then the file
         public static void CreateFileWithPath(string path) {

@@ -5,12 +5,11 @@ using DiscordBotRewrite.Modules.Economy.Stocks;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 
-namespace DiscordBotRewrite.Commands
-{
+namespace DiscordBotRewrite.Commands {
 
     [SlashCommandGroup("stock", "Throw away your money")]
     class StockCommands : ApplicationCommandModule {
-       
+
         [SlashCommand("overview", "Get a quick rundown on all stocks")]
         public async Task Overview(InteractionContext ctx, [Option("Name", "Name of the stock")] string name = null) {
 
@@ -34,7 +33,7 @@ namespace DiscordBotRewrite.Commands
                     .WithTitle(stock.Name)
                     .WithDescription($"${stock.ShareCost} ({stock.GetEarningsPercentString()})\n" +
                     $"**Last Tick Earnings:** {stock.ToPercent((decimal)stock.LastEarnings, 3)}");
-             
+
             } else {
                 StockMarket.CreateOverviewGraph(ctx.User.Id);
                 embed.WithTitle("Stock Overview");
@@ -52,7 +51,7 @@ namespace DiscordBotRewrite.Commands
                 user = ctx.User;
 
             long castedUserID = (long)user.Id;
-            List<UserStockInfo> ownedStocks = Bot.Database.Table<UserStockInfo>().Where(x =>x.UserId == castedUserID && x.Amount > 0).ToList();
+            List<UserStockInfo> ownedStocks = Bot.Database.Table<UserStockInfo>().Where(x => x.UserId == castedUserID && x.Amount > 0).ToList();
 
             string output = "";
 
@@ -103,7 +102,7 @@ namespace DiscordBotRewrite.Commands
 
             stock.ModifySales(amount);
 
-            user.Pay(price);        
+            user.Pay(price);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                 Description = $"You bought {amount} shares of {name} for ${price}!",
                 Color = Bot.Style.DefaultColor

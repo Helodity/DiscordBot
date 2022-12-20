@@ -1,6 +1,4 @@
-﻿using System;
-using DiscordBotRewrite.Global;
-using SQLite;
+﻿using SQLite;
 
 namespace DiscordBotRewrite.Modules {
     [Table("economy_accounts")]

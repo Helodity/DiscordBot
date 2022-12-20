@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using DiscordBotRewrite.Modules;
-using SQLite;
+﻿using SQLite;
 
 namespace DiscordBotRewrite.Global {
     [Table("cooldowns")]

@@ -1,6 +1,5 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
-using System.Threading.Tasks;
 
 namespace DiscordBotRewrite.Extensions {
     public static class InteractionContextExtensions {

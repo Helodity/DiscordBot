@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using static DiscordBotRewrite.Global.Global;
-
-namespace DiscordBotRewrite.Extensions {
+﻿namespace DiscordBotRewrite.Extensions {
     public static class CollectionExtensions {
         public static void AddOrUpdate<TKey, TValue>(
             this Dictionary<TKey, TValue> dict,

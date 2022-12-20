@@ -1,5 +1,4 @@
 ﻿using DSharpPlus;
-using System;
 
 namespace DiscordBotRewrite.Extensions {
     public static class DateTimeExtensions {

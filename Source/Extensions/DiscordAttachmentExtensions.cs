@@ -1,5 +1,4 @@
 ﻿using DSharpPlus.Entities;
-using System.Collections.Generic;
 
 namespace DiscordBotRewrite.Extensions {
     public static class DiscordAttachmentExtensions {

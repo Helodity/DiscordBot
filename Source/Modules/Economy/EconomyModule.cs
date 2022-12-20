@@ -1,16 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using DiscordBotRewrite.Extensions;
-using DiscordBotRewrite.Global;
-using DiscordBotRewrite.Modules.Economy;
+﻿using DiscordBotRewrite.Modules.Economy;
 using DiscordBotRewrite.Modules.Economy.Gambling;
-using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using SQLiteNetExtensions.Extensions;
 
-namespace DiscordBotRewrite.Modules
-{
+namespace DiscordBotRewrite.Modules {
     public class EconomyModule {
         #region Constructors
         public EconomyModule() {

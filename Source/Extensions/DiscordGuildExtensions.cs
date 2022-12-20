@@ -1,7 +1,5 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace DiscordBotRewrite.Extensions {
     public static class DiscordGuildExtensions {

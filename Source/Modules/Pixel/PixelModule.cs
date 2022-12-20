@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using DiscordBotRewrite.Extensions;
-using DSharpPlus.Entities;
+﻿using DiscordBotRewrite.Extensions;
 using DSharpPlus.SlashCommands;
 using SkiaSharp;
 

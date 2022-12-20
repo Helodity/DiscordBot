@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace DiscordBotRewrite.Modules.Economy.Gambling {
+﻿namespace DiscordBotRewrite.Modules.Economy.Gambling {
     public class Card {
         public enum Suit {
             Spades,

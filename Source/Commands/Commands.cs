@@ -1,10 +1,6 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using DiscordBotRewrite.Extensions;
+﻿using DiscordBotRewrite.Extensions;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
-using SQLite;
-using static DiscordBotRewrite.Global.Global;
 
 namespace DiscordBotRewrite.Commands {
     class UnsortedCommands : ApplicationCommandModule {

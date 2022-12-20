@@ -2,11 +2,9 @@
 using SQLiteNetExtensions.Attributes;
 using SQLiteNetExtensions.Extensions;
 
-namespace DiscordBotRewrite.Modules.Economy.Stocks
-{
+namespace DiscordBotRewrite.Modules.Economy.Stocks {
     [Table("stock_market")]
-    public class Stock
-    {
+    public class Stock {
         [PrimaryKey, AutoIncrement, Column("id")]
         public int Id { get; set; }
 
@@ -36,8 +34,7 @@ namespace DiscordBotRewrite.Modules.Economy.Stocks
 
         public Stock() { }
 
-        public Stock(string name, int initialCost, float priceVolality, float momentumVolatility, float maxMomentum)
-        {
+        public Stock(string name, int initialCost, float priceVolality, float momentumVolatility, float maxMomentum) {
             Name = name;
             PriceVolatility = priceVolality;
             MomentumVolatility = momentumVolatility;
@@ -48,25 +45,23 @@ namespace DiscordBotRewrite.Modules.Economy.Stocks
             PriceHistory = new() { initialCost };
         }
 
-        public void SimulateStep()
-        {
+        public void SimulateStep() {
             float momentumShift = ((float)GenerateRandomNumber(-100, 100) / 100 + LastEarnings) * MomentumVolatility;
             Momentum += momentumShift;
-            if (Momentum > MaxMomentum)
+            if(Momentum > MaxMomentum)
                 Momentum = MaxMomentum;
-            if (Momentum < -MaxMomentum)
+            if(Momentum < -MaxMomentum)
                 Momentum = -MaxMomentum;
 
             LastEarnings = (GenerateRandomNumber(-30, 40) * PriceVolatility / 100 + Momentum - (float)Math.Pow(ShareCost - 100, 0.6) / 100) / 1000;
 
             float toChange = ShareCost * LastEarnings;
-            if (toChange > -1 && toChange < 1)
-            {
+            if(toChange > -1 && toChange < 1) {
                 toChange /= Math.Abs(toChange);
             }
 
             ShareCost += (long)Math.Floor(toChange);
-            if (ShareCost < 100)
+            if(ShareCost < 100)
                 ShareCost = 100;
 
 
@@ -74,19 +69,17 @@ namespace DiscordBotRewrite.Modules.Economy.Stocks
                 PriceHistory = new();
             PriceHistory.Add(ShareCost);
             //Track the last 2 hours
-            if (PriceHistory.Count > 120)
+            if(PriceHistory.Count > 120)
                 PriceHistory.RemoveAt(0);
         }
-        public void ModifySales(long amount, bool update = true)
-        {
+        public void ModifySales(long amount, bool update = true) {
             Momentum += (float)Math.Pow(amount, 0.5f) / 1000f;
 
-            if (update)
+            if(update)
                 Bot.Database.UpdateWithChildren(this);
         }
 
-        public string GetEarningsPercentString(int digits = 2)
-        {
+        public string GetEarningsPercentString(int digits = 2) {
             float percent = (float)(ShareCost - PriceHistory[0]) / PriceHistory[0];
             return ToPercent((decimal)percent, digits);
         }
@@ -117,8 +110,7 @@ namespace DiscordBotRewrite.Modules.Economy.Stocks
         }
 
 
-        public static Stock GetStock(string name)
-        {
+        public static Stock GetStock(string name) {
             //Don't insert if the name isn't valid here. We dont want to be inserting random stocks now.
             return Bot.Database.GetAllWithChildren<Stock>().FirstOrDefault(x => x.Name == name);
         }

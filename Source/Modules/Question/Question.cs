@@ -1,5 +1,4 @@
-﻿using System;
-using DSharpPlus.SlashCommands;
+﻿using DSharpPlus.SlashCommands;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 

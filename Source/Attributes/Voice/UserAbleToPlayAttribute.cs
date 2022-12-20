@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using DiscordBotRewrite.Modules;
+﻿using DiscordBotRewrite.Modules;
 using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.Logging;
 

@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using DSharpPlus.Entities;
+﻿using DSharpPlus.Entities;
 
 namespace DiscordBotRewrite.Extensions {
     public static class DiscordUserExtensions {

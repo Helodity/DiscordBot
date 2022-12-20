@@ -4,8 +4,7 @@ using DiscordBotRewrite.Modules.Economy.Stocks;
 using SkiaSharp;
 using SQLiteNetExtensions.Extensions;
 
-namespace DiscordBotRewrite.Modules.Economy
-{
+namespace DiscordBotRewrite.Modules.Economy {
 
     public static class StockMarket {
 
@@ -36,7 +35,7 @@ namespace DiscordBotRewrite.Modules.Economy
 
                 if(stock != null) {
                     if(stock.PriceHistory == null) {
-                        stock.PriceHistory = new() {stock.ShareCost};
+                        stock.PriceHistory = new() { stock.ShareCost };
                     }
                     if(stock.MaxMomentum < 1) {
                         stock.MaxMomentum = (float)GenerateRandomNumber(10, 50) / 10;
@@ -45,7 +44,7 @@ namespace DiscordBotRewrite.Modules.Economy
                     continue;
                 };
 
-                stock = new Stock(s, 250, (float)GenerateRandomNumber(1, 100) / 10, (float)GenerateRandomNumber(1, 30) / 10, (float)GenerateRandomNumber(10,50) / 10);
+                stock = new Stock(s, 250, (float)GenerateRandomNumber(1, 100) / 10, (float)GenerateRandomNumber(1, 30) / 10, (float)GenerateRandomNumber(10, 50) / 10);
                 Bot.Database.Insert(stock);
             }
             UpdateMarket();
@@ -115,7 +114,7 @@ namespace DiscordBotRewrite.Modules.Economy
             SKImageInfo imageInfo = new SKImageInfo(imgWidth, imgHeight);
             SKSurface surface = SKSurface.Create(imageInfo);
             SKCanvas canvas = surface.Canvas;
-            SKPaint paint = new SKPaint { 
+            SKPaint paint = new SKPaint {
                 IsAntialias = true,
                 TextSize = 25,
                 Typeface = SKTypeface.Default

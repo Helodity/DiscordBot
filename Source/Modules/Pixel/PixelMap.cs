@@ -1,5 +1,4 @@
-﻿using System;
-using SQLite;
+﻿using SQLite;
 using static DiscordBotRewrite.Modules.PixelModule;
 
 namespace DiscordBotRewrite.Modules {
@@ -24,7 +23,7 @@ namespace DiscordBotRewrite.Modules {
         #endregion
 
         #region Constructor
-        public PixelMap() {}
+        public PixelMap() { }
         public PixelMap(long id, int width = 100, int height = 100) {
             GuildId = id;
             Width = width;

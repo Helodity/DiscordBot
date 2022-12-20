@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using DiscordBotRewrite.Extensions;
+﻿using DiscordBotRewrite.Extensions;
 
 namespace DiscordBotRewrite.Modules.Economy.Gambling {
     public class Deck {
@@ -48,7 +45,7 @@ namespace DiscordBotRewrite.Modules.Economy.Gambling {
             Cards.Randomize();
         }
         public void AddTop(Card c) {
-            Cards.Insert(0,c);
+            Cards.Insert(0, c);
         }
         public void AddBottom(Card c) {
             Cards.Add(c);

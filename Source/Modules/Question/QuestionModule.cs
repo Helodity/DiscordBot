@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using static DiscordBotRewrite.Global.Global;
-
-namespace DiscordBotRewrite.Modules {
+﻿namespace DiscordBotRewrite.Modules {
     public class QuestionModule {
         public List<Question> TruthQuestions;
         public List<Question> ParanoiaQuestions;

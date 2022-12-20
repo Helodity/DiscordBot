@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DiscordBotRewrite.Attributes;
+﻿using DiscordBotRewrite.Attributes;
 using DiscordBotRewrite.Extensions;
 using DiscordBotRewrite.Modules;
 using DSharpPlus;
@@ -35,7 +31,7 @@ namespace DiscordBotRewrite.Commands {
               .WithCustomId(id)
               .AddComponents(new TextInputComponent("Question", "question", "What do you want to ask?", max_length: 100));
             if(type == Poll.PollType.MultipleChoice)
-              form.AddComponents(new TextInputComponent("Choices", "choices", "Separate each choice with a comma.", style: TextInputStyle.Paragraph));
+                form.AddComponents(new TextInputComponent("Choices", "choices", "Separate each choice with a comma.", style: TextInputStyle.Paragraph));
 
             await ctx.CreateResponseAsync(InteractionResponseType.Modal, form);
 
@@ -67,7 +63,7 @@ namespace DiscordBotRewrite.Commands {
                 Description = "Started the poll!",
                 Color = Bot.Style.SuccessColor
             }).AsEphemeral());
-            
+
         }
         #endregion
 

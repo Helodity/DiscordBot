@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using DiscordBotRewrite.Extensions;
+﻿using DiscordBotRewrite.Extensions;
 using DSharpPlus.Lavalink;
 using DSharpPlus.SlashCommands;
 

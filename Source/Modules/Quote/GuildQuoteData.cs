@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json;
-using SQLite;
+﻿using SQLite;
 
 namespace DiscordBotRewrite.Modules {
     [Table("guild_quote_data")]
@@ -28,7 +26,7 @@ namespace DiscordBotRewrite.Modules {
         //How many of these emojis need to be added to quote a message
         [Column("emoji_amount")]
         public short EmojiAmount { get; set; }
-        public GuildQuoteData() {}
+        public GuildQuoteData() { }
         public GuildQuoteData(long id) {
             GuildId = id;
             Enabled = true;
