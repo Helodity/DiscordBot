@@ -34,23 +34,33 @@ namespace DiscordBotRewrite.Modules.Economy {
                 Stock stock = Stock.GetStock(s);
 
                 if(stock != null) {
-                    if(stock.PriceHistory == null) {
-                        stock.PriceHistory = new() { stock.ShareCost };
-                    }
-                    if(stock.MaxMomentum < 1) {
-                        stock.MaxMomentum = (float)GenerateRandomNumber(10, 50) / 10;
-                    }
-                    Bot.Database.UpdateWithChildren(stock);
+                    ValidateStock(stock);
                     continue;
                 };
 
-                stock = new Stock(s, 250, (float)GenerateRandomNumber(1, 100) / 10, (float)GenerateRandomNumber(1, 30) / 10, (float)GenerateRandomNumber(10, 50) / 10);
+                stock = new Stock(
+                    s, 
+                    GenerateRandomNumber(500, 10000), 
+                    (float)GenerateRandomNumber(10, 100) / 10, 
+                    (float)GenerateRandomNumber(10, 30) / 10, 
+                    (float)GenerateRandomNumber(10, 50) / 10
+                );
                 Bot.Database.Insert(stock);
             }
             UpdateMarket();
 
             UpdateEvent = new TimeBasedEvent(TimeSpan.FromMinutes(1), () => { UpdateMarket(); UpdateEvent.Start(); });
             UpdateEvent.Start();
+        }
+
+        private static void ValidateStock(Stock stock) {
+            if(stock.PriceHistory == null) {
+                stock.PriceHistory = new() { stock.ShareCost };
+            }
+            if(stock.TargetPrice < 100) {
+                stock.TargetPrice = GenerateRandomNumber(500, 10000);
+            }
+            Bot.Database.UpdateWithChildren(stock);
         }
 
         public static void CreateDetailedGraph(Stock stock, ulong userId) {

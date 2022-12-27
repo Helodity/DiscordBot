@@ -13,6 +13,9 @@ namespace DiscordBotRewrite.Modules.Economy.Stocks {
         [Column("cost")]
         public long ShareCost { get; set; }
 
+        [Column("target_price")]
+        public long TargetPrice { get; set; }
+
         [Column("momentum")]
         public float Momentum { get; set; }
 
@@ -34,26 +37,31 @@ namespace DiscordBotRewrite.Modules.Economy.Stocks {
 
         public Stock() { }
 
-        public Stock(string name, int initialCost, float priceVolality, float momentumVolatility, float maxMomentum) {
+        public Stock(string name, int targetPrice, float priceVolality, float momentumVolatility, float maxMomentum) {
             Name = name;
             PriceVolatility = priceVolality;
             MomentumVolatility = momentumVolatility;
             MaxMomentum = maxMomentum;
-            ShareCost = initialCost;
+            ShareCost = targetPrice;
+            TargetPrice = targetPrice;
             LastEarnings = 0;
             Momentum = 0;
-            PriceHistory = new() { initialCost };
+            PriceHistory = new() { targetPrice };
         }
 
         public void SimulateStep() {
-            float momentumShift = ((float)GenerateRandomNumber(-100, 100) / 100 + LastEarnings) * MomentumVolatility;
+            float momentumShift = (float)GenerateRandomNumber(-100, 100) / 100;
+            momentumShift += LastEarnings;
+            momentumShift /= 100;
+            momentumShift *= MomentumVolatility;
+
             Momentum += momentumShift;
             if(Momentum > MaxMomentum)
                 Momentum = MaxMomentum;
             if(Momentum < -MaxMomentum)
                 Momentum = -MaxMomentum;
 
-            LastEarnings = (GenerateRandomNumber(-30, 40) * PriceVolatility / 100 + Momentum - (float)Math.Pow(ShareCost - 100, 0.6) / 100) / 1000;
+            LastEarnings = (GenerateRandomNumber(-30, 40) * PriceVolatility / 10 + Momentum + Math.Sign(TargetPrice - ShareCost) * (float)Math.Pow(Math.Abs(TargetPrice - ShareCost), 0.2)) / 10000;
 
             float toChange = ShareCost * LastEarnings;
             if(toChange > -1 && toChange < 1) {
@@ -61,15 +69,15 @@ namespace DiscordBotRewrite.Modules.Economy.Stocks {
             }
 
             ShareCost += (long)Math.Floor(toChange);
-            if(ShareCost < 100)
-                ShareCost = 100;
+            if(ShareCost < 10)
+                ShareCost = 10;
 
 
             if(PriceHistory == null)
                 PriceHistory = new();
             PriceHistory.Add(ShareCost);
             //Track the last 2 hours
-            if(PriceHistory.Count > 120)
+            while(PriceHistory.Count > 120)
                 PriceHistory.RemoveAt(0);
         }
         public void ModifySales(long amount, bool update = true) {
