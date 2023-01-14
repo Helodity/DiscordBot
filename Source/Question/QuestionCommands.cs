@@ -1,4 +1,5 @@
-﻿using DiscordBotRewrite.Extensions;
+﻿using DiscordBotRewrite.Global.Extensions;
+using DiscordBotRewrite.Question.Enums;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;

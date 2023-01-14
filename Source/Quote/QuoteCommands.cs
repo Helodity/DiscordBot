@@ -1,9 +1,9 @@
 ﻿using DiscordBotRewrite.Global.Attributes;
-using DiscordBotRewrite.Extensions;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using DiscordBotRewrite.Global.Extensions;
 
 namespace DiscordBotRewrite.Quote
 {

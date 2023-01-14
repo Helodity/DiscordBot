@@ -1,4 +1,4 @@
-﻿using DiscordBotRewrite.Extensions;
+﻿using DiscordBotRewrite.Question.Enums;
 
 namespace DiscordBotRewrite.Question
 {

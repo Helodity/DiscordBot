@@ -1,4 +1,4 @@
-﻿using DiscordBotRewrite.Extensions;
+﻿using DiscordBotRewrite.Global.Extensions;
 
 namespace DiscordBotRewrite.Economy.Gambling
 {

@@ -1,9 +1,9 @@
-﻿using DiscordBotRewrite.Extensions;
-using DiscordBotRewrite.Global;
+﻿using DiscordBotRewrite.Global;
+using DiscordBotRewrite.Global.Extensions;
+using DiscordBotRewrite.Poll.Enums;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
-using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.Logging;
 using SQLite;
 
@@ -38,13 +38,6 @@ namespace DiscordBotRewrite.Poll
         //When this poll ends
         [Column("poll_type")]
         public PollType Type { get; set; }
-
-
-        public enum PollType
-        {
-            [ChoiceName("Multiple Choice")] MultipleChoice,
-            [ChoiceName("Short Answer")] ShortAnswer
-        }
 
         #region Constructors
 

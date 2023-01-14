@@ -1,10 +1,12 @@
 ﻿using DiscordBotRewrite.Global.Attributes;
-using DiscordBotRewrite.Extensions;
 using DiscordBotRewrite.Poll;
+using DiscordBotRewrite.Poll.Enums;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using DiscordBotRewrite.Global.Enums;
+using DiscordBotRewrite.Global.Extensions;
 
 namespace DiscordBotRewrite.Poll
 {
@@ -15,7 +17,7 @@ namespace DiscordBotRewrite.Poll
         #region Start
         [SlashCommand("start", "Start a new poll")]
         public async Task StartPoll(InteractionContext ctx,
-            [Option("Type", "what type of poll is this?")] Poll.PollType type,
+            [Option("Type", "what type of poll is this?")] PollType type,
             [Option("Duration", "How many units will this poll last?")] long unitAmt,
             [Option("Units", "How long is a unit?")] TimeUnit unit)
         {
@@ -35,7 +37,7 @@ namespace DiscordBotRewrite.Poll
               .WithTitle("Start a poll!")
               .WithCustomId(id)
               .AddComponents(new TextInputComponent("Question", "question", "What do you want to ask?", max_length: 100));
-            if (type == Poll.PollType.MultipleChoice)
+            if (type == PollType.MultipleChoice)
                 form.AddComponents(new TextInputComponent("Choices", "choices", "Separate each choice with a comma.", style: TextInputStyle.Paragraph));
 
             await ctx.CreateResponseAsync(InteractionResponseType.Modal, form);
@@ -48,7 +50,7 @@ namespace DiscordBotRewrite.Poll
 
 
             List<string> choices = null;
-            if (type == Poll.PollType.MultipleChoice)
+            if (type == PollType.MultipleChoice)
             {
                 choices = input.Result.Values["choices"].Split(new char[] { ',', '\n' }).ToList();
                 choices.ForEach(choice => { choice = choice.Trim(); });

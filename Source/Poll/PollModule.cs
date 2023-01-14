@@ -2,6 +2,7 @@
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.SlashCommands;
+using DiscordBotRewrite.Poll.Enums;
 
 namespace DiscordBotRewrite.Poll
 {
@@ -23,10 +24,10 @@ namespace DiscordBotRewrite.Poll
 
                 switch (p.Type)
                 {
-                    case Poll.PollType.ShortAnswer:
+                    case PollType.ShortAnswer:
                         p = new ShortAnswerPoll(p);
                         break;
-                    case Poll.PollType.MultipleChoice:
+                    case PollType.MultipleChoice:
                         p = new MultipleChoicePoll(p);
                         break;
                 }
@@ -123,10 +124,10 @@ namespace DiscordBotRewrite.Poll
 
                 switch (p.Type)
                 {
-                    case Poll.PollType.ShortAnswer:
+                    case PollType.ShortAnswer:
                         pollList[i] = new ShortAnswerPoll(p);
                         break;
-                    case Poll.PollType.MultipleChoice:
+                    case PollType.MultipleChoice:
                         pollList[i] = new MultipleChoicePoll(p);
                         break;
                 }

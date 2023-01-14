@@ -1,9 +1,11 @@
 ﻿using DiscordBotRewrite.Global.Attributes;
-using DiscordBotRewrite.Extensions;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using DiscordBotRewrite.Global.Extensions;
+using SkiaSharp;
+using System.Linq;
 
 namespace DiscordBotRewrite.Pixel
 {
@@ -69,11 +71,10 @@ namespace DiscordBotRewrite.Pixel
         };
 
             List<DiscordSelectComponentOption> colorOptions = new List<DiscordSelectComponentOption>();
-            ((int[])Enum.GetValues(typeof(PixelModule.PixelEnum))).ToList().ForEach(x =>
-            {
-                string name = Enum.GetName(typeof(PixelModule.PixelEnum), x);
-                colorOptions.Add(new DiscordSelectComponentOption(name, name));
-            });
+
+            foreach(PixelColor c in PixelColor.ColorDict) {
+                colorOptions.Add(new DiscordSelectComponentOption(c.Name, c.Name));
+            }
 
             DiscordSelectComponent colorSelectComponent = new DiscordSelectComponent("color", "Select color to place:", colorOptions);
 
@@ -84,7 +85,7 @@ namespace DiscordBotRewrite.Pixel
             int zoom = 9;
             int jumpAmount = 1;
             string imagePath = $"PixelImages/img{ctx.User.Id}.png";
-            PixelModule.PixelEnum curColor = PixelModule.PixelEnum.White;
+            PixelColor curColor = PixelColor.ColorDict[0];
 
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
             {
@@ -132,9 +133,10 @@ namespace DiscordBotRewrite.Pixel
                     if (cInput.TimedOut)
                         break;
                     await cInput.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-                    if (Enum.TryParse(typeof(PixelModule.PixelEnum), cInput.Result.Values.First(), true, out var type))
-                    {
-                        curColor = (PixelModule.PixelEnum)type;
+
+                    PixelColor newColor = PixelColor.ColorDict.FirstOrDefault(x => x.Name == cInput.Result.Values.First());
+                    if(newColor != null) {
+                        curColor = newColor;
                     }
                     recreateMessage = false;
                     await msg.DeleteAsync();

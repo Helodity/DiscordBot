@@ -1,5 +1,5 @@
 ﻿using DiscordBotRewrite.Economy;
-using DiscordBotRewrite.Extensions;
+using DiscordBotRewrite.Global.Extensions;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 

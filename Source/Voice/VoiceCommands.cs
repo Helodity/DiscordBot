@@ -1,9 +1,9 @@
 ﻿using DiscordBotRewrite.Voice.Attributes;
-using DiscordBotRewrite.Extensions;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
 using DSharpPlus.SlashCommands;
+using DiscordBotRewrite.Global.Extensions;
 
 namespace DiscordBotRewrite.Voice
 {

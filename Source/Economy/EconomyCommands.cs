@@ -1,5 +1,5 @@
-﻿using DiscordBotRewrite.Extensions;
-using DiscordBotRewrite.Global;
+﻿using DiscordBotRewrite.Global;
+using DiscordBotRewrite.Global.Extensions;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;

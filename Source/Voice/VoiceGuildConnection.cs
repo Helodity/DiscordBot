@@ -1,12 +1,13 @@
-﻿using DiscordBotRewrite.Extensions;
-using DiscordBotRewrite.Global;
+﻿using DiscordBotRewrite.Global;
+using DiscordBotRewrite.Global.Extensions;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
 using DSharpPlus.Lavalink.EventArgs;
 using Microsoft.Extensions.Logging;
 
-namespace DiscordBotRewrite.Voice {
+namespace DiscordBotRewrite.Voice
+{
     public class VoiceGuildConnection {
         #region Properites
         public LavalinkNodeConnection Node;

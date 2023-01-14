@@ -1,4 +1,4 @@
-﻿using DiscordBotRewrite.Extensions;
+﻿using DiscordBotRewrite.Question.Enums;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 

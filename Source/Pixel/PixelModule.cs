@@ -1,4 +1,4 @@
-﻿using DiscordBotRewrite.Extensions;
+﻿using DiscordBotRewrite.Global.Extensions;
 using DSharpPlus.SlashCommands;
 using SkiaSharp;
 
@@ -6,40 +6,6 @@ namespace DiscordBotRewrite.Pixel
 {
     public class PixelModule
     {
-        #region Constants
-        //Update both when adding a color
-        readonly Dictionary<uint, SKColor> PixelDict = new Dictionary<uint, SKColor>()
-        {
-        {0,  SKColors.White},
-        {1,  SKColors.Red},
-        {2,  SKColors.Orange},
-        {3,  SKColors.Yellow},
-        {4,  SKColors.Green},
-        {5,  SKColors.Blue},
-        {6,  SKColors.Purple},
-        {7,  SKColors.Brown},
-        {8,  SKColors.Pink},
-        {9,  SKColors.Gray},
-        {10, SKColors.Black},
-        {11, SKColors.Cyan}
-    };
-        public enum PixelEnum
-        {
-            White,
-            Red,
-            Orange,
-            Yellow,
-            Green,
-            Blue,
-            Purple,
-            Brown,
-            Pink,
-            Gray,
-            Black,
-            Cyan
-        };
-        #endregion
-
         #region Constructors
         public PixelModule()
         {
@@ -49,7 +15,7 @@ namespace DiscordBotRewrite.Pixel
         #endregion
 
         #region Public
-        public bool TryPlacePixel(long guildId, long userId, int x, int y, PixelEnum color)
+        public bool TryPlacePixel(long guildId, long userId, int x, int y, PixelColor color)
         {
             var map = GetPixelMap(guildId);
 
@@ -93,7 +59,7 @@ namespace DiscordBotRewrite.Pixel
             SKSurface surface = CreateSurface(map, anchor, end, 500 / zoom);
             surface.Snapshot().SaveToPng($"PixelImages/img{ctx.User.Id}.png");
         }
-        public void CreateImageWithUI(InteractionContext ctx, int x, int y, int zoom, PixelEnum selectedPixel)
+        public void CreateImageWithUI(InteractionContext ctx, int x, int y, int zoom, PixelColor selectedColor)
         {
             PixelMap map = GetPixelMap((long)ctx.Guild.Id);
             int halfDistance = zoom / 2;
@@ -102,8 +68,7 @@ namespace DiscordBotRewrite.Pixel
 
             SKSurface surface = CreateSurface(map, anchor, end, 500 / zoom);
 
-            if (PixelDict.TryGetValue((uint)selectedPixel, out SKColor color))
-                DrawCenterPixel(surface.Canvas, zoom, color);
+            DrawCenterPixel(surface.Canvas, zoom, selectedColor.Color);
             AddOutline(surface.Canvas, zoom, 2, SKColors.Silver);
 
             surface.Snapshot().SaveToPng($"PixelImages/img{ctx.User.Id}.png");
@@ -160,6 +125,7 @@ namespace DiscordBotRewrite.Pixel
             {
                 for (int y = 0; y < yDist; y++)
                 {
+                    //Cleanup
                     int absX = x + anchor.X;
                     int absY = y + anchor.Y;
                     SKColor color;
@@ -169,9 +135,13 @@ namespace DiscordBotRewrite.Pixel
                         color = SKColors.Black.WithAlpha(255);
                         exists = false;
                     }
-                    else if (!PixelDict.TryGetValue((uint)map.GetPixel(absX, absY), out color))
+                    else
                     {
-                        color = SKColors.White;
+                        var pColor = map.GetPixelColor(absX, absY);
+                        if(pColor != null)
+                            color = pColor.Color;
+                        else
+                            color = SKColors.White;
                     }
                     paint.Color = color;
 

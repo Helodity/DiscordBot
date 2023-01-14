@@ -1,8 +1,9 @@
 ﻿using DSharpPlus.SlashCommands;
 
-namespace DiscordBotRewrite.Extensions;
+namespace DiscordBotRewrite.Question.Enums;
 [Flags]
-public enum QuestionRating {
+public enum QuestionRating
+{
     All = 0,
     [ChoiceName("G")]
     G = 1 << 0,

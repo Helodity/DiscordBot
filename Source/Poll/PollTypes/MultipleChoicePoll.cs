@@ -1,4 +1,5 @@
-﻿using DiscordBotRewrite.Extensions;
+﻿using DiscordBotRewrite.Global.Extensions;
+using DiscordBotRewrite.Poll.Enums;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;

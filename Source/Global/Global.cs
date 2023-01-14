@@ -1,8 +1,9 @@
 ﻿using System.Text;
-using DiscordBotRewrite.Extensions;
+using DiscordBotRewrite.Global.Extensions;
 using Newtonsoft.Json;
 
-namespace DiscordBotRewrite.Global {
+namespace DiscordBotRewrite.Global
+{
     public static class Global {
         #region Public
         /// <summary>

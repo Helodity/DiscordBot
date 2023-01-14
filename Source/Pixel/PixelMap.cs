@@ -56,15 +56,15 @@ namespace DiscordBotRewrite.Pixel
             Bot.Database.Update(this);
         }
 
-        public void SetPixel(int x, int y, PixelEnum color)
+        public void SetPixel(int x, int y, PixelColor color)
         {
-            PixelState[x + y * Width] = (byte)color;
+            PixelState[x + y * Width] = (byte)color.ID;
             Bot.Database.Update(this);
         }
 
-        public PixelEnum GetPixel(int x, int y)
+        public PixelColor GetPixelColor(int x, int y)
         {
-            return (PixelEnum)PixelState[x + y * Width];
+            return PixelColor.GetFromID(PixelState[x + y * Width]);
         }
 
         public DateTime NextPlaceTime(long userId)

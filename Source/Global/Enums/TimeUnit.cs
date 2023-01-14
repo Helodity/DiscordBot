@@ -1,4 +1,4 @@
-﻿namespace DiscordBotRewrite.Extensions {
+﻿namespace DiscordBotRewrite.Global.Enums {
     public enum TimeUnit {
         Seconds,
         Minutes,
