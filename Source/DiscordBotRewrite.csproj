@@ -28,6 +28,10 @@
     <PackageReference Include="SQLiteNetExtensions" Version="2.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Voice\Enums\" />
+  </ItemGroup>
+
   <Target Name="PreBuildDebug" BeforeTargets="PreBuildEvent" Condition="'$(Configuration)' == 'Debug' ">
     <Version VersionFile="Properties\version.txt" RevisionType="BuildIncrement">
       <Output TaskParameter="Major" PropertyName="Major" />

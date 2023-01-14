@@ -1,7 +1,14 @@
 ﻿using System.Reflection;
 using DiscordBotRewrite.Commands;
+using DiscordBotRewrite.Economy;
+using DiscordBotRewrite.Economy.Gambling;
+using DiscordBotRewrite.General;
 using DiscordBotRewrite.Global;
-using DiscordBotRewrite.Modules;
+using DiscordBotRewrite.Pixel;
+using DiscordBotRewrite.Poll;
+using DiscordBotRewrite.Question;
+using DiscordBotRewrite.Quote;
+using DiscordBotRewrite.Voice;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
@@ -12,7 +19,8 @@ using Microsoft.Extensions.Logging;
 using SQLite;
 
 
-namespace DiscordBotRewrite {
+namespace DiscordBotRewrite
+{
     public static class Bot {
         #region Debug Specifics
 #if DEBUG
