@@ -54,7 +54,7 @@ namespace DiscordBotRewrite.Modules {
             await OnChannelDisconnect(Conn, null);
             IsConnected = false;
         }
-        public async Task RequestTracksAsync(List<LavalinkTrack> tracks) {
+        public async Task RequestTracksAsync(List<LavalinkTrack> tracks, bool force = false) {
             if(tracks == null) {
                 Bot.Client.Logger.LogError("RequestTracksAsync had a null list!");
                 return;
@@ -69,11 +69,16 @@ namespace DiscordBotRewrite.Modules {
             foreach(LavalinkTrack track in tracks) {
                 if(track == null)
                     continue;
-
-                if(IsPlayingTrack())
-                    QueueTrack(track);
-                else
+                if(IsPlayingTrack()) {
+                    if(force) {
+                        TrackQueue.Insert(0, LastPlayedTrack);
+                        await PlayTrack(track);
+                    } else {
+                        QueueTrack(track);
+                    }
+                } else {
                     await PlayTrack(track);
+                }
             }
             IdleDisconnectEvent.Cancel();
         }

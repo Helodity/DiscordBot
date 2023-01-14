@@ -1,4 +1,4 @@
-﻿using DSharpPlus.SlashCommands;
+﻿using DiscordBotRewrite.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -8,18 +8,6 @@ namespace DiscordBotRewrite.Modules {
         #region Constants
         public const string TruthJsonLocation = "Json/Questions/TruthQuestions.json";
         public const string ParanoiaJsonLocation = "Json/Questions/ParanoiaQuestions.json";
-        [Flags]
-        public enum DepthGroup {
-            All = 0,
-            [ChoiceName("G")]
-            G = 1 << 0,
-            [ChoiceName("PG")]
-            PG = 1 << 1,
-            [ChoiceName("PG13")]
-            PG13 = 1 << 2,
-            [ChoiceName("R")]
-            R = 1 << 3
-        }
         #endregion
 
         [JsonProperty("Text")]
@@ -27,11 +15,11 @@ namespace DiscordBotRewrite.Modules {
 
         [JsonProperty("Groups")]
         [JsonConverter(typeof(StringEnumConverter))]
-        public readonly DepthGroup Groups;
+        public readonly QuestionRating Groups;
         #endregion
 
         #region Constructors
-        public Question(string text, DepthGroup depth) {
+        public Question(string text, QuestionRating depth) {
             Text = text;
             Groups = depth;
         }

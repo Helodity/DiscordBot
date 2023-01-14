@@ -72,7 +72,7 @@ namespace DiscordBotRewrite.Modules {
             if(quoteReactions >= data.EmojiAmount) {
                 DiscordUser author = proper_message.Author;
                 DiscordChannel channel = await client.GetChannelAsync((ulong)data.ChannelId);
-                DiscordAttachment attachment = attachment = proper_message.Attachments.FirstOrDefault(x => x.IsImage());
+                DiscordAttachment attachment = proper_message.Attachments.FirstOrDefault(x => x.IsImage());
 
                 var quoteEmbed = new DiscordEmbedBuilder()
                     .WithColor(Bot.Style.DefaultColor)

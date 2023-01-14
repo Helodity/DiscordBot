@@ -10,6 +10,18 @@ using Microsoft.Extensions.Logging;
 
 namespace DiscordBotRewrite.Modules {
     public class VoiceModule {
+
+        public enum EqualizerPreset {
+            [ChoiceName("Pure")]
+            Pure,
+            [ChoiceName("Base Boost")]
+            BaseBoost,
+            [ChoiceName("Super Base Boost")]
+            SuperBaseBoost,
+            [ChoiceName("Center Boost")]
+            CenterBoost
+        }
+
         #region Properties
         public DiscordClient Client;
         public LavalinkConfiguration Config;
@@ -78,7 +90,6 @@ namespace DiscordBotRewrite.Modules {
 
             return new List<LavalinkTrack>();
         }
-
         public async Task<List<LavalinkTrack>> TrackSearchAsync(LavalinkNodeConnection node, string search, LavalinkSearchType type, bool returnAll = false) {
             LavalinkLoadResult loadResult = await node.Rest.GetTracksAsync(search, type);
             if(loadResult.LoadResultType != LavalinkLoadResultType.LoadFailed
@@ -93,6 +104,50 @@ namespace DiscordBotRewrite.Modules {
 
             return new List<LavalinkTrack>();
         }
+
+        public LavalinkBandAdjustment[] GetEqualizerSettings(EqualizerPreset preset) {
+            LavalinkBandAdjustment[] eqSettings = Enumerable.Range(0, 15).Select(x => new LavalinkBandAdjustment(x, 0)).ToArray();
+            switch (preset) {
+                case EqualizerPreset.BaseBoost:
+                    eqSettings[14] = new LavalinkBandAdjustment(14, -0.15f);
+                    eqSettings[13] = new LavalinkBandAdjustment(13, -0.15f);
+                    eqSettings[12] = new LavalinkBandAdjustment(12, -0.1f);
+                    eqSettings[11] = new LavalinkBandAdjustment(11, -0.05f);
+
+                    eqSettings[5] = new LavalinkBandAdjustment(5, 0.1f);
+                    eqSettings[4] = new LavalinkBandAdjustment(4, 0.2f);
+                    eqSettings[3] = new LavalinkBandAdjustment(3, 0.2f);
+                    eqSettings[2] = new LavalinkBandAdjustment(2, 0.3f);
+                    eqSettings[1] = new LavalinkBandAdjustment(1, 0.3f);
+                    eqSettings[0] = new LavalinkBandAdjustment(0, 0.4f);
+                    break;
+                case EqualizerPreset.SuperBaseBoost:
+                    eqSettings[14] = new LavalinkBandAdjustment(14, -0.2f);
+                    eqSettings[13] = new LavalinkBandAdjustment(13, -0.2f);
+                    eqSettings[12] = new LavalinkBandAdjustment(12, -0.2f);
+                    eqSettings[11] = new LavalinkBandAdjustment(11, -0.2f);
+
+                    eqSettings[8] = new LavalinkBandAdjustment(8, 0.5f);
+                    eqSettings[5] = new LavalinkBandAdjustment(7, 0.75f);
+                    eqSettings[6] = new LavalinkBandAdjustment(6, 1.0f);
+                    eqSettings[5] = new LavalinkBandAdjustment(5, 1.0f);
+                    eqSettings[4] = new LavalinkBandAdjustment(4, 1.0f);
+                    eqSettings[3] = new LavalinkBandAdjustment(3, 1.0f);
+                    eqSettings[2] = new LavalinkBandAdjustment(2, 1.0f);
+                    eqSettings[1] = new LavalinkBandAdjustment(1, 1.0f);
+                    eqSettings[0] = new LavalinkBandAdjustment(0, 1.0f);
+                    break;
+                case EqualizerPreset.CenterBoost:
+                    eqSettings[7] = new LavalinkBandAdjustment(7, 0.2f);
+                    eqSettings[6] = new LavalinkBandAdjustment(6, 0.2f);
+                    eqSettings[5] = new LavalinkBandAdjustment(5, 0.2f);
+                    eqSettings[4] = new LavalinkBandAdjustment(4, 0.2f);
+                    eqSettings[3] = new LavalinkBandAdjustment(3, 0.2f);
+                    break;
+            }
+            return eqSettings;
+        }
+
         #endregion
 
         #region Private

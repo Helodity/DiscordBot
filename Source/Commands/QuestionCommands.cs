@@ -11,7 +11,7 @@ namespace DiscordBotRewrite.Commands {
         #region Truth
         [SlashCommand("truth", "Ask a truth question")]
         public async Task AskTruth(InteractionContext ctx,
-            [Option("rating", "How risky is the question?")] Question.DepthGroup rating = Question.DepthGroup.G) {
+            [Option("rating", "How risky is the question?")] QuestionRating rating = QuestionRating.G) {
 
             QuestionModule module = Bot.Modules.Question;
             Question usedQuestion = module.PickQuestion(module.TruthQuestions.ToList(), rating);
@@ -26,7 +26,7 @@ namespace DiscordBotRewrite.Commands {
         [SlashCommand("paranoia", "Ask a paranoia question")]
         public async Task AskParanoia(InteractionContext ctx,
             [Option("user", "Who is recieving the question?")] DiscordUser user = null,
-            [Option("rating", "How risky is the question?")] Question.DepthGroup rating = Question.DepthGroup.G) {
+            [Option("rating", "How risky is the question?")] QuestionRating rating = QuestionRating.G) {
 
             QuestionModule module = Bot.Modules.Question;
             user ??= ctx.User;

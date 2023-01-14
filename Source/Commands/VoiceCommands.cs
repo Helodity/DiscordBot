@@ -3,6 +3,7 @@ using DiscordBotRewrite.Extensions;
 using DiscordBotRewrite.Modules;
 using DSharpPlus;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
 using DSharpPlus.Lavalink;
 using DSharpPlus.SlashCommands;
 
@@ -39,7 +40,9 @@ namespace DiscordBotRewrite.Commands {
         #region Play
         [SlashCommand("play", "Play a song")]
         [UserAbleToPlay]
-        public async Task Play(InteractionContext ctx, [Option("search", "what to play")] string search, [Option("time", "how far in seconds to start")] long time = 0) {
+        public async Task Play(InteractionContext ctx, [Option("search", "what to play")] string search, 
+            [Option("time", "how far in seconds to start")] long time = 0, 
+            [Option("force", "Does this song immediately play? (If yes, current song will move to queue")] bool force = false) {
             VoiceModule module = Bot.Modules.Voice;
             VoiceGuildConnection VGconn = module.GetGuildConnection(ctx);
 
@@ -56,8 +59,8 @@ namespace DiscordBotRewrite.Commands {
                 return;
             }
 
-            bool canPlayFirstSong = !VGconn.IsPlayingTrack();
-            await VGconn.RequestTracksAsync(tracks);
+            bool canPlayFirstSong = !VGconn.IsPlayingTrack() || force;
+            await VGconn.RequestTracksAsync(tracks, force);
 
             if(time > 0 && canPlayFirstSong) {
                 await VGconn.Conn.SeekAsync(TimeSpan.FromSeconds(time));
@@ -174,75 +177,6 @@ namespace DiscordBotRewrite.Commands {
         }
         #endregion
 
-        #region Clear
-        [SlashCommand("clear", "Clear the queue")]
-        [UserAbleToModify]
-        public async Task Clear(InteractionContext ctx) {
-            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-            int songCount = VGConn.TrackQueue.Count;
-            VGConn.TrackQueue = new List<LavalinkTrack>();
-
-            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                Description = $"Cleared {songCount} songs from queue!",
-                Color = Bot.Style.DefaultColor
-            });
-        }
-        #endregion
-
-        #region Remove
-        [SlashCommand("remove", "Remove the song at the specified index")]
-        [UserAbleToModify]
-        public async Task Remove(InteractionContext ctx, [Option("index", "index")] long index) {
-            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-            int songCount = VGConn.TrackQueue.Count;
-
-            index--; //Convert from 1 being the first song to 0
-            if(index >= songCount || index < 0) {
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = $"Index out of bounds!",
-                    Color = Bot.Style.ErrorColor
-                }, true);
-                return;
-            }
-
-            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                Description = $"Removed {VGConn.TrackQueue[(int)index].Title} from the queue!",
-                Color = Bot.Style.DefaultColor
-            });
-            VGConn.TrackQueue.RemoveAt((int)index);
-        }
-        #endregion
-
-        #region Queue
-        [SlashCommand("queue", "Show the queue")]
-        public async Task Queue(InteractionContext ctx, [Option("page", "what page")] long page = 1) {
-            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-            int pageCount = (int)Math.Ceiling(VGConn.TrackQueue.Count / (decimal)10);
-            int activePage = Math.Min(Math.Max(1, (int)page), pageCount);
-            int endNumber = Math.Min(activePage * 10, VGConn.TrackQueue.Count);
-
-            var embed = new DiscordEmbedBuilder {
-                Title = "Queue",
-                Color = Bot.Style.DefaultColor
-            };
-
-            string description = string.Empty;
-            if(pageCount == 0) {
-                description = "Queue is empty!";
-            } else {
-                if(VGConn.IsShuffling)
-                    description += "Shuffling is **enabled**, queue position will not reflect what song is played next\n";
-                for(int i = (activePage - 1) * 10; i < endNumber; i++) {
-                    description += $"**{i + 1}:** `{VGConn.TrackQueue[i].Title}` by `{VGConn.TrackQueue[i].Author}` \n";
-                }
-            }
-            embed.WithDescription(description);
-
-            embed.WithFooter($"Page {activePage} / {pageCount}");
-            await ctx.CreateResponseAsync(embed);
-        }
-        #endregion
-
         #region Now Playing
         [SlashCommand("current", "currently playing song")]
         [UserAbleToModify]
@@ -261,6 +195,94 @@ namespace DiscordBotRewrite.Commands {
             });
         }
         #endregion
+
+        #region Equalizer
+        [SlashCommand("equalizer", "Set the equalizer")]
+        [UserAbleToModify]
+        public async Task SetEqualizer(InteractionContext ctx, [Option("setting", "how eq")] VoiceModule.EqualizerPreset preset) {
+            VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+            var settings = Bot.Modules.Voice.GetEqualizerSettings(preset);
+
+            await VGConn.Conn.AdjustEqualizerAsync(settings);
+
+            await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                Description = $"Set EQ settings to {preset}!",
+                Color = Bot.Style.DefaultColor
+            });
+        }
+        #endregion
+
+        [SlashCommandGroup("queue", "Queue related commands")]
+        public class QueueCommands : ApplicationCommandModule {
+            #region Show
+            [SlashCommand("show", "Show the queue")]
+            public async Task ShowQueue(InteractionContext ctx, [Option("page", "what page")] long page = 1) {
+                VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+                int pageCount = (int)Math.Ceiling(VGConn.TrackQueue.Count / (decimal)10);
+                int activePage = Math.Min(Math.Max(1, (int)page), pageCount);
+                int endNumber = Math.Min(activePage * 10, VGConn.TrackQueue.Count);
+
+                var embed = new DiscordEmbedBuilder {
+                    Title = "Queue",
+                    Color = Bot.Style.DefaultColor
+                };
+
+                string description = string.Empty;
+                if(pageCount == 0) {
+                    description = "Queue is empty!";
+                } else {
+                    if(VGConn.IsShuffling)
+                        description += "Shuffling is **enabled**, queue position will not reflect what song is played next\n";
+                    for(int i = (activePage - 1) * 10; i < endNumber; i++) {
+                        description += $"**{i + 1}:** `{VGConn.TrackQueue[i].Title}` by `{VGConn.TrackQueue[i].Author}` \n";
+                    }
+                }
+                embed.WithDescription(description);
+
+                embed.WithFooter($"Page {activePage} / {pageCount}");
+                await ctx.CreateResponseAsync(embed);
+            }
+            #endregion
+
+            #region Clear
+            [SlashCommand("clear", "Clear the queue")]
+            [UserAbleToModify]
+            public async Task ClearQueue(InteractionContext ctx) {
+                VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+                int songCount = VGConn.TrackQueue.Count;
+                VGConn.TrackQueue = new List<LavalinkTrack>();
+
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = $"Cleared {songCount} songs from queue!",
+                    Color = Bot.Style.DefaultColor
+                });
+            }
+            #endregion
+
+            #region Remove
+            [SlashCommand("remove", "Remove the song at the specified index")]
+            [UserAbleToModify]
+            public async Task Remove(InteractionContext ctx, [Option("index", "index")] long index) {
+                VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
+                int songCount = VGConn.TrackQueue.Count;
+
+                index--; //Convert from 1 being the first song to 0
+                if(index >= songCount || index < 0) {
+                    await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                        Description = $"Index out of bounds!",
+                        Color = Bot.Style.ErrorColor
+                    }, true);
+                    return;
+                }
+
+                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
+                    Description = $"Removed {VGConn.TrackQueue[(int)index].Title} from the queue!",
+                    Color = Bot.Style.DefaultColor
+                });
+                VGConn.TrackQueue.RemoveAt((int)index);
+            }
+            #endregion
+        }
 
         [SlashCommandGroup("playlist", "Playlist related commands")]
         public class PlaylistCommands : ApplicationCommandModule {
@@ -320,7 +342,7 @@ namespace DiscordBotRewrite.Commands {
                     str = str.Trim();
                     str = "https://www.youtube.com/watch?v=" + str;
                 });
-                uriStrings.RemoveAll(x => string.IsNullOrWhiteSpace(x));
+                uriStrings.RemoveAll(string.IsNullOrWhiteSpace);
 
                 if(reset) {
                     VGConn.TrackQueue = new List<LavalinkTrack>();

@@ -73,6 +73,7 @@ namespace DiscordBotRewrite {
             var config = new DiscordConfiguration {
                 Token = Config.Token,
                 TokenType = TokenType.Bot,
+                Intents = DiscordIntents.MessageContents | DiscordIntents.AllUnprivileged,
                 AutoReconnect = true,
                 MinimumLogLevel = Debugging ? LogLevel.Debug : LogLevel.Information
             };
