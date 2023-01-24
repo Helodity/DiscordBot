@@ -29,7 +29,7 @@ namespace DiscordBotRewrite.Commands {
             var form = new DiscordInteractionResponseBuilder()
               .WithTitle("Start a poll!")
               .WithCustomId(id)
-              .AddComponents(new TextInputComponent("Question", "question", "What do you want to ask?", max_length: 100));
+              .AddComponents(new TextInputComponent("Question", "question", "What do you want to ask?", max_length: 1000));
             if(type == Poll.PollType.MultipleChoice)
                 form.AddComponents(new TextInputComponent("Choices", "choices", "Separate each choice with a comma.", style: TextInputStyle.Paragraph));
 
@@ -47,7 +47,7 @@ namespace DiscordBotRewrite.Commands {
                 choices = input.Result.Values["choices"].Split(new char[] { ',', '\n' }).ToList();
                 choices.ForEach(choice => { choice = choice.Trim(); });
 
-                choices.RemoveAll(x => string.IsNullOrWhiteSpace(x)); ;
+                choices.RemoveAll(string.IsNullOrWhiteSpace); ;
                 if(choices.Count < 2) {
                     await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                         Description = "Invalid choices: Make sure there are at least two unique choices!",
