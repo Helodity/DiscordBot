@@ -90,10 +90,10 @@ namespace DiscordBotRewrite.Poll
                 }
             }
 
-            var builder = GetActiveMessageBuilder();
+            var builder = await GetActiveMessageBuilder();
             await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder(builder));
         }
-        public override DiscordMessageBuilder GetActiveMessageBuilder()
+        public async override Task<DiscordMessageBuilder> GetActiveMessageBuilder()
         {
             //Create the selection component based on given choices
             var choiceSelections = new List<DiscordSelectComponentOption>();
@@ -105,7 +105,7 @@ namespace DiscordBotRewrite.Poll
             choiceSelections.Add(new DiscordSelectComponentOption("Clear", "Clear"));
             var selectionComponent = new DiscordSelectComponent("choice", "Vote here!", choiceSelections);
 
-            return base.GetActiveMessageBuilder().AddComponents(selectionComponent);
+            return (await base.GetActiveMessageBuilder()).AddComponents(selectionComponent);
         }
 
     }

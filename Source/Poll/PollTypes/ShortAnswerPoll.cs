@@ -57,7 +57,7 @@ namespace DiscordBotRewrite.Poll {
             if(e.Id == "clear") {
                 if(vote != null)
                     Bot.Database.Delete(vote);
-                builder = GetActiveMessageBuilder();
+                builder = await GetActiveMessageBuilder();
                 await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder(builder));
                 return;
             }
@@ -83,13 +83,13 @@ namespace DiscordBotRewrite.Poll {
                 Bot.Database.Insert(vote);
             }
 
-            builder = GetActiveMessageBuilder();
+            builder = await GetActiveMessageBuilder();
             await input.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder(builder));
         }
-        public override DiscordMessageBuilder GetActiveMessageBuilder() {
+        public async override Task<DiscordMessageBuilder> GetActiveMessageBuilder() {
             var voteComponent = new DiscordButtonComponent(ButtonStyle.Primary, "vote", "Vote");
             var clearComponent = new DiscordButtonComponent(ButtonStyle.Danger, "clear", "Clear");
-            return base.GetActiveMessageBuilder().AddComponents(voteComponent, clearComponent);
+            return (await base.GetActiveMessageBuilder()).AddComponents(voteComponent, clearComponent);
         }
     }
 }

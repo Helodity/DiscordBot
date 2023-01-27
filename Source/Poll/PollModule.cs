@@ -73,7 +73,7 @@ namespace DiscordBotRewrite.Poll
             {
                 poll = new ShortAnswerPoll(message, question, endTime, ctx.User);
             }
-            var messageBuilder = poll.GetActiveMessageBuilder();
+            var messageBuilder = await poll.GetActiveMessageBuilder();
             await message.ModifyAsync(messageBuilder);
 
             Bot.Database.Insert(poll);

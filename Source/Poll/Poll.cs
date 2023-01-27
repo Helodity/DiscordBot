@@ -4,6 +4,7 @@ using DiscordBotRewrite.Poll.Enums;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.Logging;
 using SQLite;
 
@@ -68,8 +69,12 @@ namespace DiscordBotRewrite.Poll
             return await (await Bot.Client.GetChannelAsync((ulong)ChannelId)).GetMessageAsync((ulong)MessageId);
         }
 
-        public async Task<DiscordUser> GetUserAsync() {
-            return await Bot.Client.GetUserAsync((ulong)AskerId);
+        public async Task<DiscordUser> GetAskerAsync() {
+            try {
+                return await Bot.Client.GetUserAsync((ulong)AskerId);
+            } catch{
+                return null;
+            }
         }
 
         public void StartWatching()
@@ -92,14 +97,16 @@ namespace DiscordBotRewrite.Poll
         {
             Bot.Client.Logger.LogCritical("Tried to run OnVote() on base class poll!");
         }
-        public virtual DiscordMessageBuilder GetActiveMessageBuilder()
+        public async virtual Task<DiscordMessageBuilder> GetActiveMessageBuilder()
         {
             int voteCount = Bot.Database.Table<Vote>().Count(x => x.PollId == MessageId);
             string voteString = voteCount == 1 ? $"{voteCount} member has voted." : $"{voteCount} members have voted.";
+            DiscordUser asker = await GetAskerAsync();
+            string askerMention = asker == null ? "Someone" : $"{asker.Mention}";
             return new DiscordMessageBuilder()
                 .AddEmbed(new DiscordEmbedBuilder
                 {
-                    Description = $"Poll ends {EndTime.ToTimestamp()}!\n{Question.ToBold()}\n{voteString}",
+                    Description = $"{askerMention} asks: {Question.ToBold()}\nPoll ends {EndTime.ToTimestamp()}!\n{voteString}",
                     Color = Bot.Style.DefaultColor
                 });
         }
