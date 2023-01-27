@@ -1,9 +1,10 @@
-﻿using DiscordBotRewrite.Extensions;
-using DiscordBotRewrite.Modules;
+﻿using DiscordBotRewrite.Economy;
+using DiscordBotRewrite.Global.Extensions;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 
-namespace DiscordBotRewrite.Global {
+namespace DiscordBotRewrite.Global
+{
     public static class CommandGuards {
         public static async Task<bool> PreventBotTargetAsync(InteractionContext ctx, DiscordUser user) {
             if(user.IsBot) {
