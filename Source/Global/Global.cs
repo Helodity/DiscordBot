@@ -5,6 +5,13 @@ using Newtonsoft.Json;
 namespace DiscordBotRewrite.Global
 {
     public static class Global {
+
+        private const int MajorVersion = 2;
+        private const int MinorVersion = 4;
+        private const int RevisionVersion = 0;
+
+        public static string VersionString = $"{MajorVersion}.{MinorVersion}.{RevisionVersion}";
+
         #region Public
         /// <summary>
         /// Returns an int with min inclusive and max inclusive
