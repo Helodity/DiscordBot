@@ -18,13 +18,14 @@ namespace DiscordBotRewrite.Poll
             MessageId = poll.MessageId;
             GuildId = poll.GuildId;
             ChannelId = poll.ChannelId;
+            AskerId = poll.AskerId;
             Question = poll.Question;
             EndTime = poll.EndTime;
             Type = PollType.MultipleChoice;
         }
 
 
-        public MultipleChoicePoll(DiscordMessage message, string question, List<string> choices, DateTime endTime) : base(message, question, endTime)
+        public MultipleChoicePoll(DiscordMessage message, string question, List<string> choices, DateTime endTime, DiscordUser asker) : base(message, question, endTime, asker)
         {
             Type = PollType.MultipleChoice;
             foreach (string choice in choices.Distinct())

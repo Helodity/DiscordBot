@@ -56,25 +56,28 @@ namespace DiscordBotRewrite.Poll
                 choices.ForEach(choice => { choice = choice.Trim(); });
 
                 choices.RemoveAll(string.IsNullOrWhiteSpace); ;
-                if (choices.Count < 2)
-                {
-                    await input.Result.Interaction.CreateResponseAsync(new DiscordEmbedBuilder
-                    {
-                        Description = "Invalid choices: Make sure there are at least two unique choices!",
-                        Color = Bot.Style.ErrorColor
-                    }, true);
+                if (choices.Count < 2) {
+                    await input.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                        new DiscordInteractionResponseBuilder()
+                            .AddEmbed(new DiscordEmbedBuilder {
+                                Description = "Invalid choices: Make sure there are at least two unique choices!",
+                                Color = Bot.Style.ErrorColor
+                            })
+                            .AsEphemeral()
+                    );
                     return;
                 }
             }
 
             DateTime endTime = DateTime.Now.AddTime((int)unitAmt, unit);
             await Bot.Modules.Poll.StartPoll(ctx, input.Result.Values["question"], endTime, choices);
-            await input.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
-            {
-                Description = "Started the poll!",
-                Color = Bot.Style.SuccessColor
-            }).AsEphemeral());
-
+            await input.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, 
+                new DiscordInteractionResponseBuilder()
+                .AddEmbed(new DiscordEmbedBuilder {
+                    Description = "Started the poll!",
+                    Color = Bot.Style.SuccessColor
+                })
+                .AsEphemeral());
         }
         #endregion
 

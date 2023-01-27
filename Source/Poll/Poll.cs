@@ -27,6 +27,10 @@ namespace DiscordBotRewrite.Poll
         [Column("message_id")]
         public long MessageId { get; set; }
 
+        //The user ID of the asker
+        [Column("asker_id")]
+        public long AskerId { get; set; }
+
         //The question being asked
         [Column("question")]
         public string Question { get; set; }
@@ -44,11 +48,12 @@ namespace DiscordBotRewrite.Poll
 
         public Poll() { }
 
-        protected Poll(DiscordMessage message, string question, DateTime endTime)
+        protected Poll(DiscordMessage message, string question, DateTime endTime, DiscordUser asker)
         {
             GuildId = (long)message.Channel.Guild.Id;
             ChannelId = (long)message.Channel.Id;
             MessageId = (long)message.Id;
+            AskerId = (long)asker.Id;
             Question = question;
             EndTime = endTime;
             Type = PollType.ShortAnswer;
@@ -61,6 +66,10 @@ namespace DiscordBotRewrite.Poll
         public async Task<DiscordMessage> GetMessageAsync()
         {
             return await (await Bot.Client.GetChannelAsync((ulong)ChannelId)).GetMessageAsync((ulong)MessageId);
+        }
+
+        public async Task<DiscordUser> GetUserAsync() {
+            return await Bot.Client.GetUserAsync((ulong)AskerId);
         }
 
         public void StartWatching()

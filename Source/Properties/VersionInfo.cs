@@ -7,6 +7,5 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-
-[assembly: System.Reflection.AssemblyFileVersion("2.3.0.614")]
-[assembly: System.Reflection.AssemblyVersion("2.3.0.614")]
+[assembly: System.Reflection.AssemblyFileVersion("2.3.0.615")]
+[assembly: System.Reflection.AssemblyVersion("2.3.0.615")]

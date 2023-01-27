@@ -17,13 +17,14 @@ namespace DiscordBotRewrite.Poll {
             MessageId = poll.MessageId;
             GuildId = poll.GuildId;
             ChannelId = poll.ChannelId;
+            AskerId = poll.AskerId;
             Question = poll.Question;
             EndTime = poll.EndTime;
-            Type = PollType.MultipleChoice;
+            Type = PollType.ShortAnswer;
         }
 
 
-        public ShortAnswerPoll(DiscordMessage message, string question, DateTime endTime) : base(message, question, endTime) {
+        public ShortAnswerPoll(DiscordMessage message, string question, DateTime endTime, DiscordUser asker) : base(message, question, endTime, asker) {
             Type = PollType.ShortAnswer;
         }
 

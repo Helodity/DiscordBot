@@ -40,12 +40,6 @@ namespace DiscordBotRewrite.Global
             sw.ToString();
             File.WriteAllText(path, sw.ToString());
         }
-
-        public static readonly string[] DistinctColors = {
-
-        };
-
-
         #endregion
     }
 }

@@ -1,5 +1,4 @@
 ﻿using SQLite;
-using static DiscordBotRewrite.Pixel.PixelModule;
 
 namespace DiscordBotRewrite.Pixel
 {

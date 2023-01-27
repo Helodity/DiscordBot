@@ -67,11 +67,11 @@ namespace DiscordBotRewrite.Poll
             Poll poll;
             if (choices != null)
             {
-                poll = new MultipleChoicePoll(message, question, choices, endTime);
+                poll = new MultipleChoicePoll(message, question, choices, endTime, ctx.User);
             }
             else
             {
-                poll = new ShortAnswerPoll(message, question, endTime);
+                poll = new ShortAnswerPoll(message, question, endTime, ctx.User);
             }
             var messageBuilder = poll.GetActiveMessageBuilder();
             await message.ModifyAsync(messageBuilder);
