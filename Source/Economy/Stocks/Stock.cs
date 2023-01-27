@@ -65,7 +65,7 @@ namespace DiscordBotRewrite.Economy.Stocks
             if (Momentum < -MaxMomentum)
                 Momentum = -MaxMomentum;
 
-            LastEarnings = (GenerateRandomNumber(-30, 40) * PriceVolatility / 10 + Momentum + Math.Sign(TargetPrice - ShareCost) * (float)Math.Pow(Math.Abs(TargetPrice - ShareCost), 0.2)) / 10000;
+            LastEarnings = (GenerateRandomNumber(-30, 40) * PriceVolatility / 10 + Momentum + Math.Sign(TargetPrice - ShareCost) * (float)Math.Pow(Math.Abs(TargetPrice - ShareCost), 0.1)) / 1000;
 
             float toChange = ShareCost * LastEarnings;
             if (toChange > -1 && toChange < 1)
