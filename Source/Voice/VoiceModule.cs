@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
+using DiscordBotRewrite.Voice.Enums;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
@@ -10,18 +11,6 @@ using Microsoft.Extensions.Logging;
 
 namespace DiscordBotRewrite.Voice {
     public class VoiceModule {
-
-        public enum EqualizerPreset {
-            [ChoiceName("Pure")]
-            Pure,
-            [ChoiceName("Base Boost")]
-            BaseBoost,
-            [ChoiceName("Super Base Boost")]
-            SuperBaseBoost,
-            [ChoiceName("Center Boost")]
-            CenterBoost
-        }
-
         #region Properties
         public DiscordClient Client;
         public LavalinkConfiguration Config;

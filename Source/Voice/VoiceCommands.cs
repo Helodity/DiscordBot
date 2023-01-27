@@ -4,6 +4,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.Lavalink;
 using DSharpPlus.SlashCommands;
 using DiscordBotRewrite.Global.Extensions;
+using DiscordBotRewrite.Voice.Enums;
 
 namespace DiscordBotRewrite.Voice
 {
@@ -228,7 +229,7 @@ namespace DiscordBotRewrite.Voice
         #region Equalizer
         [SlashCommand("equalizer", "Set the equalizer")]
         [UserAbleToModify]
-        public async Task SetEqualizer(InteractionContext ctx, [Option("setting", "how eq")] VoiceModule.EqualizerPreset preset)
+        public async Task SetEqualizer(InteractionContext ctx, [Option("setting", "how eq")] EqualizerPreset preset)
         {
             VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
             var settings = Bot.Modules.Voice.GetEqualizerSettings(preset);
