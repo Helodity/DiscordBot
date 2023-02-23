@@ -3,6 +3,7 @@ using DiscordBotRewrite.Poll.Enums;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using Microsoft.Extensions.Logging;
 using SQLite;
 
 namespace DiscordBotRewrite.Poll
@@ -37,6 +38,7 @@ namespace DiscordBotRewrite.Poll
 
         public override async Task OnEnd()
         {
+            await base.OnEnd();
             List<Vote> votes = Bot.Database.Table<Vote>().Where(x => x.PollId == MessageId).ToList();
             List<PollChoice> choices = Bot.Database.Table<PollChoice>().Where(x => x.PollId == MessageId).ToList();
 
@@ -89,6 +91,9 @@ namespace DiscordBotRewrite.Poll
                     Bot.Database.Insert(vote);
                 }
             }
+
+            if(Bot.Config.DebugLogging)
+                Bot.Client.Logger.LogDebug($"Received vote {vote.Choice} for multiple choice poll {MessageId} from {e.User.Id}");
 
             var builder = await GetActiveMessageBuilder();
             await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder(builder));

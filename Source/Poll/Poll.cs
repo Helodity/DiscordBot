@@ -44,6 +44,8 @@ namespace DiscordBotRewrite.Poll
         [Column("poll_type")]
         public PollType Type { get; set; }
 
+        TimeBasedEvent WatchEvent;
+
         #region Constructors
 
 
@@ -79,23 +81,24 @@ namespace DiscordBotRewrite.Poll
 
         public void StartWatching()
         {
-            new TimeBasedEvent(EndTime - DateTime.Now, async () =>
+            WatchEvent = new TimeBasedEvent(EndTime - DateTime.Now, async () =>
             {
                 while (Bot.Modules == null)
                 {
                     await Task.Delay(100);
                 }
                 await OnEnd();
-            }).Start();
+            });
+            WatchEvent.Start();
         }
 
         public async virtual Task OnEnd()
         {
-            Bot.Client.Logger.LogCritical("Tried to run OnEnd() on base class poll!");
+            WatchEvent.Cancel();
         }
         public async virtual Task OnVote(DiscordClient sender, ComponentInteractionCreateEventArgs e)
         {
-            Bot.Client.Logger.LogCritical("Tried to run OnVote() on base class poll!");
+            
         }
         public async virtual Task<DiscordMessageBuilder> GetActiveMessageBuilder()
         {
@@ -103,7 +106,7 @@ namespace DiscordBotRewrite.Poll
             string voteString = voteCount == 1 ? $"{voteCount} member has voted." : $"{voteCount} members have voted.";
             DiscordUser asker = await GetAskerAsync();
             string askerMention = asker == null ? "Someone" : $"{asker.Mention}";
-            var endEarlyButton = new DiscordButtonComponent(ButtonStyle.Primary, "end_early", "End Poll");
+            var endEarlyButton = new DiscordButtonComponent(ButtonStyle.Danger, "end_early", "End Poll");
             return new DiscordMessageBuilder()
                 .AddEmbed(new DiscordEmbedBuilder {
                     Description = $"{askerMention} asks: {Question.ToBold()}\nPoll ends {EndTime.ToTimestamp()}!\n{voteString}",

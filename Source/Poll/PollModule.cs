@@ -51,7 +51,6 @@ namespace DiscordBotRewrite.Poll
             return channel == null;
         }
 
-        // Returns whether the poll was sucessfully created
         public async Task StartPoll(InteractionContext ctx, string question, DateTime endTime, List<string> choices = null)
         {
             GuildPollData pollData = GetPollData((long)ctx.Guild.Id);

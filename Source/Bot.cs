@@ -24,10 +24,8 @@ namespace DiscordBotRewrite
     public static class Bot {
         #region Debug Specifics
 #if DEBUG
-        static readonly bool Debugging = true;
         static readonly ulong? TargetServer = 941558436561305630; //This is my private testing server, if you want to debug the bot you'll have to manually change this as any release won't use this code
 #else
-        static readonly bool Debugging = false;
         static readonly ulong? TargetServer = null;
 #endif
         #endregion
@@ -83,7 +81,7 @@ namespace DiscordBotRewrite
                 TokenType = TokenType.Bot,
                 Intents = DiscordIntents.MessageContents | DiscordIntents.AllUnprivileged,
                 AutoReconnect = true,
-                MinimumLogLevel = Debugging ? LogLevel.Debug : LogLevel.Information
+                MinimumLogLevel = Config.DebugLogging ? LogLevel.Debug : LogLevel.Information
             };
 
             Client = new DiscordClient(config);
@@ -120,7 +118,7 @@ namespace DiscordBotRewrite
         private static async Task OnClientReady(DiscordClient client, ReadyEventArgs e) {
             await Client.UpdateStatusAsync(new DiscordActivity() {
                 ActivityType = ActivityType.Playing,
-                Name = Debugging ? $"Version {VersionString}-Debug" : $"Version {VersionString}"
+                Name = Config.DebugLogging ? $"Version {VersionString}-Debug" : $"Version {VersionString}"
             }, UserStatus.Online);
             Client.Logger.Log(LogLevel.Debug, "Bot has started!");
         }

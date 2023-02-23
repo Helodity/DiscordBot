@@ -8,12 +8,14 @@ namespace DiscordBotRewrite {
         [JsonProperty("token")]
         public readonly string Token;
 
-        //Lavalink violates terms of service, so allow an option to disable it
         [JsonProperty("use_voice")]
         public readonly bool UseVoice;
 
         [JsonProperty("text_logging")]
         public readonly bool TextLogging;
+
+        [JsonProperty("debug_logging")]
+        public readonly bool DebugLogging;
         #endregion
     }
 }

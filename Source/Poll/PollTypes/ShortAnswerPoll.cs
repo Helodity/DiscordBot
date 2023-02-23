@@ -5,6 +5,7 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity.Extensions;
+using Microsoft.Extensions.Logging;
 using SQLite;
 
 namespace DiscordBotRewrite.Poll {
@@ -29,6 +30,8 @@ namespace DiscordBotRewrite.Poll {
         }
 
         public override async Task OnEnd() {
+
+            await base.OnEnd();
             List<Vote> votes = Bot.Database.Table<Vote>().Where(x => x.PollId == MessageId).ToList();
 
             string voteString = string.Empty;
@@ -52,6 +55,7 @@ namespace DiscordBotRewrite.Poll {
             }
         }
         public async override Task OnVote(DiscordClient sender, ComponentInteractionCreateEventArgs e) {
+            await base.OnVote(sender, e);
             Vote vote = Bot.Database.Table<Vote>().ToList().FirstOrDefault(x => x.PollId == (long)e.Message.Id && x.VoterId == (long)e.User.Id);
             DiscordMessageBuilder builder;
             if(e.Id == "clear") {
@@ -82,6 +86,9 @@ namespace DiscordBotRewrite.Poll {
                 vote = new Vote((long)e.Message.Id, (long)e.User.Id, v);
                 Bot.Database.Insert(vote);
             }
+
+            if(Bot.Config.DebugLogging)
+                Bot.Client.Logger.LogDebug($"Received vote {vote.Choice} for short answer poll {MessageId} from {e.User.Id}");
 
             builder = await GetActiveMessageBuilder();
             await input.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder(builder));
