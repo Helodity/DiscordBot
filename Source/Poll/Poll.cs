@@ -85,11 +85,11 @@ namespace DiscordBotRewrite.Poll
                 {
                     await Task.Delay(100);
                 }
-                OnEnd();
+                await OnEnd();
             }).Start();
         }
 
-        public async virtual void OnEnd()
+        public async virtual Task OnEnd()
         {
             Bot.Client.Logger.LogCritical("Tried to run OnEnd() on base class poll!");
         }
@@ -103,12 +103,12 @@ namespace DiscordBotRewrite.Poll
             string voteString = voteCount == 1 ? $"{voteCount} member has voted." : $"{voteCount} members have voted.";
             DiscordUser asker = await GetAskerAsync();
             string askerMention = asker == null ? "Someone" : $"{asker.Mention}";
+            var endEarlyButton = new DiscordButtonComponent(ButtonStyle.Primary, "end_early", "End Poll");
             return new DiscordMessageBuilder()
-                .AddEmbed(new DiscordEmbedBuilder
-                {
+                .AddEmbed(new DiscordEmbedBuilder {
                     Description = $"{askerMention} asks: {Question.ToBold()}\nPoll ends {EndTime.ToTimestamp()}!\n{voteString}",
                     Color = Bot.Style.DefaultColor
-                });
+                }).AddComponents(endEarlyButton);
         }
         #endregion
     }

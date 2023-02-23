@@ -81,7 +81,7 @@ namespace DiscordBotRewrite.Poll
         #endregion
 
         #region Events
-        Task RemoveFinishedPolls(DiscordClient sender, GuildDownloadCompletedEventArgs args)
+        async Task RemoveFinishedPolls(DiscordClient sender, GuildDownloadCompletedEventArgs args)
         {
             //Compile polls to be completed
             List<Poll> toComplete = GetAllPolls();
@@ -90,9 +90,8 @@ namespace DiscordBotRewrite.Poll
             //Complete the polls
             foreach (Poll p in toComplete)
             {
-                p.OnEnd();
-            }
-            return Task.CompletedTask;
+                await p.OnEnd();
+            }      
         }
         async Task OnInteraction(DiscordClient sender, ComponentInteractionCreateEventArgs e)
         {
@@ -100,16 +99,32 @@ namespace DiscordBotRewrite.Poll
             if (e.Guild == null)
                 return;
 
-            if (e.Id.StartsWith("poll_vote_modal"))
-                return;
-
             //Make sure message is a poll message
             GuildPollData pollData = GetPollData((long)e.Guild.Id);
             List<Poll> polls = GetAllPolls();
             Poll poll = polls.FirstOrDefault(x => x.MessageId == (long)e.Message.Id);
-            if (poll == null)
+            if(poll == null)
                 return;
-            Task.Run(async () => { await poll.OnVote(sender, e); });
+
+            if(e.Id == "vote") {
+                //We dont await here since voting can take a long time for short answers
+                Task.Run(async () => { await poll.OnVote(sender, e); });
+                return;
+            }
+
+            if(e.Id == "end_early") {
+                if((ulong)poll.AskerId == e.User.Id) {
+                    await poll.OnEnd();
+                } else {
+                    var embed = new DiscordEmbedBuilder {
+                        Description = $"You can't end the poll unless you're the one who started it!",
+                        Color = Bot.Style.ErrorColor
+                    };
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(embed).AsEphemeral());
+                }
+                return;
+            }
+
         }
         #endregion
 

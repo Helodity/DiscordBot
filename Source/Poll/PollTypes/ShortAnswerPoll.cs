@@ -28,7 +28,7 @@ namespace DiscordBotRewrite.Poll {
             Type = PollType.ShortAnswer;
         }
 
-        public override async void OnEnd() {
+        public override async Task OnEnd() {
             List<Vote> votes = Bot.Database.Table<Vote>().Where(x => x.PollId == MessageId).ToList();
 
             string voteString = string.Empty;

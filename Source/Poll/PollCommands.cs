@@ -54,8 +54,9 @@ namespace DiscordBotRewrite.Poll
             {
                 choices = input.Result.Values["choices"].Split(new char[] { ',', '\n' }).ToList();
                 choices.ForEach(choice => { choice = choice.Trim(); });
+                choices.RemoveAll(string.IsNullOrWhiteSpace);
+                choices = choices.Distinct().ToList();
 
-                choices.RemoveAll(string.IsNullOrWhiteSpace); ;
                 if (choices.Count < 2) {
                     await input.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder()

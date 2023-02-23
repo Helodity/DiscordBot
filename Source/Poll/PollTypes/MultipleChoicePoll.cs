@@ -35,7 +35,7 @@ namespace DiscordBotRewrite.Poll
             }
         }
 
-        public override async void OnEnd()
+        public override async Task OnEnd()
         {
             List<Vote> votes = Bot.Database.Table<Vote>().Where(x => x.PollId == MessageId).ToList();
             List<PollChoice> choices = Bot.Database.Table<PollChoice>().Where(x => x.PollId == MessageId).ToList();
@@ -103,7 +103,7 @@ namespace DiscordBotRewrite.Poll
                 choiceSelections.Add(new DiscordSelectComponentOption(c.Name, c.Name));
             }
             choiceSelections.Add(new DiscordSelectComponentOption("Clear", "Clear"));
-            var selectionComponent = new DiscordSelectComponent("choice", "Vote here!", choiceSelections);
+            var selectionComponent = new DiscordSelectComponent("vote", "Vote here!", choiceSelections);
 
             return (await base.GetActiveMessageBuilder()).AddComponents(selectionComponent);
         }
