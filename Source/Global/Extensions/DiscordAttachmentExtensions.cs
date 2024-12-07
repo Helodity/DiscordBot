@@ -5,7 +5,7 @@ namespace DiscordBotRewrite.Global.Extensions
     public static class DiscordAttachmentExtensions
     {
 
-        static List<string> ImageFileExtensions = new List<string> {
+        static readonly List<string> ImageFileExtensions = new List<string> {
         ".jpg",
         ".jpeg",
         ".gif",
