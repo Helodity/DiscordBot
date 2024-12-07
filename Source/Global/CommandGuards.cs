@@ -1,5 +1,4 @@
-﻿using DiscordBotRewrite.Economy;
-using DiscordBotRewrite.Global.Extensions;
+﻿using DiscordBotRewrite.Global.Extensions;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 
@@ -33,27 +32,6 @@ namespace DiscordBotRewrite.Global
             if(!cooldown.IsOver) {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
                     Description = $"You can run this again {cooldown.EndTime.ToTimestamp()}!",
-                    Color = Bot.Style.ErrorColor
-                }, true);
-                return false;
-            }
-            return true;
-        }
-
-        public static async Task<bool> CheckForProperBetAsync(InteractionContext ctx, long bet) {
-            UserAccount account = UserAccount.GetAccount((long)ctx.User.Id);
-            if(bet < 0) {
-                account.Pay(1);
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = $"Alright bitchass stop trying to game the system. I'm taking a dollar from you cuz of that.",
-                    Color = Bot.Style.ErrorColor
-                }, true);
-                return false;
-            }
-
-            if(account.Balance < bet) {
-                await ctx.CreateResponseAsync(new DiscordEmbedBuilder {
-                    Description = $"You can only bet what's in your pocket!",
                     Color = Bot.Style.ErrorColor
                 }, true);
                 return false;

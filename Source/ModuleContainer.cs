@@ -1,5 +1,5 @@
-﻿using DiscordBotRewrite.Economy;
-using DiscordBotRewrite.Global;
+﻿using DiscordBotRewrite.Global;
+using DiscordBotRewrite.LifeSim;
 using DSharpPlus;
 
 namespace DiscordBotRewrite
@@ -7,8 +7,8 @@ namespace DiscordBotRewrite
     public class ModuleContainer
     {
         #region Properties
-        public readonly EconomyModule Economy;
 
+        public readonly LifeSimModule LifeSim;
         #endregion
 
         #region Constructors
@@ -16,7 +16,7 @@ namespace DiscordBotRewrite
         {
             Bot.Database.CreateTable<Cooldown>();
 
-            Economy = new EconomyModule();
+            LifeSim = new LifeSimModule();
         }
         #endregion
     }

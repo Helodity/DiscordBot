@@ -1,5 +1,6 @@
 ﻿using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
+using DiscordBotRewrite.LifeSim;
 
 namespace DiscordBotRewrite.General
 {

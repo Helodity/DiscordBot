@@ -1,7 +1,4 @@
-﻿using DiscordBotRewrite.Commands;
-using DiscordBotRewrite.Economy;
-using DiscordBotRewrite.Economy.Gambling;
-using DiscordBotRewrite.General;
+﻿using DiscordBotRewrite.General;
 using DiscordBotRewrite.Global;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -97,11 +94,6 @@ namespace DiscordBotRewrite
         }
         private static Task InitCommands() {
             SlashExtension = Client.UseSlashCommands();
-
-            //Dont actually register these commands, just using these as reference.
-            //SlashExtension.RegisterCommands<EconomyCommands>(TargetServer);
-            //SlashExtension.RegisterCommands<GamblingCommands>(TargetServer);
-            //SlashExtension.RegisterCommands<StockCommands>(TargetServer);
 
             SlashExtension.RegisterCommands<UnsortedCommands>(TargetServer);
 
