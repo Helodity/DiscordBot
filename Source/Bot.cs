@@ -1,14 +1,8 @@
-﻿using System.Reflection;
-using DiscordBotRewrite.Commands;
+﻿using DiscordBotRewrite.Commands;
 using DiscordBotRewrite.Economy;
 using DiscordBotRewrite.Economy.Gambling;
 using DiscordBotRewrite.General;
 using DiscordBotRewrite.Global;
-using DiscordBotRewrite.Pixel;
-using DiscordBotRewrite.Poll;
-using DiscordBotRewrite.Question;
-using DiscordBotRewrite.Quote;
-using DiscordBotRewrite.Voice;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
@@ -24,9 +18,9 @@ namespace DiscordBotRewrite
     public static class Bot {
         #region Debug Specifics
 #if DEBUG
-        static readonly ulong? TargetServer = 1312649782216364103; //This is my private testing server, if you want to debug the bot you'll have to manually change this as any release won't use this code
+        private static readonly ulong? TargetServer = 1312649782216364103; //This is my private testing server, if you want to debug the bot you'll have to manually change this as any release won't use this code
 #else
-        static readonly ulong? TargetServer = null;
+        private static readonly ulong? TargetServer = null;
 #endif
         #endregion
 
@@ -104,18 +98,12 @@ namespace DiscordBotRewrite
         private static Task InitCommands() {
             SlashExtension = Client.UseSlashCommands();
 
-            SlashExtension.RegisterCommands<EconomyCommands>(TargetServer);
-            SlashExtension.RegisterCommands<GamblingCommands>(TargetServer);
-            SlashExtension.RegisterCommands<PixelCommands>(TargetServer);
-            SlashExtension.RegisterCommands<PollCommands>(TargetServer);
-            SlashExtension.RegisterCommands<QuestionCommands>(TargetServer);
-            SlashExtension.RegisterCommands<QuoteCommands>(TargetServer);
-            SlashExtension.RegisterCommands<StockCommands>(TargetServer);
+            //Dont actually register these commands, just using these as reference.
+            //SlashExtension.RegisterCommands<EconomyCommands>(TargetServer);
+            //SlashExtension.RegisterCommands<GamblingCommands>(TargetServer);
+            //SlashExtension.RegisterCommands<StockCommands>(TargetServer);
+
             SlashExtension.RegisterCommands<UnsortedCommands>(TargetServer);
-            if(Config.UseVoice)
-            {
-                SlashExtension.RegisterCommands<VoiceCommands>(TargetServer);
-            }
 
             SlashExtension.SlashCommandErrored += (sender, args) => {
                 LogException(args.Exception, "SlashCommandError");
