@@ -25,32 +25,36 @@ namespace DiscordBotRewrite.Global.Extensions
         /// </summary>
         public static async Task<List<DiscordMember>> GetMembersAsync(this DiscordGuild guild, bool includeBots = false)
         {
-            var members = await guild.GetAllMembersAsync();
+            IReadOnlyCollection<DiscordMember> members = await guild.GetAllMembersAsync();
             //Convert members to a list that can be written to.
             List<DiscordMember> filteredMembers = new List<DiscordMember>();
             foreach (DiscordMember member in members)
             {
                 if (!member.IsBot || includeBots)
+                {
                     filteredMembers.Add(member);
+                }
             }
             return filteredMembers;
         }
         public static async Task<List<ulong>> GetMembersIdAsync(this DiscordGuild guild, bool includeBots = false)
         {
-            var members = await guild.GetAllMembersAsync();
+            IReadOnlyCollection<DiscordMember> members = await guild.GetAllMembersAsync();
             //Convert members to a list that can be written to.
             List<ulong> filteredMembers = new List<ulong>();
             foreach (DiscordMember member in members)
             {
                 if (!member.IsBot || includeBots)
+                {
                     filteredMembers.Add(member.Id);
+                }
             }
             return filteredMembers;
         }
 
         public static List<DiscordRole> GetAllRoles(this DiscordGuild guild)
         {
-            var roles = guild.Roles;
+            IReadOnlyDictionary<ulong, DiscordRole> roles = guild.Roles;
             List<DiscordRole> roleList = new List<DiscordRole>();
             foreach (DiscordRole role in roles.Values)
             {

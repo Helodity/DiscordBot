@@ -15,13 +15,22 @@ namespace DiscordBotRewrite.Economy
         public async Task Balance(InteractionContext ctx, [Option("user", "Who are we checking?")] DiscordUser user = null)
         {
             if (user == null)
+            {
                 user = ctx.User;
-            if (!await CommandGuards.PreventBotTargetAsync(ctx, user)) return;
+            }
+
+            if (!await CommandGuards.PreventBotTargetAsync(ctx, user))
+            {
+                return;
+            }
 
             UserAccount account = UserAccount.GetAccount((long)user.Id);
             string description = $"Balance: ${account.Balance}\nBank: ${account.Bank}/${account.BankMax}";
             if (account.Debt > 0)
+            {
                 description += $"\n **Debt**: ${account.Debt}";
+            }
+
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder
             {
                 Title = $"{user.Username}'s Account",
@@ -35,8 +44,8 @@ namespace DiscordBotRewrite.Economy
         [SlashCommand("baltop", "Who has the most money?")]
         public async Task Baltop(InteractionContext ctx)
         {
-            var allMembers = await ctx.Guild.GetMembersAsync();
-            var accounts = UserAccount.GetAllAccounts().Where(x => allMembers.Any(y => y.Id == (ulong)x.UserID)).ToList();
+            List<DiscordMember> allMembers = await ctx.Guild.GetMembersAsync();
+            List<UserAccount> accounts = UserAccount.GetAllAccounts().Where(x => allMembers.Any(y => y.Id == (ulong)x.UserID)).ToList();
             List<UserAccount> topAccounts = new List<UserAccount>() { accounts[0] };
             long totalValue = accounts[0].NetWorth;
             foreach (UserAccount a in accounts.Skip(1))
@@ -78,7 +87,10 @@ namespace DiscordBotRewrite.Economy
         [SlashCommand("beg", "Cry on the streets for some money.")]
         public async Task Beg(InteractionContext ctx)
         {
-            if (!await CommandGuards.CheckForCooldown(ctx, "beg")) return;
+            if (!await CommandGuards.CheckForCooldown(ctx, "beg"))
+            {
+                return;
+            }
 
             Cooldown begCooldown = Cooldown.GetCooldown((long)ctx.User.Id, "beg");
             begCooldown.SetEndTime(DateTime.Now + TimeSpan.FromMinutes(1));
@@ -99,7 +111,10 @@ namespace DiscordBotRewrite.Economy
         [SlashCommand("daily", "Get your daily stimulus check.")]
         public async Task Daily(InteractionContext ctx)
         {
-            if (!await CommandGuards.CheckForCooldown(ctx, "daily")) return;
+            if (!await CommandGuards.CheckForCooldown(ctx, "daily"))
+            {
+                return;
+            }
 
             UserAccount account = UserAccount.GetAccount((long)ctx.User.Id);
             Cooldown dailyCooldown = Cooldown.GetCooldown((long)ctx.User.Id, "daily");
@@ -185,15 +200,15 @@ namespace DiscordBotRewrite.Economy
                 new DiscordButtonComponent(ButtonStyle.Danger, "no", "No"),
             };
 
-            var embed = new DiscordEmbedBuilder
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
             {
                 Description = $"It will cost ${cost} to increase you bank size by ${amount}, are you sure?",
                 Color = Bot.Style.DefaultColor
             };
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(embed).AddComponents(confirmationButtons));
 
-            var interactivity = ctx.Client.GetInteractivity();
-            var interactivityResult = await interactivity.WaitForButtonAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
+            DSharpPlus.Interactivity.InteractivityExtension interactivity = ctx.Client.GetInteractivity();
+            DSharpPlus.Interactivity.InteractivityResult<DSharpPlus.EventArgs.ComponentInteractionCreateEventArgs> interactivityResult = await interactivity.WaitForButtonAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
 
             if (interactivityResult.Result.Id == "no")
             {
@@ -223,7 +238,11 @@ namespace DiscordBotRewrite.Economy
         [SlashCommand("give", "Give some money to another user!")]
         public async Task Give(InteractionContext ctx, [Option("user", "Who gets your money?")] DiscordUser user, [Option("amount", "How much to give?")] long amount)
         {
-            if (!await CommandGuards.PreventBotTargetAsync(ctx, user)) return;
+            if (!await CommandGuards.PreventBotTargetAsync(ctx, user))
+            {
+                return;
+            }
+
             if (amount < 0)
             {
                 await ctx.CreateResponseAsync(new DiscordEmbedBuilder

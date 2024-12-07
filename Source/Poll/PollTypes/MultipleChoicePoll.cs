@@ -32,7 +32,9 @@ namespace DiscordBotRewrite.Poll
             foreach (string choice in choices.Distinct())
             {
                 if (!Bot.Database.Table<PollChoice>().Any(x => x.PollId == MessageId && x.Name == choice))
+                {
                     Bot.Database.Insert(new PollChoice(MessageId, choice));
+                }
             }
         }
 
@@ -55,8 +57,8 @@ namespace DiscordBotRewrite.Poll
             Bot.Database.Delete(this);
             try
             {
-                var message = await GetMessageAsync();
-                var builder = new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder
+                DiscordMessage message = await GetMessageAsync();
+                DiscordMessageBuilder builder = new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder
                 {
                     Description = $"Poll has ended {EndTime.ToTimestamp()}!\n{Question.ToBold()}\n{voteString}",
                     Color = Bot.Style.DefaultColor
@@ -76,7 +78,9 @@ namespace DiscordBotRewrite.Poll
             if (e.Values.First() == "Clear")
             {
                 if (vote != null)
+                {
                     Bot.Database.Delete(vote);
+                }
             }
             else
             {
@@ -93,22 +97,24 @@ namespace DiscordBotRewrite.Poll
             }
 
             if(Bot.Config.DebugLogging)
+            {
                 Bot.Client.Logger.LogDebug($"Received vote {vote.Choice} for multiple choice poll {MessageId} from {e.User.Id}");
+            }
 
-            var builder = await GetActiveMessageBuilder();
+            DiscordMessageBuilder builder = await GetActiveMessageBuilder();
             await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder(builder));
         }
         public async override Task<DiscordMessageBuilder> GetActiveMessageBuilder()
         {
             //Create the selection component based on given choices
-            var choiceSelections = new List<DiscordSelectComponentOption>();
+            List<DiscordSelectComponentOption> choiceSelections = new List<DiscordSelectComponentOption>();
             List<PollChoice> choices = Bot.Database.Table<PollChoice>().Where(x => x.PollId == MessageId).ToList();
             foreach (PollChoice c in choices)
             {
                 choiceSelections.Add(new DiscordSelectComponentOption(c.Name, c.Name));
             }
             choiceSelections.Add(new DiscordSelectComponentOption("Clear", "Clear"));
-            var selectionComponent = new DiscordSelectComponent("vote", "Vote here!", choiceSelections);
+            DiscordSelectComponent selectionComponent = new DiscordSelectComponent("vote", "Vote here!", choiceSelections);
 
             return (await base.GetActiveMessageBuilder()).AddComponents(selectionComponent);
         }

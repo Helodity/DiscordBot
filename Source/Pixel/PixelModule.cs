@@ -17,7 +17,7 @@ namespace DiscordBotRewrite.Pixel
         #region Public
         public bool TryPlacePixel(long guildId, long userId, int x, int y, PixelColor color)
         {
-            var map = GetPixelMap(guildId);
+            PixelMap map = GetPixelMap(guildId);
 
             PlaceCooldown cooldown = GetPlaceCooldown(guildId, userId);
             if (cooldown != null && DateTime.Compare(DateTime.Now, cooldown.EndTime) < 0)
@@ -94,13 +94,13 @@ namespace DiscordBotRewrite.Pixel
         }
         public void ResizeMap(long guildId, int width, int height)
         {
-            var map = GetPixelMap(guildId);
+            PixelMap map = GetPixelMap(guildId);
             map.Resize(width, height);
             Bot.Database.Update(map);
         }
         public void SetCooldown(long guildId, uint duration)
         {
-            var map = GetPixelMap(guildId);
+            PixelMap map = GetPixelMap(guildId);
             map.PlaceCooldown = duration;
             Bot.Database.Update(map);
         }
@@ -137,19 +137,27 @@ namespace DiscordBotRewrite.Pixel
                     }
                     else
                     {
-                        var pColor = map.GetPixelColor(absX, absY);
+                        PixelColor pColor = map.GetPixelColor(absX, absY);
                         if(pColor != null)
+                        {
                             color = pColor.Color;
+                        }
                         else
+                        {
                             color = SKColors.White;
+                        }
                     }
                     paint.Color = color;
 
 
                     if (exists)
+                    {
                         canvas.DrawRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize, paint);
+                    }
                     else
+                    {
                         canvas.DrawHatchedRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize, paint, 3);
+                    }
                 }
             }
 

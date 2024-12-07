@@ -17,7 +17,10 @@ namespace DiscordBotRewrite.Economy.Gambling
         [SlashCommand("blackjack", "Play blackjack against the bot")]
         public async Task BlackJack(InteractionContext ctx, [Option("bet", "How much money to lose")] long bet)
         {
-            if (!await CommandGuards.CheckForProperBetAsync(ctx, bet)) return;
+            if (!await CommandGuards.CheckForProperBetAsync(ctx, bet))
+            {
+                return;
+            }
 
             DiscordButtonComponent[] hitStandButtons = {
                 new DiscordButtonComponent(ButtonStyle.Primary, "hit", "Hit!"),
@@ -26,8 +29,8 @@ namespace DiscordBotRewrite.Economy.Gambling
 
             UserAccount account = UserAccount.GetAccount((long)ctx.User.Id);
             await ctx.DeferAsync();
-            var interactivity = ctx.Client.GetInteractivity();
-            var embed = new DiscordEmbedBuilder
+            InteractivityExtension interactivity = ctx.Client.GetInteractivity();
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
             {
                 Title = "Blackjack"
             };
@@ -79,9 +82,14 @@ namespace DiscordBotRewrite.Economy.Gambling
                     //Don't respond to the interaction here, it's handled elsewhere
 
                     if (interactivityResult.Result.Id == "hit")
+                    {
                         playerHand.Add(deck.Draw());
+                    }
+
                     if (interactivityResult.Result.Id == "stand")
+                    {
                         break;
+                    }
                 }
                 if (hasBust)
                 {
@@ -161,7 +169,10 @@ namespace DiscordBotRewrite.Economy.Gambling
         [SlashCommand("highlow", "Play higher lower against the bot.")]
         public async Task HighLow(InteractionContext ctx, [Option("bet", "How much money to lose?")] long bet)
         {
-            if (!await CommandGuards.CheckForProperBetAsync(ctx, bet)) return;
+            if (!await CommandGuards.CheckForProperBetAsync(ctx, bet))
+            {
+                return;
+            }
 
             //Create all the used buttons
             DiscordButtonComponent[] highLowButtons = {
@@ -175,8 +186,8 @@ namespace DiscordBotRewrite.Economy.Gambling
             UserAccount account = UserAccount.GetAccount((long)ctx.User.Id);
             await ctx.DeferAsync();
 
-            var interactivity = ctx.Client.GetInteractivity();
-            var embed = new DiscordEmbedBuilder
+            InteractivityExtension interactivity = ctx.Client.GetInteractivity();
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
             {
                 Title = "Higher or Lower"
             };
@@ -280,9 +291,20 @@ namespace DiscordBotRewrite.Economy.Gambling
         [SlashCommand("rps", "Play rock paper scissors against another user")]
         public async Task RPS(InteractionContext ctx, [Option("opponent", "Who to challenge?")] DiscordUser opponent, [Option("bet", "How much money to lose?")] long bet)
         {
-            if (!await CommandGuards.CheckForProperBetAsync(ctx, bet)) return;
-            if (!await CommandGuards.PreventBotTargetAsync(ctx, opponent)) return;
-            if (!await CommandGuards.PreventSelfTargetAsync(ctx, opponent)) return;
+            if (!await CommandGuards.CheckForProperBetAsync(ctx, bet))
+            {
+                return;
+            }
+
+            if (!await CommandGuards.PreventBotTargetAsync(ctx, opponent))
+            {
+                return;
+            }
+
+            if (!await CommandGuards.PreventSelfTargetAsync(ctx, opponent))
+            {
+                return;
+            }
 
             DiscordButtonComponent[] rpsButtons = {
                 new DiscordButtonComponent(ButtonStyle.Primary, "rock", "Rock"),
@@ -297,9 +319,9 @@ namespace DiscordBotRewrite.Economy.Gambling
             bet = Math.Min(Math.Min(account1.Balance, account2.Balance), bet);
 
             await ctx.DeferAsync();
-            var interactivity = ctx.Client.GetInteractivity();
+            InteractivityExtension interactivity = ctx.Client.GetInteractivity();
 
-            var embed = new DiscordEmbedBuilder
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder
             {
                 Title = "RPS"
             };
@@ -313,14 +335,14 @@ namespace DiscordBotRewrite.Economy.Gambling
                 $"**{opponent.Username}**: {p2status}");
             await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed).AddComponents(rpsButtons));
 
-            var originalMessage = await ctx.GetOriginalResponseAsync();
+            DiscordMessage originalMessage = await ctx.GetOriginalResponseAsync();
             int p1_choice = -1;
             string p1_str = "";
             int p2_choice = -1;
             string p2_str = "";
-            var task1 = new Task<Task>(async () =>
+            Task<Task> task1 = new Task<Task>(async () =>
             {
-                var a = interactivity.WaitForButtonAsync(originalMessage, ctx.User);
+                Task<InteractivityResult<ComponentInteractionCreateEventArgs>> a = interactivity.WaitForButtonAsync(originalMessage, ctx.User);
                 if (a.Result.TimedOut)
                 {
                     embed.WithDescription($"{ctx.User.Username} didn't respond...");
@@ -347,9 +369,9 @@ namespace DiscordBotRewrite.Economy.Gambling
                 $"**{opponent.Username}**: {p2status}");
                 await a.Result.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(embed).AddComponents(rpsButtons));
             });
-            var task2 = new Task<Task>(async () =>
+            Task<Task> task2 = new Task<Task>(async () =>
             {
-                var b = interactivity.WaitForButtonAsync(originalMessage, opponent);
+                Task<InteractivityResult<ComponentInteractionCreateEventArgs>> b = interactivity.WaitForButtonAsync(originalMessage, opponent);
                 if (b.Result.TimedOut)
                 {
                     embed.WithDescription($"{opponent.Username} didn't respond...");
@@ -384,7 +406,9 @@ namespace DiscordBotRewrite.Economy.Gambling
 
             //Something went wrong, abort
             if (p1_choice == -1 || p2_choice == -1)
+            {
                 return;
+            }
 
             int result;
             if (p1_choice == p2_choice)

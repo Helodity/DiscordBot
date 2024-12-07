@@ -8,9 +8,11 @@ namespace DiscordBotRewrite.Global.Extensions
         {
             using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
             if (!File.Exists(path))
+            {
                 FileExtension.CreateFileWithPath(path);
+            }
 
-            using var stream = File.OpenWrite(path);
+            using FileStream stream = File.OpenWrite(path);
             data.SaveTo(stream);
         }
         public static void DrawHatchedRect(this SKCanvas canvas, float x, float y, float w, float h, SKPaint paint, int hatchDistance)

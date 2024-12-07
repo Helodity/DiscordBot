@@ -23,7 +23,7 @@ namespace DiscordBotRewrite.Quote
                 return;
             }
 
-            var data = Bot.Modules.Quote.GetQuoteData((long)ctx.Guild.Id);
+            GuildQuoteData data = Bot.Modules.Quote.GetQuoteData((long)ctx.Guild.Id);
             data.ChannelId = (long)ctx.Channel.Id;
             Bot.Database.Update(data);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder
@@ -39,7 +39,7 @@ namespace DiscordBotRewrite.Quote
         [RequirePermissions(Permissions.Administrator)]
         public async Task SetQuoteEmoji(InteractionContext ctx)
         {
-            var data = Bot.Modules.Quote.GetQuoteData((long)ctx.Guild.Id);
+            GuildQuoteData data = Bot.Modules.Quote.GetQuoteData((long)ctx.Guild.Id);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder
             {
                 Description = "React to this message with the emoji to use!",
@@ -47,8 +47,8 @@ namespace DiscordBotRewrite.Quote
             });
 
             //Get the user's emoji they want
-            var interactivity = ctx.Client.GetInteractivity();
-            var reaction = await interactivity.WaitForReactionAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
+            DSharpPlus.Interactivity.InteractivityExtension interactivity = ctx.Client.GetInteractivity();
+            DSharpPlus.Interactivity.InteractivityResult<DSharpPlus.EventArgs.MessageReactionAddEventArgs> reaction = await interactivity.WaitForReactionAsync(await ctx.GetOriginalResponseAsync(), ctx.User);
 
             //Ensure they sent an emoji
             if (reaction.TimedOut)
@@ -63,9 +63,13 @@ namespace DiscordBotRewrite.Quote
 
             DiscordEmoji emoji;
             if (reaction.Result.Emoji.Id == 0)
+            {
                 emoji = DiscordEmoji.FromUnicode(ctx.Client, reaction.Result.Emoji.Name);
+            }
             else
+            {
                 emoji = Bot.Modules.Quote.GetEmojiFromGuild(ctx.Guild, reaction.Result.Emoji.Id);
+            }
 
             if (emoji == null)
             {
@@ -93,7 +97,7 @@ namespace DiscordBotRewrite.Quote
         [RequirePermissions(Permissions.Administrator)]
         public async Task SetQuoteEmojiAmount(InteractionContext ctx, [Option("amount", "how many")] long amount)
         {
-            var data = Bot.Modules.Quote.GetQuoteData((long)ctx.Guild.Id);
+            GuildQuoteData data = Bot.Modules.Quote.GetQuoteData((long)ctx.Guild.Id);
             data.EmojiAmount = (short)amount;
             Bot.Database.Update(data);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder
@@ -109,7 +113,7 @@ namespace DiscordBotRewrite.Quote
         [RequirePermissions(Permissions.Administrator)]
         public async Task Toggle(InteractionContext ctx)
         {
-            var data = Bot.Modules.Quote.GetQuoteData((long)ctx.Guild.Id);
+            GuildQuoteData data = Bot.Modules.Quote.GetQuoteData((long)ctx.Guild.Id);
             data.Enabled = !data.Enabled;
             Bot.Database.Update(data);
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder

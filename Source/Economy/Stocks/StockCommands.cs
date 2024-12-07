@@ -14,7 +14,7 @@ namespace DiscordBotRewrite.Commands
         public async Task Overview(InteractionContext ctx, [Option("Name", "Name of the stock")] string name = null) {
 
             string imagePath = $"StockImages/img{ctx.User.Id}.png";
-            var embed = new DiscordEmbedBuilder()
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
                 .WithColor(Bot.Style.DefaultColor)
                 .WithImageUrl($"attachment://{Path.GetFileName(imagePath)}");
 
@@ -39,7 +39,7 @@ namespace DiscordBotRewrite.Commands
                 embed.WithTitle("Stock Overview");
             }
 
-            using(var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read)) {
+            using(FileStream fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read)) {
                 await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(embed).AddFile(Path.GetFileName(imagePath), fs));
             }
             File.Delete(imagePath);
@@ -48,7 +48,9 @@ namespace DiscordBotRewrite.Commands
         [SlashCommand("posession", "See someone's owned stocks")]
         public async Task Owned(InteractionContext ctx, [Option("user", "Who are we checking?")] DiscordUser user = null) {
             if(user == null)
+            {
                 user = ctx.User;
+            }
 
             long castedUserID = (long)user.Id;
             List<UserStockInfo> ownedStocks = Bot.Database.Table<UserStockInfo>().Where(x => x.UserId == castedUserID && x.Amount > 0).ToList();

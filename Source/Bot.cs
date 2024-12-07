@@ -24,7 +24,7 @@ namespace DiscordBotRewrite
     public static class Bot {
         #region Debug Specifics
 #if DEBUG
-        static readonly ulong? TargetServer = 941558436561305630; //This is my private testing server, if you want to debug the bot you'll have to manually change this as any release won't use this code
+        static readonly ulong? TargetServer = 1312649782216364103; //This is my private testing server, if you want to debug the bot you'll have to manually change this as any release won't use this code
 #else
         static readonly ulong? TargetServer = null;
 #endif
@@ -41,7 +41,11 @@ namespace DiscordBotRewrite
 
         #region Public
         public static async Task Start() {
-            if(!TryLoadConfig()) return;
+            if(!TryLoadConfig())
+            {
+                return;
+            }
+
             await InitClient();
             Database = new SQLiteConnection("SavedData.db3");
             Modules = new ModuleContainer(Client);
@@ -59,7 +63,9 @@ namespace DiscordBotRewrite
                 $"TARGETSITE:{e.TargetSite}";
             Client.Logger.LogCritical(text);
             if(Config.TextLogging)
+            {
                 File.AppendAllText("log.txt", text);
+            }
         }
         #endregion
 
@@ -76,7 +82,7 @@ namespace DiscordBotRewrite
             return true;
         }
         private static Task InitClient() {
-            var config = new DiscordConfiguration {
+            DiscordConfiguration config = new DiscordConfiguration {
                 Token = Config.Token,
                 TokenType = TokenType.Bot,
                 Intents = DiscordIntents.MessageContents | DiscordIntents.AllUnprivileged,
@@ -106,7 +112,10 @@ namespace DiscordBotRewrite
             SlashExtension.RegisterCommands<QuoteCommands>(TargetServer);
             SlashExtension.RegisterCommands<StockCommands>(TargetServer);
             SlashExtension.RegisterCommands<UnsortedCommands>(TargetServer);
-            if(Config.UseVoice) SlashExtension.RegisterCommands<VoiceCommands>(TargetServer);
+            if(Config.UseVoice)
+            {
+                SlashExtension.RegisterCommands<VoiceCommands>(TargetServer);
+            }
 
             SlashExtension.SlashCommandErrored += (sender, args) => {
                 LogException(args.Exception, "SlashCommandError");

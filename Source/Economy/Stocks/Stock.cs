@@ -61,9 +61,14 @@ namespace DiscordBotRewrite.Economy.Stocks
 
             Momentum += momentumShift;
             if (Momentum > MaxMomentum)
+            {
                 Momentum = MaxMomentum;
+            }
+
             if (Momentum < -MaxMomentum)
+            {
                 Momentum = -MaxMomentum;
+            }
 
             LastEarnings = (GenerateRandomNumber(-30, 40) * PriceVolatility / 10 + Momentum + Math.Sign(TargetPrice - ShareCost) * (float)Math.Pow(Math.Abs(TargetPrice - ShareCost), 0.1)) / 1000;
 
@@ -75,22 +80,30 @@ namespace DiscordBotRewrite.Economy.Stocks
 
             ShareCost += (long)Math.Floor(toChange);
             if (ShareCost < 10)
+            {
                 ShareCost = 10;
-
+            }
 
             if (PriceHistory == null)
+            {
                 PriceHistory = new();
+            }
+
             PriceHistory.Add(ShareCost);
             //Track the last 2 hours
             while (PriceHistory.Count > 120)
+            {
                 PriceHistory.RemoveAt(0);
+            }
         }
         public void ModifySales(long amount, bool update = true)
         {
             Momentum += (float)Math.Pow(amount, 0.5f) / 1000f;
 
             if (update)
+            {
                 Bot.Database.UpdateWithChildren(this);
+            }
         }
 
         public string GetEarningsPercentString(int digits = 2)
@@ -103,7 +116,9 @@ namespace DiscordBotRewrite.Economy.Stocks
         public string ToPercent(decimal toConvert, int digits = 2)
         {
             if (toConvert == 0)
+            {
                 return "0%";
+            }
 
             decimal scale = (decimal)Math.Pow(10, Math.Floor(Math.Log10((double)Math.Abs(toConvert))) - digits + 1);
 

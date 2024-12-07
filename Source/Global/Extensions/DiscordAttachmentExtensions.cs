@@ -19,7 +19,9 @@ namespace DiscordBotRewrite.Global.Extensions
             for (int i = 0; i < ImageFileExtensions.Count; i++)
             {
                 if (url.EndsWith(ImageFileExtensions[i]))
+                {
                     return true;
+                }
             }
             return false;
         }

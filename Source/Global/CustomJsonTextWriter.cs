@@ -16,25 +16,33 @@ namespace DiscordBotRewrite.Global {
         public override void WriteStartArray() {
             base.WriteStartArray();
             if(MaxIndentDepth.HasValue && Top > MaxIndentDepth.Value)
+            {
                 Formatting = Formatting.None;
+            }
         }
 
         public override void WriteStartObject() {
             base.WriteStartObject();
             if(MaxIndentDepth.HasValue && Top > MaxIndentDepth.Value)
+            {
                 Formatting = Formatting.None;
+            }
         }
 
         public override void WriteEndArray() {
             base.WriteEndArray();
             if(MaxIndentDepth.HasValue && Top <= MaxIndentDepth.Value)
+            {
                 Formatting = Formatting.Indented;
+            }
         }
 
         public override void WriteEndObject() {
             base.WriteEndObject();
             if(MaxIndentDepth.HasValue && Top <= MaxIndentDepth.Value)
+            {
                 Formatting = Formatting.Indented;
+            }
         }
         #endregion
     }

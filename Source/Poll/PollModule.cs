@@ -39,7 +39,7 @@ namespace DiscordBotRewrite.Poll
         #region Public
         public void SetPollChannel(InteractionContext ctx)
         {
-            var data = Bot.Modules.Poll.GetPollData((long)ctx.Guild.Id);
+            GuildPollData data = Bot.Modules.Poll.GetPollData((long)ctx.Guild.Id);
             data.PollChannelId = (long)ctx.Channel.Id;
             Bot.Database.Update(data);
         }
@@ -57,7 +57,7 @@ namespace DiscordBotRewrite.Poll
 
             DiscordChannel channel = ctx.Guild.GetChannel((ulong)pollData.PollChannelId);
             //Send a dummy message to update
-            var message = await channel.SendMessageAsync(new DiscordEmbedBuilder
+            DiscordMessage message = await channel.SendMessageAsync(new DiscordEmbedBuilder
             {
                 Description = "Preparing poll...",
                 Color = Bot.Style.DefaultColor
@@ -72,7 +72,7 @@ namespace DiscordBotRewrite.Poll
             {
                 poll = new ShortAnswerPoll(message, question, endTime, ctx.User);
             }
-            var messageBuilder = await poll.GetActiveMessageBuilder();
+            DiscordMessageBuilder messageBuilder = await poll.GetActiveMessageBuilder();
             await message.ModifyAsync(messageBuilder);
 
             Bot.Database.Insert(poll);
@@ -96,16 +96,20 @@ namespace DiscordBotRewrite.Poll
         {
             //Make sure we aren't checking dms
             if (e.Guild == null)
+            {
                 return;
+            }
 
             //Make sure message is a poll message
             GuildPollData pollData = GetPollData((long)e.Guild.Id);
             List<Poll> polls = GetAllPolls();
             Poll poll = polls.FirstOrDefault(x => x.MessageId == (long)e.Message.Id);
             if(poll == null)
+            {
                 return;
+            }
 
-            if(e.Id == "vote") {
+            if (e.Id == "vote") {
                 //We dont await here since voting can take a long time for short answers
                 Task.Run(async () => { await poll.OnVote(sender, e); });
                 return;
@@ -115,7 +119,7 @@ namespace DiscordBotRewrite.Poll
                 if((ulong)poll.AskerId == e.User.Id) {
                     await poll.OnEnd();
                 } else {
-                    var embed = new DiscordEmbedBuilder {
+                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder {
                         Description = $"You can't end the poll unless you're the one who started it!",
                         Color = Bot.Style.ErrorColor
                     };

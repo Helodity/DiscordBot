@@ -73,7 +73,9 @@ namespace DiscordBotRewrite.Economy.Stocks
         public static void CreateDetailedGraph(Stock stock, ulong userId)
         {
             if (stock == null)
+            {
                 return;
+            }
 
             int imgHeight = 500;
             int imgWidth = 1200;
@@ -139,9 +141,15 @@ namespace DiscordBotRewrite.Economy.Stocks
             SKPaint paint = new SKPaint
             {
                 IsAntialias = true,
-                TextSize = 25,
+            };
+
+            SKFont font = new SKFont
+            {
+                Size = 25,
                 Typeface = SKTypeface.Default
             };
+
+
             paint.StrokeWidth = 3;
 
             for (int i = 0; i < stocks.Count; i++)
@@ -196,23 +204,26 @@ namespace DiscordBotRewrite.Economy.Stocks
                 canvas.DrawLine(point1, point2, paint);
 
                 paint.Color = SKColor.FromHsv(0, 0, 100);
-                paint.TextAlign = SKTextAlign.Left;
-                canvas.DrawText($"{stock.Name}", anchorX + 5, anchorY + spacingHeight / 2 - 3, paint);
-                canvas.DrawText($"${stock.ShareCost} ({stock.GetEarningsPercentString(2)})", anchorX + 5, anchorY + spacingHeight - 3, paint);
+                canvas.DrawText($"{stock.Name}", anchorX + 5, anchorY + spacingHeight / 2 - 3, SKTextAlign.Left, font, paint);
+                canvas.DrawText($"${stock.ShareCost} ({stock.GetEarningsPercentString(2)})", anchorX + 5, anchorY + spacingHeight - 3, SKTextAlign.Left, font, paint);
             }
 
             surface.Snapshot().SaveToPng($"StockImages/img{userId}.png");
         }
 
-        static SKColor GetGraphPaintColor(Stock stock)
+        private static SKColor GetGraphPaintColor(Stock stock)
         {
             if (stock.PriceHistory[0] < stock.ShareCost)
+            {
                 return SKColor.FromHsv(80, 100, 100);
+            }
             else
+            {
                 return SKColor.FromHsv(0, 100, 100);
+            }
         }
 
-        static void UpdateMarket()
+        private static void UpdateMarket()
         {
             List<Stock> stocks = Bot.Database.GetAllWithChildren<Stock>();
 

@@ -90,33 +90,47 @@ namespace DiscordBotRewrite.Economy
             amount = Math.Max(-BankMax, amount);
             BankMax += amount;
             if (update)
+            {
                 Bot.Database.Update(this);
+            }
         }
         public void IncrementStreak(bool update = true)
         {
             Streak += 1;
             if (update)
+            {
                 Bot.Database.Update(this);
+            }
         }
         public void ResetStreak(bool update = true)
         {
             Streak = 1;
             if (update)
+            {
                 Bot.Database.Update(this);
+            }
         }
 
         //Returns amount put in bank
         public long TransferToBank(long amount, bool update = true)
         {
             if (Bank + amount > BankMax)
+            {
                 amount = BankMax - Bank;
+            }
+
             if (amount > Balance)
+            {
                 amount = Balance;
+            }
+
             Balance -= amount;
             Bank += amount;
 
             if (update)
+            {
                 Bot.Database.Update(this);
+            }
 
             return amount;
         }
@@ -124,12 +138,17 @@ namespace DiscordBotRewrite.Economy
         public long TransferToBalance(long amount, bool update = true)
         {
             if (amount > Bank)
+            {
                 amount = Bank;
+            }
+
             Balance += amount;
             Bank -= amount;
 
             if (update)
+            {
                 Bot.Database.Update(this);
+            }
 
             return amount;
         }
@@ -138,21 +157,27 @@ namespace DiscordBotRewrite.Economy
         {
             Debt += amount;
             if (update)
+            {
                 Bot.Database.Update(this);
+            }
         }
         void ModifyBalance(long amount, bool update = true)
         {
             amount = Math.Max(-Balance, amount);
             Balance += amount;
             if (update)
+            {
                 Bot.Database.Update(this);
+            }
         }
         void ModifyBank(long amount, bool update = true)
         {
             amount = Math.Max(-Bank, amount);
             Bank = Math.Min(Bank + amount, BankMax);
             if (update)
+            {
                 Bot.Database.Update(this);
+            }
         }
     }
 }

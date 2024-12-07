@@ -32,7 +32,9 @@ namespace DiscordBotRewrite.Voice
             GuildId = guild.Id;
             IdleDisconnectEvent = new TimeBasedEvent(TimeSpan.FromMinutes(5), async () => {
                 if(!IsPlayingTrack())
+                {
                     await Disconnect();
+                }
             });
             SetDefaultState();
         }
@@ -48,7 +50,9 @@ namespace DiscordBotRewrite.Voice
         }
         public async Task Disconnect() {
             if(!IsConnected)
+            {
                 return;
+            }
 
             await Conn.StopAsync();
             await Conn.DisconnectAsync();
@@ -62,15 +66,22 @@ namespace DiscordBotRewrite.Voice
             }
 
             if(!tracks.Any())
+            {
                 return;
+            }
 
-            if(IsShuffling)
+            if (IsShuffling)
+            {
                 tracks.Randomize();
+            }
 
-            foreach(LavalinkTrack track in tracks) {
+            foreach (LavalinkTrack track in tracks) {
                 if(track == null)
+                {
                     continue;
-                if(IsPlayingTrack()) {
+                }
+
+                if (IsPlayingTrack()) {
                     if(force) {
                         TrackQueue.Insert(0, LastPlayedTrack);
                         await PlayTrack(track);
@@ -85,7 +96,10 @@ namespace DiscordBotRewrite.Voice
         }
         public async Task ProgressQueue() {
             if(IsLooping)
+            {
                 QueueTrack(LastPlayedTrack);
+            }
+
             await PlayNextTrackInQueue();
         }
         public async Task SkipTrack() {
@@ -119,7 +133,10 @@ namespace DiscordBotRewrite.Voice
         }
         private Task OnChannelDisconnect(LavalinkGuildConnection sender, WebSocketCloseEventArgs args) {
             if(args != null)
+            {
                 args.Handled = true;
+            }
+
             Bot.Client.Logger.LogDebug($"Web socket closed at {GuildId}");
             SetDefaultState();
             IdleDisconnectEvent.Cancel();

@@ -31,7 +31,9 @@ namespace DiscordBotRewrite.Economy
         {
             Amount += amount;
             if (update)
+            {
                 Bot.Database.Update(this);
+            }
         }
 
 

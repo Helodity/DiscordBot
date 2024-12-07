@@ -27,7 +27,10 @@ namespace DiscordBotRewrite.Economy.Gambling
         public Card Draw()
         {
             if (Cards.Count == 0)
+            {
                 return null;
+            }
+
             Card c = Cards.First();
             Cards.RemoveAt(0);
             return c;
@@ -38,7 +41,10 @@ namespace DiscordBotRewrite.Economy.Gambling
             for (int i = 0; i < amount; i++)
             {
                 if (Cards.Count == 0)
+                {
                     break;
+                }
+
                 Card c = Cards.First();
                 Cards.RemoveAt(0);
                 l.Add(c);

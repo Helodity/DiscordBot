@@ -5,7 +5,10 @@
         //Creates all sub directories needed and then the file
         public static void CreateFileWithPath(string path)
         {
-            if (string.IsNullOrWhiteSpace(path)) return;
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return;
+            }
 
             string directoryPath = Path.GetDirectoryName(path);
             if (!string.IsNullOrWhiteSpace(directoryPath))

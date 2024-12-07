@@ -53,10 +53,12 @@ namespace DiscordBotRewrite.Voice
             VoiceGuildConnection VGconn = module.GetGuildConnection(ctx);
 
             if (!VGconn.IsConnected || VGconn.Conn.Channel == ctx.Member.VoiceState.Channel)
+            {
                 await VGconn.Connect(ctx.Member.VoiceState.Channel);
+            }
 
             await ctx.DeferAsync();
-            var tracks = await module.PerformStandardSearchAsync(search, VGconn.Node);
+            List<LavalinkTrack> tracks = await module.PerformStandardSearchAsync(search, VGconn.Node);
             if (tracks.Count == 0)
             {
                 await ctx.EditResponseAsync(new DiscordEmbedBuilder
@@ -129,7 +131,10 @@ namespace DiscordBotRewrite.Voice
         public async Task Seek(InteractionContext ctx, [Option("time", "how far in seconds")] long time)
         {
             if (time < 0)
+            {
                 time = 0;
+            }
+
             VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
             TimeSpan span = TimeSpan.FromSeconds(time);
             await VGConn.Conn.SeekAsync(span);
@@ -232,7 +237,7 @@ namespace DiscordBotRewrite.Voice
         public async Task SetEqualizer(InteractionContext ctx, [Option("setting", "how eq")] EqualizerPreset preset)
         {
             VoiceGuildConnection VGConn = Bot.Modules.Voice.GetGuildConnection(ctx);
-            var settings = Bot.Modules.Voice.GetEqualizerSettings(preset);
+            LavalinkBandAdjustment[] settings = Bot.Modules.Voice.GetEqualizerSettings(preset);
 
             await VGConn.Conn.AdjustEqualizerAsync(settings);
 
@@ -256,7 +261,7 @@ namespace DiscordBotRewrite.Voice
                 int activePage = Math.Min(Math.Max(1, (int)page), pageCount);
                 int endNumber = Math.Min(activePage * 10, VGConn.TrackQueue.Count);
 
-                var embed = new DiscordEmbedBuilder
+                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                 {
                     Title = "Queue",
                     Color = Bot.Style.DefaultColor
@@ -270,7 +275,10 @@ namespace DiscordBotRewrite.Voice
                 else
                 {
                     if (VGConn.IsShuffling)
+                    {
                         description += "Shuffling is **enabled**, queue position will not reflect what song is played next\n";
+                    }
+
                     for (int i = (activePage - 1) * 10; i < endNumber; i++)
                     {
                         description += $"**{i + 1}:** `{VGConn.TrackQueue[i].Title}` by `{VGConn.TrackQueue[i].Author}` \n";
@@ -341,15 +349,25 @@ namespace DiscordBotRewrite.Voice
                 string toWrite = string.Empty;
 
                 //Create the parameters (shuffle and looping) section of the savestate
-                if (VGConn.IsLooping) toWrite += "L";
-                if (VGConn.IsShuffling) toWrite += "S";
+                if (VGConn.IsLooping)
+                {
+                    toWrite += "L";
+                }
+
+                if (VGConn.IsShuffling)
+                {
+                    toWrite += "S";
+                }
 
                 //Add a divider between sections
                 toWrite += "|";
 
                 //Create the queue section of the savestate
                 if (VGConn.IsPlayingTrack())
+                {
                     toWrite += VGConn.Conn.CurrentState.CurrentTrack.Identifier;
+                }
+
                 foreach (LavalinkTrack track in VGConn.TrackQueue)
                 {
                     toWrite += $";{track.Identifier}";
@@ -359,12 +377,15 @@ namespace DiscordBotRewrite.Voice
                 //Save the file to memory
                 string path = $"Queues/{ctx.User.Id}.txt";
                 if (!File.Exists(path))
+                {
                     FileExtension.CreateFileWithPath(path);
+                }
+
                 File.WriteAllText(path, toWrite);
 
                 //Send the file in the channel
-                using var stream = File.OpenRead(path);
-                var msgBuilder = new DiscordInteractionResponseBuilder().AddFile(path, stream);
+                using FileStream stream = File.OpenRead(path);
+                DiscordInteractionResponseBuilder msgBuilder = new DiscordInteractionResponseBuilder().AddFile(path, stream);
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, msgBuilder);
             }
             #endregion
@@ -400,10 +421,12 @@ namespace DiscordBotRewrite.Voice
                 }
 
                 if (!VGConn.IsConnected || VGConn.Conn.Channel == ctx.Member.VoiceState.Channel)
+                {
                     await VGConn.Connect(ctx.Member.VoiceState.Channel);
+                }
 
                 List<LavalinkTrack> tracks = new List<LavalinkTrack>();
-                foreach (var str in uriStrings)
+                foreach (string str in uriStrings)
                 {
                     List<LavalinkTrack> searchResult = await Bot.Modules.Voice.TrackSearchAsync(VGConn.Node, str, LavalinkSearchType.Plain);
                     tracks.AddRange(searchResult);
@@ -412,7 +435,9 @@ namespace DiscordBotRewrite.Voice
 
                 string description = "Sucessfully loaded the playlist!";
                 if (sections.Count >= 3 && !string.IsNullOrWhiteSpace(sections[2]))
+                {
                     description = $"Loaded playlist: `{sections[2]}`!";
+                }
 
                 await ctx.EditResponseAsync(new DiscordEmbedBuilder
                 {

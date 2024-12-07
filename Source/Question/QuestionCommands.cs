@@ -46,7 +46,7 @@ namespace DiscordBotRewrite.Question
             Question usedQuestion = module.PickQuestion(module.ParanoiaQuestions.ToList(), rating);
 
             DiscordDmChannel channel = await member.CreateDmChannelAsync();
-            var msg = await member.SendMessageAsync(new DiscordEmbedBuilder()
+            DiscordMessage msg = await member.SendMessageAsync(new DiscordEmbedBuilder()
             {
                 Title = "Paranoia",
                 Description = $"**{ctx.Member.DisplayName} sent you a question!**\n{usedQuestion.Text}\nSend a message with your answer.",
@@ -59,17 +59,21 @@ namespace DiscordBotRewrite.Question
                 Color = Bot.Style.DefaultColor
             });
 
-            var interactivity = ctx.Client.GetInteractivity();
+            InteractivityExtension interactivity = ctx.Client.GetInteractivity();
             InteractivityResult<DiscordMessage> result = await interactivity.WaitForMessageAsync(x => x.Channel == channel && x.Author == user);
 
-            var message = result.Result;
+            DiscordMessage message = result.Result;
             if (message != null)
             {
                 string description;
                 if (GenerateRandomNumber(1, 4) > 1)
+                {
                     description = $"Question is hidden \n{member.DisplayName} answered: {message.Content}";
+                }
                 else
+                {
                     description = $"{member.DisplayName} was asked {usedQuestion.Text}. \nThey answered: {message.Content}";
+                }
 
                 await ctx.EditResponseAsync(new DiscordEmbedBuilder
                 {

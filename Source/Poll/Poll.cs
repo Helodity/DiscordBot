@@ -106,7 +106,7 @@ namespace DiscordBotRewrite.Poll
             string voteString = voteCount == 1 ? $"{voteCount} member has voted." : $"{voteCount} members have voted.";
             DiscordUser asker = await GetAskerAsync();
             string askerMention = asker == null ? "Someone" : $"{asker.Mention}";
-            var endEarlyButton = new DiscordButtonComponent(ButtonStyle.Danger, "end_early", "End Poll");
+            DiscordButtonComponent endEarlyButton = new DiscordButtonComponent(ButtonStyle.Danger, "end_early", "End Poll");
             return new DiscordMessageBuilder()
                 .AddEmbed(new DiscordEmbedBuilder {
                     Description = $"{askerMention} asks: {Question.ToBold()}\nPoll ends {EndTime.ToTimestamp()}!\n{voteString}",

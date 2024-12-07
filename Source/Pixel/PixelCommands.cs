@@ -19,7 +19,7 @@ namespace DiscordBotRewrite.Pixel
             await ctx.CreateResponseAsync($"Loading...", true);
             string imagePath = $"PixelImages/img{ctx.User.Id}.png";
             Bot.Modules.Pixel.CreateImage(ctx);
-            using (var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
+            using (FileStream fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddFile(imagePath, fs).AsEphemeral());
             }
@@ -94,24 +94,24 @@ namespace DiscordBotRewrite.Pixel
             }).AsEphemeral());
 
             DiscordMessage msg;
-            var embed = new DiscordEmbedBuilder()
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
                 .WithTitle("Pixel")
                 .WithColor(Bot.Style.DefaultColor)
                 .WithImageUrl($"attachment://{Path.GetFileName(imagePath)}")
                 .WithDescription($"{ctx.Guild.Name}'s canvas. ({curX},{curY}) is selected. {zoom} zoom. {jumpAmount} tiles per move.");
             Bot.Modules.Pixel.CreateImageWithUI(ctx, curX, curY, zoom, curColor);
-            using (var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
+            using (FileStream fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
             {
                 msg = await ctx.Member.SendMessageAsync(new DiscordMessageBuilder().AddComponents(row1).AddComponents(row2).AddComponents(row3).AddComponents(row4).AddComponents(row5).AddEmbed(embed).AddFile(Path.GetFileName(imagePath), fs));
             }
-            var interactivity = ctx.Client.GetInteractivity();
+            DSharpPlus.Interactivity.InteractivityExtension interactivity = ctx.Client.GetInteractivity();
             while (true)
             {
-                var input = await interactivity.WaitForButtonAsync(msg, ctx.User);
+                DSharpPlus.Interactivity.InteractivityResult<DSharpPlus.EventArgs.ComponentInteractionCreateEventArgs> input = await interactivity.WaitForButtonAsync(msg, ctx.User);
 
                 if (input.TimedOut)
                 {
-                    using (var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
+                    using (FileStream fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
                     {
                         await msg.DeleteAsync();
                         embed.WithDescription($"{ctx.Guild.Name}'s canvas.").WithColor(Bot.Style.DefaultColor);
@@ -128,10 +128,13 @@ namespace DiscordBotRewrite.Pixel
                     await msg.DeleteAsync();
                     msg = await input.Result.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddComponents(colorSelectComponent));
 
-                    var cInput = await interactivity.WaitForSelectAsync(msg, ctx.User, "color");
+                    DSharpPlus.Interactivity.InteractivityResult<DSharpPlus.EventArgs.ComponentInteractionCreateEventArgs> cInput = await interactivity.WaitForSelectAsync(msg, ctx.User, "color");
 
                     if (cInput.TimedOut)
+                    {
                         break;
+                    }
+
                     await cInput.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
                     PixelColor newColor = PixelColor.ColorDict.FirstOrDefault(x => x.Name == cInput.Result.Values.First());
@@ -141,7 +144,7 @@ namespace DiscordBotRewrite.Pixel
                     recreateMessage = false;
                     await msg.DeleteAsync();
                     Bot.Modules.Pixel.CreateImageWithUI(ctx, curX, curY, zoom, curColor);
-                    using (var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
+                    using (FileStream fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
                     {
                         msg = await cInput.Result.Interaction.EditOriginalResponseAsync(
                             new DiscordWebhookBuilder()
@@ -151,7 +154,7 @@ namespace DiscordBotRewrite.Pixel
                 }
                 if (input.Result.Id == "exit")
                 {
-                    using (var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
+                    using (FileStream fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
                     {
                         await msg.DeleteAsync();
                         embed.WithDescription($"{ctx.Guild.Name}'s canvas.").WithColor(Bot.Style.DefaultColor);
@@ -166,7 +169,9 @@ namespace DiscordBotRewrite.Pixel
                     for (int i = 0; i < jumpAmount; i++)
                     {
                         if (curY > 0)
+                        {
                             curY--;
+                        }
                     }
                 }
                 if (input.Result.Id == "moveDown")
@@ -174,7 +179,9 @@ namespace DiscordBotRewrite.Pixel
                     for (int i = 0; i < jumpAmount; i++)
                     {
                         if (curY <= map.Height)
+                        {
                             curY++;
+                        }
                     }
                 }
                 if (input.Result.Id == "moveLeft")
@@ -182,7 +189,9 @@ namespace DiscordBotRewrite.Pixel
                     for (int i = 0; i < jumpAmount; i++)
                     {
                         if (curX > 0)
+                        {
                             curX--;
+                        }
                     }
                 }
                 if (input.Result.Id == "moveRight")
@@ -190,13 +199,17 @@ namespace DiscordBotRewrite.Pixel
                     for (int i = 0; i < jumpAmount; i++)
                     {
                         if (curX <= map.Width)
+                        {
                             curX++;
+                        }
                     }
                 }
                 if (input.Result.Id == "zoomIn")
                 {
                     if (zoom > 3)
+                    {
                         zoom -= 2;
+                    }
                 }
                 if (input.Result.Id == "zoomOut")
                 {
@@ -205,7 +218,9 @@ namespace DiscordBotRewrite.Pixel
                 if (input.Result.Id == "jumpSubtract")
                 {
                     if (jumpAmount > 1)
+                    {
                         jumpAmount--;
+                    }
                 }
                 if (input.Result.Id == "jumpAdd")
                 {
@@ -226,7 +241,7 @@ namespace DiscordBotRewrite.Pixel
                 {
                     Bot.Modules.Pixel.CreateImageWithUI(ctx, curX, curY, zoom, curColor);
                     await msg.DeleteAsync();
-                    using (var fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
+                    using (FileStream fs = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
                     {
                         msg = await input.Result.Interaction.EditOriginalResponseAsync(
                             new DiscordWebhookBuilder()

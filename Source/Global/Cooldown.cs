@@ -29,7 +29,9 @@ namespace DiscordBotRewrite.Global {
         public void SetEndTime(DateTime time, bool update = true) {
             EndTime = time;
             if(update)
+            {
                 Bot.Database.Update(this);
+            }
         }
         public static Cooldown GetCooldown(long userID, string cooldownID) {
             Cooldown cooldown = Bot.Database.Table<Cooldown>().FirstOrDefault(x => x.UserID == userID && x.CooldownID == cooldownID);

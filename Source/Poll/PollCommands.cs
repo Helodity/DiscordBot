@@ -32,22 +32,25 @@ namespace DiscordBotRewrite.Poll
                 }, true);
                 return;
             }
-            var id = $"poll_start_modal{DateTime.Now}";
-            var form = new DiscordInteractionResponseBuilder()
+            string id = $"poll_start_modal{DateTime.Now}";
+            DiscordInteractionResponseBuilder form = new DiscordInteractionResponseBuilder()
               .WithTitle("Start a poll!")
               .WithCustomId(id)
               .AddComponents(new TextInputComponent("Question", "question", "What do you want to ask?", max_length: 500));
             if (type == PollType.MultipleChoice)
+            {
                 form.AddComponents(new TextInputComponent("Choices", "choices", "Separate each choice with a comma.", style: TextInputStyle.Paragraph));
+            }
 
             await ctx.CreateResponseAsync(InteractionResponseType.Modal, form);
 
-            var interactivity = ctx.Client.GetInteractivity();
-            var input = await interactivity.WaitForModalAsync(id, ctx.User, timeoutOverride: TimeSpan.FromMinutes(5));
+            DSharpPlus.Interactivity.InteractivityExtension interactivity = ctx.Client.GetInteractivity();
+            DSharpPlus.Interactivity.InteractivityResult<DSharpPlus.EventArgs.ModalSubmitEventArgs> input = await interactivity.WaitForModalAsync(id, ctx.User, timeoutOverride: TimeSpan.FromMinutes(5));
 
             if (input.TimedOut)
+            {
                 return;
-
+            }
 
             List<string> choices = null;
             if (type == PollType.MultipleChoice)

@@ -21,7 +21,7 @@ namespace DiscordBotRewrite.Voice {
 
         #region Constructors
         public VoiceModule(DiscordClient client) {
-            var endpoint = new ConnectionEndpoint {
+            ConnectionEndpoint endpoint = new ConnectionEndpoint {
                 Hostname = "127.0.0.1", // From your server configuration.
                 Port = 2333 // From your server configuration
             };
@@ -68,14 +68,18 @@ namespace DiscordBotRewrite.Voice {
         }
         public async Task<List<LavalinkTrack>> PerformStandardSearchAsync(string search, LavalinkNodeConnection node) {
 
-            var tracks = new List<LavalinkTrack>();
+            List<LavalinkTrack> tracks = new List<LavalinkTrack>();
             tracks = await TrackSearchAsync(node, search, LavalinkSearchType.Plain, true);
             if(tracks.Any())
+            {
                 return tracks;
+            }
 
             tracks = await TrackSearchAsync(node, search, LavalinkSearchType.Youtube);
             if(tracks.Any())
+            {
                 return tracks;
+            }
 
             return new List<LavalinkTrack>();
         }

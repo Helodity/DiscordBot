@@ -36,7 +36,10 @@ namespace DiscordBotRewrite.Question
                 }
             }
             if (validQuestions.Count == 0)
+            {
                 return new Question("No valid question!", QuestionRating.All);
+            }
+
             return validQuestions[GenerateRandomNumber(0, validQuestions.Count - 1)];
         }
     }

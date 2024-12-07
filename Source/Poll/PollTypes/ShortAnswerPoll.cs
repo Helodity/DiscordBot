@@ -42,8 +42,8 @@ namespace DiscordBotRewrite.Poll {
             Bot.Database.Delete(this);
             try {
                 MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(voteString));
-                var message = await GetMessageAsync();
-                var builder = new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder {
+                DiscordMessage message = await GetMessageAsync();
+                DiscordMessageBuilder builder = new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder {
                     Description = $"Poll has ended {EndTime.ToTimestamp()}!\n{Question.ToBold()}\nAnswers are above.",
                     Color = Bot.Style.DefaultColor
                 }).AddFile("votes.txt", stream);
@@ -60,23 +60,28 @@ namespace DiscordBotRewrite.Poll {
             DiscordMessageBuilder builder;
             if(e.Id == "clear") {
                 if(vote != null)
+                {
                     Bot.Database.Delete(vote);
+                }
+
                 builder = await GetActiveMessageBuilder();
                 await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder(builder));
                 return;
             }
-            var id = $"poll_vote_modal{DateTime.Now}{MessageId}";
-            var form = new DiscordInteractionResponseBuilder()
+            string id = $"poll_vote_modal{DateTime.Now}{MessageId}";
+            DiscordInteractionResponseBuilder form = new DiscordInteractionResponseBuilder()
                .WithTitle("Vote")
                .WithCustomId(id)
                .AddComponents(new TextInputComponent("Vote", "vote", "Put your vote here!", style: TextInputStyle.Paragraph));
 
             await e.Interaction.CreateResponseAsync(InteractionResponseType.Modal, form);
-            var interactivity = sender.GetInteractivity();
-            var input = await interactivity.WaitForModalAsync(id, e.User, timeoutOverride: TimeSpan.FromMinutes(5));
+            DSharpPlus.Interactivity.InteractivityExtension interactivity = sender.GetInteractivity();
+            DSharpPlus.Interactivity.InteractivityResult<ModalSubmitEventArgs> input = await interactivity.WaitForModalAsync(id, e.User, timeoutOverride: TimeSpan.FromMinutes(5));
 
             if(input.TimedOut)
+            {
                 return;
+            }
 
             string v = input.Result.Values["vote"];
             if(vote != null) {
@@ -88,14 +93,16 @@ namespace DiscordBotRewrite.Poll {
             }
 
             if(Bot.Config.DebugLogging)
+            {
                 Bot.Client.Logger.LogDebug($"Received vote {vote.Choice} for short answer poll {MessageId} from {e.User.Id}");
+            }
 
             builder = await GetActiveMessageBuilder();
             await input.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder(builder));
         }
         public async override Task<DiscordMessageBuilder> GetActiveMessageBuilder() {
-            var voteComponent = new DiscordButtonComponent(ButtonStyle.Primary, "vote", "Vote");
-            var clearComponent = new DiscordButtonComponent(ButtonStyle.Danger, "clear", "Clear");
+            DiscordButtonComponent voteComponent = new DiscordButtonComponent(ButtonStyle.Primary, "vote", "Vote");
+            DiscordButtonComponent clearComponent = new DiscordButtonComponent(ButtonStyle.Danger, "clear", "Clear");
             return (await base.GetActiveMessageBuilder()).AddComponents(voteComponent, clearComponent);
         }
     }
