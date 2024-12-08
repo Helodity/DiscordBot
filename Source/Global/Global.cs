@@ -9,7 +9,7 @@ namespace DiscordBotRewrite.Global
 
         private const int MajorVersion = 1;
         private const int MinorVersion = 0;
-        private const int RevisionVersion = 0;
+        private const int RevisionVersion = 5;
 
         public static string VersionString = $"{MajorVersion}.{MinorVersion}.{RevisionVersion}";
 

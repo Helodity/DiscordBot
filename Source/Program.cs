@@ -2,15 +2,15 @@
 
 namespace DiscordBotRewrite
 {
-    class Program
+    internal class Program
     {
-        static void Main()
+        private static void Main()
         {
             SetupGlobalExceptionHandlers();
             Bot.Start().GetAwaiter().GetResult();
         }
 
-        static void SetupGlobalExceptionHandlers()
+        private static void SetupGlobalExceptionHandlers()
         {
             AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
             {

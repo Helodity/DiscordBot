@@ -77,6 +77,10 @@ namespace DiscordBotRewrite.LifeSim
             Current_Location_Duration = 0;
         }
 
+        public override string ToString()
+        {
+            return $"(ID: {Id}) {FirstName} {LastName}";
+        }
         //Todo: Constructor that takes 2 other characters in as input
     }
 }

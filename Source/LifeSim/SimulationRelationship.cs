@@ -31,5 +31,43 @@ namespace DiscordBotRewrite.LifeSim
             TargetID = targetID;
             Friendship = 0;
         }
+
+        public string GetQuantizedString()
+        {
+
+            List<SimulationRelationship> relationships = Bot.Database.Table<SimulationRelationship>().Where(x => x.OwnerID == OwnerID).ToList();
+            int BestFriendID = -1;
+            float BestRelationship = 0;
+            for (int i = 0; i < relationships.Count(); i++)
+            {
+                if (relationships[i].Friendship > Math.Max(50, BestRelationship))
+                {
+                    BestFriendID = relationships[i].TargetID;
+                    BestRelationship = relationships[i].Friendship;
+                }
+            }
+            if (BestFriendID == TargetID)
+            {
+                return "Best Friends";
+            }
+
+            switch (Friendship)
+            {
+                case <= -25:
+                    return "Hatred";
+                case >= -25 and <= -2:
+                    return "Dislike";
+                case >= -2 and <= 2:
+                    return "Acquaintance";
+                case > 2 and <= 25:
+                    return "Casual Friends";
+                case > 25 and <= 50:
+                    return "Close Friends";
+                case > 50:
+                    return "Intimate Friends";
+                default:
+                    return "Acquaintance";
+            }
+        }
     }
 }

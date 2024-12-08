@@ -106,6 +106,8 @@ namespace DiscordBotRewrite
             SlashExtension = Client.UseSlashCommands();
 
             SlashExtension.RegisterCommands<UnsortedCommands>(TargetServer);
+            SlashExtension.RegisterCommands<LocationCommands>(TargetServer);
+            SlashExtension.RegisterCommands<CharacterCommands>(TargetServer);
 
             SlashExtension.SlashCommandErrored += (sender, args) =>
             {

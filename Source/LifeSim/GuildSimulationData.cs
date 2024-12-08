@@ -30,6 +30,5 @@ namespace DiscordBotRewrite.LifeSim
         {
             return Bot.Database.Table<SimulationCharacter>().Where(x => x.GuildID == GuildId).ToList();
         }
-
     }
 }

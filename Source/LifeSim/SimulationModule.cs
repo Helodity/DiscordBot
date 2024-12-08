@@ -6,7 +6,7 @@ namespace DiscordBotRewrite.LifeSim
     {
         public TimeBasedEvent UpdateEvent;
         private List<string> PotentialNames;
-        private readonly List<SimulationLocation> Locations;
+        public readonly List<SimulationLocation> Locations;
 
         public const int TICKS_PER_YEAR = 1440;
         #region Constructors
@@ -58,6 +58,17 @@ namespace DiscordBotRewrite.LifeSim
             }
             return relationshipData;
         }
+        public SimulationLocation? GetSimulationLocation(string locationName)
+        {
+            foreach (SimulationLocation loc in Locations)
+            {
+                if (loc.Name == locationName)
+                {
+                    return loc;
+                }
+            }
+            return null;
+        }
 
         public string GetRandomName()
         {
@@ -94,12 +105,13 @@ namespace DiscordBotRewrite.LifeSim
         {
             //See if someone new moves in. 
             TryForCharacterMoveIn(data);
-
+            //TODO: Limit actions based on age
             DoCharacterAging(data);
 
             List<SimulationCharacter> charList = data.GetAllCharacters();
 
             //Moving around n stuff
+            //TODO add visiting friends.
             for (int i = 0; i < charList.Count(); i++)
             {
                 SimulationCharacter c = charList[i];
@@ -111,6 +123,7 @@ namespace DiscordBotRewrite.LifeSim
 
                     if (GenerateRandomNumber(1, goOutsideInverseOdds) > 1)
                     {
+                        Bot.Database.Update(c);
                         continue;
                     }
 
@@ -122,18 +135,25 @@ namespace DiscordBotRewrite.LifeSim
                         SimulationLocation location = Locations[loc];
                         float appeal = 0;
                         //Matching interests
-                        foreach (Enum value in Enum.GetValues(c.Interests.GetType()))
+                        int totalAppeals = 0;
+                        int matchingAppeals = 0;
+                        foreach (Enum value in Enum.GetValues(typeof(SimulationInterests)))
                         {
-                            if (c.Interests.HasFlag(value) && location.Appeals.HasFlag(value))
+                            if (location.Appeals.HasFlag(value))
                             {
-                                appeal += 20;
+                                totalAppeals++;
+                                if (c.Interests.HasFlag(value))
+                                {
+                                    matchingAppeals++;
+                                }
                             }
                         }
+                        appeal += 15 * (matchingAppeals * 2 / (totalAppeals + 1));
                         //Matching intensity
                         appeal += (1 - Math.Abs(c.Personality_Extraversion - location.Intensity)) * 20;
 
                         //Random chance
-                        appeal += (3 + c.Personality_Openness * 2) * 5 * GenerateRandomNumber(-1, 1f);
+                        appeal += (3 + c.Personality_Openness * 2) * 7 * GenerateRandomNumber(-1, 1f);
 
                         if (appeal > maxAppeal || topLocationIndex == -1)
                         {
@@ -155,6 +175,7 @@ namespace DiscordBotRewrite.LifeSim
 
                     if (GenerateRandomNumber(1, goInsideInverseOdds) > 1)
                     {
+                        Bot.Database.Update(c);
                         continue;
                     }
 
@@ -214,25 +235,28 @@ namespace DiscordBotRewrite.LifeSim
             appeal += (c1.Personality_Agreeableness + c2.Personality_Agreeableness) * 10;
             appeal -= (c1.Personality_Neuroticism + c1.Personality_Neuroticism) * 5;
 
-            appeal += GenerateRandomNumber(-25, 25);
+            //Very slight positive lean.
+            appeal += GenerateRandomNumber(-20, 25);
 
             SimulationRelationship relationship1 = GetRelationshipData(c1, c2);
             float r1Appeal = appeal;
+            r1Appeal += relationship1.Friendship * 0.1f;
             if (r1Appeal < 0)
             {
                 r1Appeal *= 1 + (c1.Personality_Neuroticism * 0.8f);
             }
             relationship1.Friendship += r1Appeal / 100;
-
+            Bot.Database.Update(relationship1);
 
             SimulationRelationship relationship2 = GetRelationshipData(c2, c1);
             float r2Appeal = appeal;
+            r2Appeal += relationship2.Friendship * 0.1f;
             if (r2Appeal < 0)
             {
                 r2Appeal *= 1 + (c2.Personality_Neuroticism * 0.8f);
             }
             relationship2.Friendship += r2Appeal / 100;
-
+            Bot.Database.Update(relationship2);
         }
 
         private void TryForCharacterMoveIn(GuildSimulationData data)
