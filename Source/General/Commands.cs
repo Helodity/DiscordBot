@@ -53,10 +53,32 @@ namespace DiscordBotRewrite.General
                 locationText = $"Has been at the {c.Current_Location} for {c.Current_Location_Duration} minutes.";
             }
 
+            List<SimulationRelationship> relationships = Bot.Database.Table<SimulationRelationship>().Where(x => x.OwnerID == c.Id).ToList();
+            string description = "";
+            description += "**Relationships**\n";
+
+            if (relationships.Count() == 0)
+            {
+                description += "None!\n";
+            }
+            else
+            {
+                for (int i = 0; i < relationships.Count(); i++)
+                {
+                    SimulationCharacter otherChar = Bot.Database.Table<SimulationCharacter>().FirstOrDefault(x => x.Id == relationships[i].TargetID);
+                    if (otherChar == null)
+                    {
+                        continue;
+                    }
+                    description += $"{otherChar.FirstName} {otherChar.LastName}: {relationships[i].Friendship}";
+                }
+            }
+
+
             await ctx.CreateResponseAsync(new DiscordEmbedBuilder
             {
                 Title = $"{c.FirstName} {c.LastName}",
-                Description = locationText,
+                Description = description,
                 Color = Bot.Style.DefaultColor
             });
         }
