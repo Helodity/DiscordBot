@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json;
 
-namespace DiscordBotRewrite {
-    public readonly struct Config {
+namespace DiscordBotRewrite
+{
+    public readonly struct Config
+    {
         #region Properties
         public const string JsonLocation = "Config.json";
 

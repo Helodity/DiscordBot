@@ -4,10 +4,11 @@ using Newtonsoft.Json;
 
 namespace DiscordBotRewrite.Global
 {
-    public static class Global {
+    public static class Global
+    {
 
-        private const int MajorVersion = 2;
-        private const int MinorVersion = 4;
+        private const int MajorVersion = 1;
+        private const int MinorVersion = 0;
         private const int RevisionVersion = 0;
 
         public static string VersionString = $"{MajorVersion}.{MinorVersion}.{RevisionVersion}";
@@ -16,14 +17,27 @@ namespace DiscordBotRewrite.Global
         /// <summary>
         /// Returns an int with min inclusive and max inclusive
         /// </summary>
-        public static int GenerateRandomNumber(int min, int max) {
+        public static int GenerateRandomNumber(int min, int max)
+        {
             DateTime date = DateTime.Now;
             int seed = (date.Year * 10000) + (date.Month * 100) + date.Day + date.Hour + date.Minute + (int)date.Ticks;
             Random rng = new Random(seed);
             return rng.Next(min, max + 1);
         }
-        public static T LoadJson<T>(string path) {
-            if(!File.Exists(path)) {
+        /// <summary>
+        /// Returns an float with min inclusive and max inclusive
+        /// </summary>
+        public static float GenerateRandomNumber(float min, float max)
+        {
+            DateTime date = DateTime.Now;
+            int seed = (date.Year * 10000) + (date.Month * 100) + date.Day + date.Hour + date.Minute + (int)date.Ticks;
+            Random rng = new Random(seed);
+            return min + (float)rng.NextDouble() * (max - min);
+        }
+        public static T LoadJson<T>(string path)
+        {
+            if (!File.Exists(path))
+            {
                 FileExtension.CreateFileWithPath(path);
                 return (T)Activator.CreateInstance(typeof(T));
             }
@@ -32,12 +46,14 @@ namespace DiscordBotRewrite.Global
 
             string output = sr.ReadToEnd();
             T obj = default;
-            if(JsonConvert.DeserializeObject(output) != null) {
+            if (JsonConvert.DeserializeObject(output) != null)
+            {
                 obj = JsonConvert.DeserializeObject<T>(output);
             }
             return obj != null ? obj : (T)Activator.CreateInstance(typeof(T));
         }
-        public static void SaveJson(object toSave, string path) {
+        public static void SaveJson(object toSave, string path)
+        {
             using StringWriter sw = new StringWriter();
             using CustomJsonTextWriter jw = new CustomJsonTextWriter(sw);
 

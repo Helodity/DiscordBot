@@ -2,7 +2,7 @@ using SQLite;
 
 namespace DiscordBotRewrite.LifeSim
 {
-
+    //This does not need a guildID, since each character contains a reference to the guild they are in.
     [Table("simulation_relationships")]
     public class SimulationRelationship
     {
